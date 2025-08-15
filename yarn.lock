@@ -488,7 +488,7 @@ __metadata:
     cors: "npm:2.8.5"
     express: "npm:5.1.0"
     helmet: "npm:8.1.0"
-    nodemon: "npm:3.0.2"
+    nodemon: "npm:3.1.10"
     supertest: "npm:7.1.4"
   languageName: unknown
   linkType: soft
@@ -552,7 +552,7 @@ __metadata:
     express-session: "npm:1.18.2"
     govuk-frontend: "npm:5.2.0"
     helmet: "npm:8.1.0"
-    nodemon: "npm:3.0.2"
+    nodemon: "npm:3.1.10"
     nunjucks: "npm:3.2.4"
     sass: "npm:1.90.0"
     supertest: "npm:7.1.4"
@@ -3990,9 +3990,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"nodemon@npm:3.0.2":
-  version: 3.0.2
-  resolution: "nodemon@npm:3.0.2"
+"nodemon@npm:3.1.10":
+  version: 3.1.10
+  resolution: "nodemon@npm:3.1.10"
   dependencies:
     chokidar: "npm:^3.5.2"
     debug: "npm:^4"
@@ -4006,7 +4006,7 @@ __metadata:
     undefsafe: "npm:^2.0.5"
   bin:
     nodemon: bin/nodemon.js
-  checksum: 10c0/65837603fa790d723f8d59e1f098342ed5a5517c3a38ea3b52ca3d532ed21924ecd43fbaceadb458472ae0a8ae6b8395bda22ccd062709ad50c5c4537a625c9d
+  checksum: 10c0/95b64d647f2c22e85e375b250517b0a4b32c2d2392ad898444e331f70d6b1ab43b17f53a8a1d68d5879ab8401fc6cd6e26f0d2a8736240984f6b5a8435b407c0
   languageName: node
   linkType: hard
 
