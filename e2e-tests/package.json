@@ -10,7 +10,7 @@
     "test:e2e:debug": "playwright test --debug"
   },
   "devDependencies": {
-    "@axe-core/playwright": "4.10.1",
+    "@axe-core/playwright": "4.10.2",
     "@playwright/test": "1.49.1"
   }
 }
