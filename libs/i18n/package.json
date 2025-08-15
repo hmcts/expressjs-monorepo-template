@@ -19,7 +19,7 @@
   "dependencies": {
     "i18next": "23.7.16",
     "i18next-fs-backend": "2.3.1",
-    "i18next-http-middleware": "3.5.0"
+    "i18next-http-middleware": "3.8.0"
   },
   "devDependencies": {
     "@types/express": "5.0.3",

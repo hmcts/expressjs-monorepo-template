@@ -720,7 +720,7 @@ __metadata:
     "@types/node": "npm:24.2.1"
     i18next: "npm:23.7.16"
     i18next-fs-backend: "npm:2.3.1"
-    i18next-http-middleware: "npm:3.5.0"
+    i18next-http-middleware: "npm:3.8.0"
   peerDependencies:
     express: ^5.1.0
   languageName: unknown
@@ -3699,10 +3699,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"i18next-http-middleware@npm:3.5.0":
-  version: 3.5.0
-  resolution: "i18next-http-middleware@npm:3.5.0"
-  checksum: 10c0/fc3cb67c6984c0eb29c7456ecf320230eb361534f7d58983f514e66f14addbf082d5aa7af04b4c0bbad45b696faf4709aac64840fcd5db02038f5870b7285ea9
+"i18next-http-middleware@npm:3.8.0":
+  version: 3.8.0
+  resolution: "i18next-http-middleware@npm:3.8.0"
+  checksum: 10c0/ae2060f5b5cad0fac61d323daf5357cdaebe30ca77e84e926955d553a209e3f04d6cb601ab43e44438eefd3b35af4426f2efcaf8a3afb40bbe170cb08112b03e
   languageName: node
   linkType: hard
 
