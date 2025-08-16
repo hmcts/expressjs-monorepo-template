@@ -1,5 +1,5 @@
 # Multi-stage build for Express API
-FROM node:20-alpine AS dependencies
+FROM node:22-alpine AS dependencies
 WORKDIR /app
 COPY package.json yarn.lock .yarnrc.yml ./
 COPY .yarn .yarn
@@ -8,7 +8,7 @@ COPY apps/postgres/package.json apps/postgres/
 COPY libs/*/package.json libs/*/
 RUN yarn workspaces focus @hmcts/api --production
 
-FROM node:20-alpine AS build
+FROM node:22-alpine AS build
 WORKDIR /app
 COPY package.json yarn.lock .yarnrc.yml ./
 COPY .yarn .yarn
@@ -16,7 +16,7 @@ COPY . .
 RUN yarn install --immutable
 RUN yarn workspace @hmcts/api build
 
-FROM node:20-alpine AS runtime
+FROM node:22-alpine AS runtime
 WORKDIR /app
 ENV NODE_ENV=production
 RUN apk add --no-cache dumb-init
