@@ -19,7 +19,7 @@
     "@hmcts/cloud-native-platform": "workspace:*",
     "@hmcts/postgres": "workspace:*",
     "compression": "1.8.1",
-    "config": "3.3.12",
+    "config": "4.1.1",
     "cors": "2.8.5",
     "express": "5.1.0",
     "helmet": "8.1.0"
