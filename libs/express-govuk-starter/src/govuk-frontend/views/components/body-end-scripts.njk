@@ -1,0 +1,7 @@
+{# Run JavaScript at end of the <body>, to avoid blocking the initial render. #}
+{% if isProduction %}
+  <script src="{{ jsEntry }}"></script>
+{% else %}
+  <script type="module" src="/@vite/client"></script>
+  <script type="module" src="{{ jsEntry }}"></script>
+{% endif %}

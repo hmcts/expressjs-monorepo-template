@@ -58,6 +58,10 @@ export async function createApp(): Promise<Express> {
         cssEntry: "css/index.scss",
       },
     },
+    nunjucksGlobals: {
+      gtm: config.get("gtm"),
+      dynatrace: config.get("dynatrace"),
+    },
   });
 
   await configureCookieManager(app, {

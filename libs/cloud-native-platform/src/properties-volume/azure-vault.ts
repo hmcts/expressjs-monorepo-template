@@ -49,8 +49,10 @@ export async function addFromAzureVault(config: Config, options: AzureVaultOptio
         }
       }
     }
-  } catch (error) {
-    throw new Error(`Failed to load secrets from Azure Key Vault: ${error}`);
+  } catch (error: any) {
+    // Provide cleaner error message
+    const message = error.message || error;
+    throw new Error(`Azure Key Vault: ${message}`);
   }
 }
 
@@ -80,8 +82,12 @@ async function processVault(config: Config, vault: any): Promise<void> {
     }
 
     Object.assign(config, deepMerge(config, secretsConfig));
-  } catch (error) {
-    throw new Error(`Failed to retrieve secrets from vault ${vaultName}: ${error}`);
+  } catch (error: any) {
+    // Re-throw with vault context if not already included
+    if (error.message && !error.message.includes(vaultName)) {
+      throw new Error(`Vault '${vaultName}': ${error.message}`);
+    }
+    throw error;
   }
 }
 
@@ -111,7 +117,11 @@ async function processSecret(client: SecretClient, secret: StructuredOrUnstructu
       key: configKey,
       value: secretResponse.value,
     };
-  } catch (error) {
-    throw new Error(`Failed to retrieve secret ${secretName}: ${error}`);
+  } catch (error: any) {
+    // Extract cleaner error message for common Azure Key Vault permission issues
+    if (error?.statusCode === 403 || error?.message?.includes("does not have secrets get permission")) {
+      throw new Error(`Could not load secret '${secretName}'. Check it exists and you have access to it.`);
+    }
+    throw new Error(`Failed to retrieve secret ${secretName}: ${error.message || error}`);
   }
 }

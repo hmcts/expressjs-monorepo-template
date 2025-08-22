@@ -73,7 +73,7 @@ describe("configurePropertiesVolume", () => {
 
     await setupPropertiesVolume(config, { failOnError: false });
 
-    expect(consoleWarnSpy).toHaveBeenCalledWith("Properties volume: Mount point /mnt/secrets does not exist");
+    expect(consoleWarnSpy).toHaveBeenCalledWith("Warning: Mount point /mnt/secrets does not exist");
     expect(config).toEqual({ existing: "value" });
   });
 
@@ -86,7 +86,7 @@ describe("configurePropertiesVolume", () => {
 
     await setupPropertiesVolume(config, { failOnError: false });
 
-    expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining("Failed to read property file"));
+    expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining("Warning: Failed to read property file"));
     expect(config).toEqual({
       existing: "value",
       secret1: "value1",

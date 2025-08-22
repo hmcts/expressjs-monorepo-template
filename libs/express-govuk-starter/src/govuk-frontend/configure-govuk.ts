@@ -30,7 +30,7 @@ export async function configureGovuk(app: Express, options: GovukSetupOptions = 
   app.set("nunjucksEnv", env);
 
   addFilters(env);
-  addGlobals(env);
+  addGlobals(env, options.nunjucksGlobals);
 
   if (i18nContentPath) {
     const translations = await loadTranslations(i18nContentPath);
@@ -60,8 +60,12 @@ function addFilters(env: nunjucks.Environment): void {
   env.addFilter("govukErrorSummary", govukErrorSummaryFilter);
 }
 
-function addGlobals(env: nunjucks.Environment): void {
+function addGlobals(env: nunjucks.Environment, globals: Record<string, unknown> = {}): void {
   env.addGlobal("isProduction", process.env.NODE_ENV === "production");
+
+  Object.entries(globals).forEach(([key, value]) => {
+    env.addGlobal(key, value);
+  });
 }
 
 export interface GovukSetupOptions {
@@ -69,4 +73,5 @@ export interface GovukSetupOptions {
   assets?: AssetOptions;
   errorPages?: boolean;
   i18nContentPath?: string;
+  nunjucksGlobals?: Record<string, unknown>;
 }

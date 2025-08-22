@@ -35,5 +35,5 @@ const cy = {
 };
 
 export const GET = async (_req: Request, res: Response) => {
-  res.render("contact-us", { en, cy });
+  res.render("contact-us", { backLink: "/", en, cy });
 };

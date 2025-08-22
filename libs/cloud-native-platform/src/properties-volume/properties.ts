@@ -33,7 +33,7 @@ export async function configurePropertiesVolume(config: Config, options: AddToOp
       if (failOnError) {
         throw new Error(message);
       }
-      console.warn(`Properties volume: ${message}`);
+      console.warn(`Warning: ${message}`);
       return;
     }
 
@@ -53,17 +53,20 @@ export async function configurePropertiesVolume(config: Config, options: AddToOp
         if (failOnError) {
           throw new Error(message);
         }
-        console.warn(`Properties volume: ${message}`);
+        console.warn(`Warning: ${message}`);
       }
     }
 
     // Merge properties into the configuration object
     Object.assign(config, deepMerge(config, properties));
-  } catch (error) {
-    const message = `Failed to load properties from ${mountPoint}: ${error}`;
+  } catch (error: any) {
+    // Extract cleaner error message
+    const errorMessage = error.message || error;
+    const cleanMessage = errorMessage.includes("Azure Key Vault:") ? errorMessage : `Failed to load properties from ${mountPoint}: ${errorMessage}`;
+
     if (failOnError) {
-      throw new Error(message);
+      throw new Error(cleanMessage);
     }
-    console.warn(`Properties volume: ${message}`);
+    console.warn(`Warning: ${cleanMessage}`);
   }
 }

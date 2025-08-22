@@ -207,5 +207,5 @@ const cy = {
 };
 
 export const GET = async (_req: Request, res: Response) => {
-  res.render("privacy-policy", { en, cy });
+  res.render("privacy-policy", { backLink: "/", en, cy });
 };

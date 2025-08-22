@@ -137,5 +137,5 @@ const cy = {
 };
 
 export const GET = async (_req: Request, res: Response) => {
-  res.render("terms-and-conditions", { en, cy });
+  res.render("terms-and-conditions", { backLink: "/", en, cy });
 };

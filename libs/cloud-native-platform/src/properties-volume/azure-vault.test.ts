@@ -154,7 +154,29 @@ describe("addFromAzureVault", () => {
     mockYamlLoad.mockReturnValue(helmChart);
     mockClient.getSecret.mockRejectedValue(new Error("Access denied"));
 
-    await expect(addFromAzureVault(config, { pathToHelmChart: "/path/to/chart.yaml" })).rejects.toThrow("Failed to retrieve secrets from vault test-vault");
+    await expect(addFromAzureVault(config, { pathToHelmChart: "/path/to/chart.yaml" })).rejects.toThrow(
+      "Azure Key Vault: Vault 'test-vault': Failed to retrieve secret failing-secret: Access denied",
+    );
+  });
+
+  it("should provide cleaner error message for permission errors", async () => {
+    const helmChart = {
+      keyVaults: {
+        "test-vault": {
+          secrets: ["redis-access-key"],
+        },
+      },
+    };
+
+    mockReadFileSync.mockReturnValue("helm-chart-content");
+    mockYamlLoad.mockReturnValue(helmChart);
+    const permissionError: any = new Error("The user does not have secrets get permission");
+    permissionError.statusCode = 403;
+    mockClient.getSecret.mockRejectedValue(permissionError);
+
+    await expect(addFromAzureVault(config, { pathToHelmChart: "/path/to/chart.yaml" })).rejects.toThrow(
+      "Azure Key Vault: Vault 'test-vault': Could not load secret 'redis-access-key'. Check it exists and you have access to it.",
+    );
   });
 
   it("should throw error when secret has no value", async () => {
@@ -170,7 +192,9 @@ describe("addFromAzureVault", () => {
     mockYamlLoad.mockReturnValue(helmChart);
     mockClient.getSecret.mockResolvedValue({ value: null });
 
-    await expect(addFromAzureVault(config, { pathToHelmChart: "/path/to/chart.yaml" })).rejects.toThrow("Failed to retrieve secrets from vault test-vault");
+    await expect(addFromAzureVault(config, { pathToHelmChart: "/path/to/chart.yaml" })).rejects.toThrow(
+      "Azure Key Vault: Vault 'test-vault': Failed to retrieve secret empty-secret: Secret empty-secret has no value",
+    );
   });
 
   it("should normalize secret names when no alias provided", async () => {
