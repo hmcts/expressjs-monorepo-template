@@ -218,4 +218,151 @@ describe("addFromAzureVault", () => {
       secret_with_dots: "value2",
     });
   });
+
+  it("should handle deeply nested keyVaults in Helm chart", async () => {
+    const helmChart = {
+      global: {
+        nested: {
+          keyVaults: {
+            "deep-vault": {
+              secrets: ["deep-secret"],
+            },
+          },
+        },
+      },
+      someOther: {
+        keyVaults: {
+          "other-vault": {
+            secrets: ["other-secret"],
+          },
+        },
+      },
+    };
+
+    mockReadFileSync.mockReturnValue("helm-chart-content");
+    mockYamlLoad.mockReturnValue(helmChart);
+    mockClient.getSecret.mockResolvedValueOnce({ value: "deep-value" }).mockResolvedValueOnce({ value: "other-value" });
+
+    await addFromAzureVault(config, { pathToHelmChart: "/path/to/chart.yaml" });
+
+    expect(mockSecretClient).toHaveBeenCalledWith("https://deep-vault-aat.vault.azure.net/", expect.any(Object));
+    expect(mockSecretClient).toHaveBeenCalledWith("https://other-vault-aat.vault.azure.net/", expect.any(Object));
+    expect(config).toEqual({
+      existing: "value",
+      deep_secret: "deep-value",
+      other_secret: "other-value",
+    });
+  });
+
+  it("should handle keyVaults that are not objects", async () => {
+    const helmChart = {
+      keyVaults: "not-an-object",
+    };
+
+    mockReadFileSync.mockReturnValue("helm-chart-content");
+    mockYamlLoad.mockReturnValue(helmChart);
+
+    await addFromAzureVault(config, { pathToHelmChart: "/path/to/chart.yaml" });
+
+    expect(consoleWarnSpy).not.toHaveBeenCalled();
+    expect(config).toEqual({ existing: "value" });
+  });
+
+  it("should throw error when YAML parsing fails", async () => {
+    mockReadFileSync.mockReturnValue("invalid-yaml: {{{");
+    mockYamlLoad.mockImplementation(() => {
+      throw new Error("YAML parsing error");
+    });
+
+    await expect(addFromAzureVault(config, { pathToHelmChart: "/path/to/chart.yaml" })).rejects.toThrow("Azure Key Vault: YAML parsing error");
+  });
+
+  it("should throw error when file reading fails", async () => {
+    mockReadFileSync.mockImplementation(() => {
+      throw new Error("File not found");
+    });
+
+    await expect(addFromAzureVault(config, { pathToHelmChart: "/path/to/chart.yaml" })).rejects.toThrow("Azure Key Vault: File not found");
+  });
+
+  it("should handle vault config as simple string", async () => {
+    const helmChart = {
+      keyVaults: {
+        "vault-name": "simple-string",
+      },
+    };
+
+    mockReadFileSync.mockReturnValue("helm-chart-content");
+    mockYamlLoad.mockReturnValue(helmChart);
+
+    await addFromAzureVault(config, { pathToHelmChart: "/path/to/chart.yaml" });
+
+    expect(consoleWarnSpy).toHaveBeenCalledWith("Azure Vault: Invalid vault configuration, missing name or secrets");
+    expect(config).toEqual({ existing: "value" });
+  });
+
+  it("should merge secrets with deep nested config", async () => {
+    config = {
+      existing: "value",
+      nested: {
+        prop: "old",
+      },
+    };
+
+    const helmChart = {
+      keyVaults: {
+        "test-vault": {
+          secrets: ["nested"],
+        },
+      },
+    };
+
+    mockReadFileSync.mockReturnValue("helm-chart-content");
+    mockYamlLoad.mockReturnValue(helmChart);
+    mockClient.getSecret.mockResolvedValue({ value: "new-value" });
+
+    await addFromAzureVault(config, { pathToHelmChart: "/path/to/chart.yaml" });
+
+    expect(config).toEqual({
+      existing: "value",
+      nested: "new-value",
+    });
+  });
+
+  it("should handle errors with no message property", async () => {
+    const helmChart = {
+      keyVaults: {
+        "test-vault": {
+          secrets: ["secret1"],
+        },
+      },
+    };
+
+    mockReadFileSync.mockReturnValue("helm-chart-content");
+    mockYamlLoad.mockReturnValue(helmChart);
+    mockClient.getSecret.mockRejectedValue("String error");
+
+    await expect(addFromAzureVault(config, { pathToHelmChart: "/path/to/chart.yaml" })).rejects.toThrow(
+      "Azure Key Vault: Vault 'test-vault': Failed to retrieve secret secret1: String error",
+    );
+  });
+
+  it("should not duplicate vault name in error message if already present", async () => {
+    const helmChart = {
+      keyVaults: {
+        "test-vault": {
+          secrets: ["secret1"],
+        },
+      },
+    };
+
+    mockReadFileSync.mockReturnValue("helm-chart-content");
+    mockYamlLoad.mockReturnValue(helmChart);
+    const error = new Error("test-vault: Already contains vault name");
+    mockClient.getSecret.mockRejectedValue(error);
+
+    await expect(addFromAzureVault(config, { pathToHelmChart: "/path/to/chart.yaml" })).rejects.toThrow(
+      "Azure Key Vault: Failed to retrieve secret secret1: test-vault: Already contains vault name",
+    );
+  });
 });

@@ -3,3 +3,4 @@
 - Add Redis
 - Setup script to add product name to packages, e.g. @hmcts/sptribs-web
 - Add example form and confirmation page
+- Add OSV scanner GitHub Action
