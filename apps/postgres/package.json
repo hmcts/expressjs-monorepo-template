@@ -20,11 +20,11 @@
     "lint:fix": "biome check --write ."
   },
   "dependencies": {
-    "@prisma/client": "6.14.0"
+    "@prisma/client": "6.15.0"
   },
   "devDependencies": {
     "@testcontainers/postgresql": "11.5.1",
-    "prisma": "6.14.0",
+    "prisma": "6.15.0",
     "testcontainers": "11.5.1"
   }
 }
