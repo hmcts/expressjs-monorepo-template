@@ -22,11 +22,10 @@ export class PostgresStore extends Store {
     this.pool = options.pool;
     this.tableName = options.tableName || "session";
     this.schemaName = options.schemaName || "public";
-    this.ttl = options.ttl || 86400; // 24 hours default
+    this.ttl = options.ttl || 86400;
     this.disableTouch = options.disableTouch || false;
     this.cleanupInterval = options.cleanupInterval || 900000; // 15 minutes default
 
-    // Initialize table and start cleanup
     this.initTable()
       .then(() => {
         if (this.cleanupInterval > 0) {
@@ -88,7 +87,7 @@ export class PostgresStore extends Store {
 
   private getExpireDate(session: SessionData): Date {
     let ttl = this.ttl;
-    if (session.cookie && session.cookie.maxAge) {
+    if (session.cookie?.maxAge) {
       ttl = Math.floor(session.cookie.maxAge / 1000);
     }
     return new Date(Date.now() + ttl * 1000);

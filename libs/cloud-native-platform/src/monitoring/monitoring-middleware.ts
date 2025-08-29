@@ -5,7 +5,7 @@ export function monitoringMiddleware(config: MonitoringMiddlewareConfig): (req: 
   const { serviceName, appInsightsConnectionString, enabled = true } = config;
 
   if (!enabled) {
-    return (req: Request, res: Response, next: NextFunction) => next();
+    return (_req: Request, _res: Response, next: NextFunction) => next();
   }
 
   const monitoringService = new MonitoringService(appInsightsConnectionString, serviceName);

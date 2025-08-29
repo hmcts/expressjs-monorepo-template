@@ -85,7 +85,7 @@ export function renderInterceptorMiddleware() {
 
       // If options contains both 'en' and 'cy' keys, select based on locale
       if (opts && typeof opts === "object" && "en" in opts && "cy" in opts) {
-        const { en, cy, ...otherContent } = opts;
+        const { en, ...otherContent } = opts;
         const locale = res.locals.locale || "en";
         const selectedContent = opts[locale] || en || {};
 
