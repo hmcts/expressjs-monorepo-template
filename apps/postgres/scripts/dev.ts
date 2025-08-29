@@ -6,11 +6,14 @@ const execAsync = promisify(exec);
 
 async function startPostgresContainer() {
   console.log("Starting PostgreSQL container...");
+  const databaseName = "expressjs-monorepo-template".replace("-", "_");
+  const username = "hmcts";
+  const password = "hmcts";
 
   const container = await new PostgreSqlContainer("postgres:16-alpine")
-    .withDatabase("hmcts_db")
-    .withUsername("hmcts")
-    .withPassword("hmcts_dev_password")
+    .withDatabase(databaseName)
+    .withUsername(username)
+    .withPassword(password)
     .withExposedPorts({
       container: 5432,
       host: 5432,
@@ -20,7 +23,7 @@ async function startPostgresContainer() {
   const port = container.getMappedPort(5432);
   const host = container.getHost();
 
-  const databaseUrl = `postgresql://hmcts:hmcts_dev_password@${host}:${port}/hmcts_db`;
+  const databaseUrl = `postgresql://${username}:${password}@${host}:${port}/${databaseName}`;
 
   console.log("PostgreSQL container started successfully!");
   console.log(`Database URL: ${databaseUrl}`);
@@ -29,7 +32,7 @@ async function startPostgresContainer() {
   console.log(`  Port: ${port}`);
   console.log(`  Database: hmcts_db`);
   console.log(`  Username: hmcts`);
-  console.log(`  Password: hmcts_dev_password`);
+  console.log(`  Password: hmcts`);
 
   // Set environment variable for Prisma
   process.env.DATABASE_URL = databaseUrl;

@@ -1,0 +1,28 @@
+{
+  "name": "@hmcts/express-session-postgres",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "dev": "tsc --watch",
+    "format": "biome format --write .",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write ."
+  },
+  "peerDependencies": {
+    "express": "^5.1.0",
+    "express-session": "^1.18.2",
+    "pg": "^8.13.1"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.3",
+    "@types/express-session": "1.18.2",
+    "@types/pg": "8.11.10",
+    "express": "5.1.0",
+    "express-session": "1.18.2",
+    "pg": "8.13.1"
+  }
+}

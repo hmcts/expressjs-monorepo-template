@@ -1,0 +1,28 @@
+{
+  "name": "@hmcts/express-session-redis",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run",
+    "dev": "tsc --watch",
+    "format": "biome format --write .",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write ."
+  },
+  "dependencies": {
+    "connect-redis": "7.1.1"
+  },
+  "peerDependencies": {
+    "express": "^5.1.0",
+    "express-session": "^1.18.2"
+  },
+  "devDependencies": {
+    "@types/express": "5.0.3",
+    "@types/express-session": "1.18.2",
+    "express": "5.1.0",
+    "express-session": "1.18.2"
+  }
+}

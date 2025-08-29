@@ -1,7 +1,7 @@
 import type { NextFunction, Request, Response } from "express";
 import express from "express";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { type CookieManagerOptions, configureCookieManager } from "./cookie-manager-middleware.js";
+import { configureCookieManager } from "./cookie-manager-middleware.js";
 
 describe("configureCookieManager", () => {
   let app: express.Express;
