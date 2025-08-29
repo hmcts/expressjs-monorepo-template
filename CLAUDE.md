@@ -1,7 +1,5 @@
 # HMCTS Monorepo AI Development Guide
 
-This guide contains specific instructions for AI assistants working on HMCTS projects.
-
 ## Core Development Commands
 
 ```bash
@@ -9,21 +7,18 @@ This guide contains specific instructions for AI assistants working on HMCTS pro
 yarn install
 
 # Start development environment
-yarn dev              # Start all services concurrently
+yarn dev             # Start all services concurrently
 yarn start:db        # Start PostgreSQL in Docker
 yarn start:api       # Start API server on port 3001
 yarn start:web       # Start web frontend on port 3000
 
 # Testing
-yarn test            # Run all tests across workspaces
-yarn test:unit       # Unit tests only
+yarn test            # Run unit tests across workspaces
 yarn test:e2e        # Playwright E2E tests
-yarn test:a11y       # Accessibility tests with axe-core
 
 # Code quality
 yarn lint            # Run Biome linter
 yarn format          # Format code with Biome
-yarn type-check      # TypeScript type checking
 yarn test:coverage   # Run tests with coverage report
 
 # Database operations
@@ -34,7 +29,6 @@ yarn workspace @hmcts/postgres run studio      # Open Prisma Studio
 # Build and deployment
 yarn build           # Build all packages
 yarn docker:build    # Build Docker images
-yarn helm:lint       # Validate Helm charts
 ```
 
 ## Naming Conventions (STRICT - MUST FOLLOW)
@@ -175,8 +169,6 @@ describe('UserService', () => {
 
 - Input validation on all endpoints
 - CSRF protection on state-changing operations
-- Content Security Policy headers
-- Rate limiting on public endpoints
 - Parameterized database queries (Prisma)
 - No sensitive data in logs
 - Encrypted session storage
@@ -219,24 +211,7 @@ describe('UserService', () => {
 
 1. **Module Loading**: Check imports in apps/*/src/app.ts
 2. **Database Issues**: Enable Prisma logging with `DEBUG=prisma:query`
-3. **Welsh Translations**: Check locale middleware and translation files
-4. **Azure Insights**: Check connection string and network access
-5. **Docker Build**: Verify multi-stage build and dependencies
-
-## AI Development Notes
-
-This template is optimized for AI-assisted development:
-- Clear separation between apps (thin) and libs (logic)
-- Modular architecture for focused changes
-- Comprehensive type definitions
-- Test coverage validates AI-generated code
-- Consistent patterns across modules
-
-When developing:
-- Always check existing modules for patterns
-- Follow naming conventions exactly
-- Write tests for new functionality
-- Consider Welsh language from the start
+3. **Run commands from the root directory**: Run yarn test etc from the root directory
 
 ## Adding Pages and Content
 
@@ -306,3 +281,11 @@ Every page must support both English and Welsh:
 * **KISS**: Keep It Simple, Stupid - Avoid unnecessary complexity. Write code that is easy to understand and maintain.
 * **Immutable**: Data should be immutable by default. Use const and avoid mutations to ensure predictable state.
 * **Side Effects**: Functions should have no side effects. Avoid modifying external state or relying on mutable data.
+
+## Communication Style
+
+Be direct and straightforward. No cheerleading phrases like "that's absolutely right" or "great question." Tell me when my ideas are flawed, incomplete, or poorly thought through. Focus on practical problems and realistic solutions rather than being overly positive or encouraging.
+
+## Technical Approach 
+
+Challenge assumptions, point out potential issues, and ask the hard questions about implementation, scalability, and real-world viability. If something won't work, say so directly and explain why it has problems rather than just dismissing it.
