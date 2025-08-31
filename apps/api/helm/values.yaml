@@ -1,0 +1,13 @@
+nodejs:
+  applicationPort: 3000
+  aadIdentityName: rpe
+  ingressHost: expressjs-monorepo-template.{{ .Values.global.environment }}.platform.hmcts.net
+  image: 'hmctspublic.azurecr.io/rpe/expressjs-monorepo-template:latest'
+  environment:
+    REDIS_HOST: 'rpe-{{ .Values.global.environment }}.redis.cache.windows.net'
+  keyVaults:
+    rpe-shared:
+      secrets:
+        - redis-access-key
+        - app-insights-connection-string
+        - dynatrace-url
