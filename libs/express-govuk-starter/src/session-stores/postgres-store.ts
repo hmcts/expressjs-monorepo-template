@@ -1,6 +1,7 @@
 import type { SessionData } from "express-session";
 import { Store } from "express-session";
 import type { Pool } from "pg";
+import format from "pg-format";
 
 export class PostgresStore extends Store {
   private pool: Pool;
@@ -41,19 +42,16 @@ export class PostgresStore extends Store {
     const client = await this.pool.connect();
     try {
       // Create table if it doesn't exist
-      await client.query(`
-        CREATE TABLE IF NOT EXISTS ${this.schemaName}.${this.tableName} (
-          sid VARCHAR(255) PRIMARY KEY,
-          sess JSONB NOT NULL,
-          expire TIMESTAMPTZ NOT NULL
-        )
-      `);
+      const createTableQuery = format(
+        "CREATE TABLE IF NOT EXISTS %I.%I (sid VARCHAR(255) PRIMARY KEY, sess JSONB NOT NULL, expire TIMESTAMPTZ NOT NULL)",
+        this.schemaName,
+        this.tableName,
+      );
+      await client.query(createTableQuery);
 
       // Create index on expire column for cleanup queries
-      await client.query(`
-        CREATE INDEX IF NOT EXISTS idx_${this.tableName}_expire 
-        ON ${this.schemaName}.${this.tableName} (expire)
-      `);
+      const createIndexQuery = format("CREATE INDEX IF NOT EXISTS %I ON %I.%I (expire)", `idx_${this.tableName}_expire`, this.schemaName, this.tableName);
+      await client.query(createIndexQuery);
 
       this.tableInitialized = true;
     } finally {
@@ -79,7 +77,8 @@ export class PostgresStore extends Store {
 
     const client = await this.pool.connect();
     try {
-      await client.query(`DELETE FROM ${this.schemaName}.${this.tableName} WHERE expire < NOW()`);
+      const query = format("DELETE FROM %I.%I WHERE expire < NOW()", this.schemaName, this.tableName);
+      await client.query(query);
     } finally {
       client.release();
     }
@@ -100,11 +99,8 @@ export class PostgresStore extends Store {
 
     const client = await this.pool.connect();
     try {
-      const result = await client.query(
-        `SELECT sess FROM ${this.schemaName}.${this.tableName} 
-         WHERE sid = $1 AND expire > NOW()`,
-        [sid],
-      );
+      const query = format("SELECT sess FROM %I.%I WHERE sid = $1 AND expire > NOW()", this.schemaName, this.tableName);
+      const result = await client.query(query, [sid]);
 
       if (result.rows.length === 0) {
         return callback(null, null);
@@ -128,13 +124,12 @@ export class PostgresStore extends Store {
     try {
       const expire = this.getExpireDate(session);
 
-      await client.query(
-        `INSERT INTO ${this.schemaName}.${this.tableName} (sid, sess, expire)
-         VALUES ($1, $2, $3)
-         ON CONFLICT (sid) 
-         DO UPDATE SET sess = $2, expire = $3`,
-        [sid, JSON.stringify(session), expire],
+      const query = format(
+        "INSERT INTO %I.%I (sid, sess, expire) VALUES ($1, $2, $3) ON CONFLICT (sid) DO UPDATE SET sess = $2, expire = $3",
+        this.schemaName,
+        this.tableName,
       );
+      await client.query(query, [sid, JSON.stringify(session), expire]);
 
       callback?.(null);
     } catch (error) {
@@ -151,7 +146,8 @@ export class PostgresStore extends Store {
 
     const client = await this.pool.connect();
     try {
-      await client.query(`DELETE FROM ${this.schemaName}.${this.tableName} WHERE sid = $1`, [sid]);
+      const query = format("DELETE FROM %I.%I WHERE sid = $1", this.schemaName, this.tableName);
+      await client.query(query, [sid]);
       callback?.(null);
     } catch (error) {
       callback?.(error);
@@ -169,12 +165,8 @@ export class PostgresStore extends Store {
     try {
       const expire = this.getExpireDate(session);
 
-      await client.query(
-        `UPDATE ${this.schemaName}.${this.tableName} 
-         SET expire = $2 
-         WHERE sid = $1`,
-        [sid, expire],
-      );
+      const query = format("UPDATE %I.%I SET expire = $2 WHERE sid = $1", this.schemaName, this.tableName);
+      await client.query(query, [sid, expire]);
 
       callback?.(null);
     } catch (error) {
@@ -191,7 +183,8 @@ export class PostgresStore extends Store {
 
     const client = await this.pool.connect();
     try {
-      await client.query(`DELETE FROM ${this.schemaName}.${this.tableName}`);
+      const query = format("DELETE FROM %I.%I", this.schemaName, this.tableName);
+      await client.query(query);
       callback?.(null);
     } catch (error) {
       callback?.(error);
@@ -207,7 +200,8 @@ export class PostgresStore extends Store {
 
     const client = await this.pool.connect();
     try {
-      const result = await client.query(`SELECT COUNT(*) FROM ${this.schemaName}.${this.tableName}`);
+      const query = format("SELECT COUNT(*) FROM %I.%I", this.schemaName, this.tableName);
+      const result = await client.query(query);
       const count = parseInt(result.rows[0].count, 10);
       callback(null, count);
     } catch (error) {
@@ -224,10 +218,8 @@ export class PostgresStore extends Store {
 
     const client = await this.pool.connect();
     try {
-      const result = await client.query(
-        `SELECT sid, sess FROM ${this.schemaName}.${this.tableName} 
-         WHERE expire > NOW()`,
-      );
+      const query = format("SELECT sid, sess FROM %I.%I WHERE expire > NOW()", this.schemaName, this.tableName);
+      const result = await client.query(query);
 
       const sessions: { [sid: string]: SessionData } = {};
       for (const row of result.rows) {

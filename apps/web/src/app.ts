@@ -1,15 +1,8 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { configurePropertiesVolume, healthcheck, monitoringMiddleware } from "@hmcts/cloud-native-platform";
-import {
-  configureCookieManager,
-  configureGovuk,
-  configureHelmet,
-  configureNonce,
-  createSimpleRouter,
-  errorHandler,
-  notFoundHandler,
-} from "@hmcts/express-govuk-starter";
+import { configureCookieManager, configureGovuk, configureHelmet, configureNonce, errorHandler, notFoundHandler } from "@hmcts/express-govuk-starter";
+import { createSimpleRouter } from "@hmcts/simple-router";
 import compression from "compression";
 import config from "config";
 import cookieParser from "cookie-parser";

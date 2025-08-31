@@ -21,6 +21,7 @@
     "@hmcts/cookie-manager": "1.1.0",
     "@hmcts/express-govuk-starter": "workspace:*",
     "@hmcts/postgres": "workspace:*",
+    "@hmcts/simple-router": "workspace:*",
     "compression": "1.8.1",
     "config": "4.1.1",
     "cookie-parser": "1.4.7",
