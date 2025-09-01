@@ -21,8 +21,8 @@
     "clean": "find . -name '*.tsbuildinfo' -delete && find apps libs -name 'dist' -type d -prune -exec rm -rf {} +",
     "start:api": "yarn workspace @hmcts/api run dev",
     "start:web": "yarn workspace @hmcts/web run dev",
-    "start:db": "yarn workspace @hmcts/postgres run dev",
-    "dev": "yarn workspace @hmcts/postgres run generate && concurrently \"yarn:start:*\""
+    "dev": "docker compose up -d && yarn workspace @hmcts/postgres run generate && concurrently \"yarn:start:api\" \"yarn:start:web\"",
+    "dev:down": "docker compose down"
   },
   "keywords": [],
   "author": "HMCTS",
