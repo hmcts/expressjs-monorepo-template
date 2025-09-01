@@ -9,7 +9,7 @@ describe("contact-us page", () => {
   beforeEach(() => {
     req = {};
     res = {
-      render: vi.fn(),
+      render: vi.fn()
     };
   });
 
@@ -21,12 +21,12 @@ describe("contact-us page", () => {
         "contact-us",
         expect.objectContaining({
           en: expect.objectContaining({
-            title: "Contact us",
+            title: "Contact us"
           }),
           cy: expect.objectContaining({
-            title: "Cysylltu â ni",
-          }),
-        }),
+            title: "Cysylltu â ni"
+          })
+        })
       );
     });
 

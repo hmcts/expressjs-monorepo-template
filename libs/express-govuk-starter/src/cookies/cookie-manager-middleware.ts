@@ -92,7 +92,8 @@ function configureCookieRoutes(app: Express, config: CookieManagerOptions): void
       doNotUsePreferences: "Do not use settings cookies",
       saveButton: "Save cookie preferences",
       successBanner: "Success",
-      successMessage: "Your cookie settings have been saved"
+      successMessage: "Your cookie settings have been saved",
+      cookiesUsed: "Cookies used"
     };
 
     const cy = {
@@ -111,7 +112,8 @@ function configureCookieRoutes(app: Express, config: CookieManagerOptions): void
       doNotUsePreferences: "Peidio â defnyddio cwcis gosodiadau",
       saveButton: "Cadw dewisiadau cwcis",
       successBanner: "Llwyddiant",
-      successMessage: "Mae eich gosodiadau cwcis wedi'u cadw"
+      successMessage: "Mae eich gosodiadau cwcis wedi'u cadw",
+      cookiesUsed: "Cwcis a ddefnyddir"
     };
 
     res.render("cookie-preferences", {

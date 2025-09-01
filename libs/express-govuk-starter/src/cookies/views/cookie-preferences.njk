@@ -1,5 +1,22 @@
 {% extends "layouts/default.njk" %}
 
+{% macro cookiesList(cookies) %}
+<details class="govuk-details govuk-!-margin-top-2" data-module="govuk-details">
+  <summary class="govuk-details__summary">
+    <span class="govuk-details__summary-text">
+      {{ cookiesUsed }}
+    </span>
+  </summary>
+  <div class="govuk-details__text">
+    <ul class="govuk-list govuk-list--bullet">
+      {% for cookie in cookies %}
+      <li>{{ cookie }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+</details>
+{% endmacro %}
+
 {% block content %}
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
@@ -27,7 +44,10 @@
       
       <h2 class="govuk-heading-m">{{ essentialTitle }}</h2>
       <p class="govuk-body">{{ essentialDescription }}</p>
-      
+      {% if categories.analytics %}
+      {{ cookiesList(categories.essential) }}
+      {% endif %}
+
       {% if categories.analytics %}
       <div class="govuk-form-group">
         <fieldset class="govuk-fieldset">
@@ -39,20 +59,7 @@
           <div class="govuk-hint">
             {{ analyticsDescription }}
             {% if categories.analytics %}
-            <details class="govuk-details govuk-!-margin-top-2" data-module="govuk-details">
-              <summary class="govuk-details__summary">
-                <span class="govuk-details__summary-text">
-                  Cookies used
-                </span>
-              </summary>
-              <div class="govuk-details__text">
-                <ul class="govuk-list govuk-list--bullet">
-                  {% for cookie in categories.analytics %}
-                  <li>{{ cookie }}</li>
-                  {% endfor %}
-                </ul>
-              </div>
-            </details>
+            {{ cookiesList(categories.analytics) }}
             {% endif %}
           </div>
           <div class="govuk-radios" data-module="govuk-radios">
@@ -84,20 +91,7 @@
           <div class="govuk-hint">
             {{ preferencesDescription }}
             {% if categories.preferences %}
-            <details class="govuk-details govuk-!-margin-top-2" data-module="govuk-details">
-              <summary class="govuk-details__summary">
-                <span class="govuk-details__summary-text">
-                  Cookies used
-                </span>
-              </summary>
-              <div class="govuk-details__text">
-                <ul class="govuk-list govuk-list--bullet">
-                  {% for cookie in categories.preferences %}
-                  <li>{{ cookie }}</li>
-                  {% endfor %}
-                </ul>
-              </div>
-            </details>
+            {{ cookiesList(categories.preferences) }}
             {% endif %}
           </div>
           <div class="govuk-radios" data-module="govuk-radios">

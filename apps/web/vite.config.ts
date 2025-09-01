@@ -11,9 +11,9 @@ export default defineConfig(
       rollupOptions: {
         input: {
           main: resolve(__dirname, "src/assets/js/index.ts"),
-          styles: resolve(__dirname, "src/assets/css/index.scss"),
-        },
-      },
+          styles: resolve(__dirname, "src/assets/css/index.scss")
+        }
+      }
     },
     plugins: [
       viteStaticCopy({
@@ -25,15 +25,15 @@ export default defineConfig(
               // Preserve directory structure by extracting path after 'src/pages/'
               const relativePath = fullPath.split("src/pages/")[1];
               return relativePath;
-            },
+            }
           },
           {
             // Copy app-specific images
             src: "src/assets/images/**/*",
-            dest: "images",
-          },
-        ],
-      }),
-    ],
-  }),
+            dest: "images"
+          }
+        ]
+      })
+    ]
+  })
 );

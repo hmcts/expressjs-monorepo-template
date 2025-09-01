@@ -6,7 +6,7 @@ initAll();
 
 const config = {
   userPreferences: {
-    cookieName: "cookie_policy",
+    cookieName: "cookie_policy"
   },
   cookieBanner: {
     class: "govuk-cookie-banner",
@@ -15,41 +15,41 @@ const config = {
         name: "accept",
         buttonClass: "js-cookie-banner-accept",
         confirmationClass: "cookie-banner-accept-message",
-        consent: true,
+        consent: true
       },
       {
         name: "reject",
         buttonClass: "js-cookie-banner-reject",
         confirmationClass: "cookie-banner-reject-message",
-        consent: false,
+        consent: false
       },
       {
         name: "hide",
-        buttonClass: "js-cookie-banner-hide",
-      },
-    ],
+        buttonClass: "js-cookie-banner-hide"
+      }
+    ]
   },
   preferencesForm: {
-    class: "cookie-preferences-form",
+    class: "cookie-preferences-form"
   },
   cookieManifest: [
     {
       categoryName: "essential",
       optional: false,
       matchBy: "exact",
-      cookies: ["connect.sid", "_csrf", "cookie_policy", "cookies_preferences_set", "locale"],
+      cookies: ["connect.sid", "_csrf", "cookie_policy", "cookies_preferences_set", "locale"]
     },
     {
       categoryName: "analytics",
       optional: true,
-      cookies: ["_ga", "_gid", "dtCookie", "dtSa", "rxVisitor", "rxvt"],
+      cookies: ["_ga", "_gid", "dtCookie", "dtSa", "rxVisitor", "rxvt"]
     },
     {
       categoryName: "preferences",
       optional: true,
-      cookies: ["language"],
-    },
-  ],
+      cookies: ["language"]
+    }
+  ]
 };
 
 cookieManager.on("CookieBannerAction", (eventData: any) => {

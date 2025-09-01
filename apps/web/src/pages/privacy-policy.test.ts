@@ -9,7 +9,7 @@ describe("privacy-policy page", () => {
   beforeEach(() => {
     req = {};
     res = {
-      render: vi.fn(),
+      render: vi.fn()
     };
   });
 
@@ -21,12 +21,12 @@ describe("privacy-policy page", () => {
         "privacy-policy",
         expect.objectContaining({
           en: expect.objectContaining({
-            title: "Privacy policy",
+            title: "Privacy policy"
           }),
           cy: expect.objectContaining({
-            title: "Polisi preifatrwydd",
-          }),
-        }),
+            title: "Polisi preifatrwydd"
+          })
+        })
       );
     });
 

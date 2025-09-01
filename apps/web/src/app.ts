@@ -8,7 +8,7 @@ import {
   configureNonce,
   errorHandler,
   expressSessionRedis,
-  notFoundHandler,
+  notFoundHandler
 } from "@hmcts/express-govuk-starter";
 import { createSimpleRouter } from "@hmcts/simple-router";
 import compression from "compression";
@@ -43,20 +43,21 @@ export async function createApp(): Promise<Express> {
       distPath: path.join(__dirname, "../dist"),
       entries: {
         jsEntry: "js/index.ts",
-        cssEntry: "css/index.scss",
-      },
+        cssEntry: "css/index.scss"
+      }
     },
     nunjucksGlobals: {
       gtm: config.get("gtm"),
-      dynatrace: config.get("dynatrace"),
-    },
+      dynatrace: config.get("dynatrace")
+    }
   });
 
   await configureCookieManager(app, {
     categories: {
+      essential: ["connect.sid"],
       analytics: ["_ga", "_gid", "dtCookie", "dtSa", "rxVisitor", "rxvt"],
-      preferences: ["language"],
-    },
+      preferences: ["language"]
+    }
   });
 
   app.use(await createSimpleRouter({ pagesDir: path.join(__dirname, "/pages") }));

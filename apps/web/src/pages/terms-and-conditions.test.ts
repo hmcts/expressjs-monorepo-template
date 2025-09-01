@@ -9,7 +9,7 @@ describe("terms-and-conditions page", () => {
   beforeEach(() => {
     req = {};
     res = {
-      render: vi.fn(),
+      render: vi.fn()
     };
   });
 
@@ -21,12 +21,12 @@ describe("terms-and-conditions page", () => {
         "terms-and-conditions",
         expect.objectContaining({
           en: expect.objectContaining({
-            title: "Terms and conditions",
+            title: "Terms and conditions"
           }),
           cy: expect.objectContaining({
-            title: "Telerau ac amodau",
-          }),
-        }),
+            title: "Telerau ac amodau"
+          })
+        })
       );
     });
 

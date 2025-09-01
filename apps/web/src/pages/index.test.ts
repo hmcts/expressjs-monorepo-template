@@ -9,7 +9,7 @@ describe("index page", () => {
   beforeEach(() => {
     req = {};
     res = {
-      render: vi.fn(),
+      render: vi.fn()
     };
   });
 
@@ -27,7 +27,7 @@ describe("index page", () => {
           govukStarterTitle: "GOV.UK Starter",
           architectureTitle: "Monorepo Architecture",
           gettingStartedTitle: "Getting Started",
-          learnMoreTitle: "Learn More",
+          learnMoreTitle: "Learn More"
         }),
         cy: expect.objectContaining({
           title: "Templed Monorepo Express HMCTS",
@@ -36,8 +36,8 @@ describe("index page", () => {
           govukStarterTitle: "Dechreuwr GOV.UK",
           architectureTitle: "Pensaernïaeth Monorepo",
           gettingStartedTitle: "Dechrau Arni",
-          learnMoreTitle: "Dysgu Mwy",
-        }),
+          learnMoreTitle: "Dysgu Mwy"
+        })
       });
     });
 

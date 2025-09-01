@@ -9,7 +9,7 @@ describe("accessibility-statement page", () => {
   beforeEach(() => {
     req = {};
     res = {
-      render: vi.fn(),
+      render: vi.fn()
     };
   });
 
@@ -21,12 +21,12 @@ describe("accessibility-statement page", () => {
         "accessibility-statement",
         expect.objectContaining({
           en: expect.objectContaining({
-            title: "Accessibility statement",
+            title: "Accessibility statement"
           }),
           cy: expect.objectContaining({
-            title: "Datganiad hygyrchedd",
-          }),
-        }),
+            title: "Datganiad hygyrchedd"
+          })
+        })
       );
     });
 
