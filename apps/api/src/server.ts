@@ -10,7 +10,6 @@ async function startServer() {
     console.log(`📊 Health check: http://localhost:${PORT}/health`);
     console.log(`📊 Readiness check: http://localhost:${PORT}/health/readiness`);
     console.log(`📊 Liveness check: http://localhost:${PORT}/health/liveness`);
-    console.log(`🔌 API routes: http://localhost:${PORT}/api`);
   });
 
   return server;
