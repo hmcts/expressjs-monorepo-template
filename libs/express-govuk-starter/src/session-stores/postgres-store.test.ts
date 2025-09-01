@@ -2,12 +2,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { PostgresStore } from "./postgres-store.js";
 
 const mockPool = {
-  connect: vi.fn(),
+  connect: vi.fn()
 };
 
 const mockClient = {
   query: vi.fn(),
-  release: vi.fn(),
+  release: vi.fn()
 };
 
 describe("PostgresStore", () => {
@@ -23,7 +23,7 @@ describe("PostgresStore", () => {
       tableName: "test_session",
       schemaName: "public",
       ttl: 3600,
-      cleanupInterval: 0, // Disable auto cleanup for tests
+      cleanupInterval: 0 // Disable auto cleanup for tests
     });
 
     // Wait for initialization to complete
@@ -42,7 +42,7 @@ describe("PostgresStore", () => {
     it("should set default values", () => {
       const defaultStore = new PostgresStore({
         pool: mockPool as any,
-        cleanupInterval: 0,
+        cleanupInterval: 0
       });
       expect(defaultStore).toBeDefined();
     });
@@ -61,7 +61,7 @@ describe("PostgresStore", () => {
 
       // Mocks already set in beforeEach
       mockClient.query.mockResolvedValueOnce({
-        rows: [{ sess: sessionData }],
+        rows: [{ sess: sessionData }]
       });
 
       await new Promise<void>((resolve) => {
@@ -161,7 +161,7 @@ describe("PostgresStore", () => {
       const touchStore = new PostgresStore({
         pool: mockPool as any,
         disableTouch: true,
-        cleanupInterval: 0,
+        cleanupInterval: 0
       });
 
       vi.clearAllMocks(); // Clear init mocks
@@ -213,8 +213,8 @@ describe("PostgresStore", () => {
       mockClient.query.mockResolvedValueOnce({
         rows: [
           { sid: "sess1", sess: { userId: "1" } },
-          { sid: "sess2", sess: { userId: "2" } },
-        ],
+          { sid: "sess2", sess: { userId: "2" } }
+        ]
       });
 
       await new Promise<void>((resolve) => {
@@ -222,7 +222,7 @@ describe("PostgresStore", () => {
           expect(err).toBeNull();
           expect(sessions).toEqual({
             sess1: { userId: "1" },
-            sess2: { userId: "2" },
+            sess2: { userId: "2" }
           });
           resolve();
         });
@@ -247,7 +247,7 @@ describe("PostgresStore", () => {
     it("should create store with cleanup interval", () => {
       const storeWithCleanup = new PostgresStore({
         pool: mockPool as any,
-        cleanupInterval: 1000,
+        cleanupInterval: 1000
       });
 
       expect(storeWithCleanup).toBeDefined();

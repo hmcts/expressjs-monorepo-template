@@ -40,10 +40,10 @@ export async function configureAssets(app: Express, env: nunjucks.Environment, o
         preprocessorOptions: {
           scss: {
             quietDeps: true,
-            silenceDeprecations: ["mixed-decls"],
-          },
-        },
-      },
+            silenceDeprecations: ["mixed-decls"]
+          }
+        }
+      }
     });
 
     app.use(viteServer.middlewares);

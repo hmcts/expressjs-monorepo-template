@@ -12,9 +12,9 @@ describe("getTranslation", () => {
         home: "Home",
         about: "About",
         nested: {
-          deep: "Deep value",
-        },
-      },
+          deep: "Deep value"
+        }
+      }
     },
     cy: {
       welcome: "Croeso",
@@ -22,10 +22,10 @@ describe("getTranslation", () => {
         home: "Hafan",
         about: "Amdanom",
         nested: {
-          deep: "Gwerth ddofn",
-        },
-      },
-    },
+          deep: "Gwerth ddofn"
+        }
+      }
+    }
   };
 
   it("should get a simple translation key", () => {
@@ -51,9 +51,9 @@ describe("getTranslation", () => {
   it("should fall back to English if Welsh translation missing", () => {
     const partialTranslations = {
       en: {
-        onlyInEnglish: "English only",
+        onlyInEnglish: "English only"
       },
-      cy: {},
+      cy: {}
     };
     // When the key doesn't exist in Welsh, it falls back to English
     expect(getTranslation(partialTranslations, "onlyInEnglish", "cy")).toBe("English only");
@@ -67,9 +67,9 @@ describe("getTranslation", () => {
     const complexTranslations = {
       en: {
         navigation: {
-          home: "Home",
-        },
-      },
+          home: "Home"
+        }
+      }
     };
     expect(getTranslation(complexTranslations, "navigation", "en")).toBe("navigation");
   });

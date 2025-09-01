@@ -29,7 +29,7 @@ describe("assets", () => {
         const { createAssetHelpers } = await import("./assets.js");
         const entries = {
           mainJs: "js/main.ts",
-          mainCss: "css/main.scss",
+          mainCss: "css/main.scss"
         };
         const distPath = "/dist";
 
@@ -52,7 +52,7 @@ describe("assets", () => {
       it("should handle nested paths", async () => {
         const { createAssetHelpers } = await import("./assets.js");
         const entries = {
-          component: "components/header/index.ts",
+          component: "components/header/index.ts"
         };
         const distPath = "/dist";
 
@@ -71,12 +71,12 @@ describe("assets", () => {
         const manifestContent = JSON.stringify({
           "src/assets/js/main.ts": {
             file: "js/main-abc123.js",
-            isEntry: true,
+            isEntry: true
           },
           "src/assets/css/main.scss": {
             file: "css/main-def456.css",
-            isEntry: true,
-          },
+            isEntry: true
+          }
         });
 
         vi.mocked(path.join).mockReturnValue("/dist/assets/.vite/manifest.json");
@@ -86,7 +86,7 @@ describe("assets", () => {
         const { createAssetHelpers } = await import("./assets.js");
         const entries = {
           mainJs: "js/main.ts",
-          mainCss: "css/main.scss",
+          mainCss: "css/main.scss"
         };
         const distPath = "/dist";
 
@@ -99,8 +99,8 @@ describe("assets", () => {
       it("should fallback to entry path if not in manifest", async () => {
         const manifestContent = JSON.stringify({
           "src/assets/js/other.ts": {
-            file: "js/other-xyz789.js",
-          },
+            file: "js/other-xyz789.js"
+          }
         });
 
         vi.mocked(path.join).mockReturnValue("/dist/assets/.vite/manifest.json");
@@ -109,7 +109,7 @@ describe("assets", () => {
 
         const { createAssetHelpers } = await import("./assets.js");
         const entries = {
-          mainJs: "js/main.ts",
+          mainJs: "js/main.ts"
         };
         const distPath = "/dist";
 
@@ -124,7 +124,7 @@ describe("assets", () => {
 
         const { createAssetHelpers } = await import("./assets.js");
         const entries = {
-          mainJs: "js/main.ts",
+          mainJs: "js/main.ts"
         };
         const distPath = "/dist";
 
@@ -142,7 +142,7 @@ describe("assets", () => {
 
         const { createAssetHelpers } = await import("./assets.js");
         const entries = {
-          mainJs: "js/main.ts",
+          mainJs: "js/main.ts"
         };
         const distPath = "/dist";
 
@@ -157,8 +157,8 @@ describe("assets", () => {
       it("should cache manifest across multiple calls", async () => {
         const manifestContent = JSON.stringify({
           "src/assets/js/main.ts": {
-            file: "js/main-abc123.js",
-          },
+            file: "js/main-abc123.js"
+          }
         });
 
         vi.mocked(path.join).mockReturnValue("/dist/assets/.vite/manifest.json");
@@ -190,7 +190,7 @@ describe("assets", () => {
 
         const { createAssetHelpers } = await import("./assets.js");
         const entries = {
-          mainJs: "js/main.ts",
+          mainJs: "js/main.ts"
         };
         const distPath = "/dist";
 
@@ -210,7 +210,7 @@ describe("assets", () => {
         const { createAssetHelpers } = await import("./assets.js");
         const entries = {
           "entry-with-dash": "js/entry-with-dash.ts",
-          entry_with_underscore: "js/entry_with_underscore.ts",
+          entry_with_underscore: "js/entry_with_underscore.ts"
         };
         const distPath = "/dist";
 
@@ -225,7 +225,7 @@ describe("assets", () => {
 
         const { createAssetHelpers } = await import("./assets.js");
         const entries = {
-          absolute: "/absolute/path/to/file.ts",
+          absolute: "/absolute/path/to/file.ts"
         };
         const distPath = "/dist";
 
@@ -239,7 +239,7 @@ describe("assets", () => {
 
         const { createAssetHelpers } = await import("./assets.js");
         const entries = {
-          noExt: "js/main",
+          noExt: "js/main"
         };
         const distPath = "/dist";
 

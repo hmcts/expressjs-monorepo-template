@@ -20,7 +20,7 @@ function createCookieManagerMiddleware(options: CookieManagerOptions): RequestHa
     const state: CookieManagerState = {
       cookiesAccepted: Object.keys(cookiePolicy).length > 0,
       cookiePreferences: cookiePolicy,
-      showBanner: !isOnCookiesPage && !bannerSeen && Object.keys(cookiePolicy).length === 0,
+      showBanner: !isOnCookiesPage && !bannerSeen && Object.keys(cookiePolicy).length === 0
     };
 
     res.locals.cookieManager = state;
@@ -48,7 +48,7 @@ function setCookiePolicy(res: Response, preferences: CookiePreferences): void {
     httpOnly: false,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
-    maxAge: 365 * 24 * 60 * 60 * 1000,
+    maxAge: 365 * 24 * 60 * 60 * 1000
   });
 }
 
@@ -67,7 +67,7 @@ function configureCookieRoutes(app: Express, config: CookieManagerOptions): void
     res.cookie(COOKIE_BANNER_SEEN, "true", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "strict"
     });
 
     res.redirect(`${cookiePath}?saved=true`);
@@ -92,7 +92,7 @@ function configureCookieRoutes(app: Express, config: CookieManagerOptions): void
       doNotUsePreferences: "Do not use settings cookies",
       saveButton: "Save cookie preferences",
       successBanner: "Success",
-      successMessage: "Your cookie settings have been saved",
+      successMessage: "Your cookie settings have been saved"
     };
 
     const cy = {
@@ -111,7 +111,7 @@ function configureCookieRoutes(app: Express, config: CookieManagerOptions): void
       doNotUsePreferences: "Peidio â defnyddio cwcis gosodiadau",
       saveButton: "Cadw dewisiadau cwcis",
       successBanner: "Llwyddiant",
-      successMessage: "Mae eich gosodiadau cwcis wedi'u cadw",
+      successMessage: "Mae eich gosodiadau cwcis wedi'u cadw"
     };
 
     res.render("cookie-preferences", {
@@ -119,7 +119,7 @@ function configureCookieRoutes(app: Express, config: CookieManagerOptions): void
       cy,
       cookiePreferences: cookiePolicy,
       categories: config.categories,
-      saved: req.query.saved === "true",
+      saved: req.query.saved === "true"
     });
   });
 }

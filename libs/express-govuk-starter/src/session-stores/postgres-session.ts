@@ -8,7 +8,7 @@ export function expressSessionPostgres(options: ExpressSessionPostgresOptions): 
 
   const store = new PostgresStore({
     pool: pgConnection,
-    ...storeOptions,
+    ...storeOptions
   });
 
   const defaultSessionOptions: SessionOptions = {
@@ -18,14 +18,14 @@ export function expressSessionPostgres(options: ExpressSessionPostgresOptions): 
     cookie: {
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
-      maxAge: options.cookieMaxAge || 1000 * 60 * 60 * 24,
-    },
+      maxAge: options.cookieMaxAge || 1000 * 60 * 60 * 24
+    }
   };
 
   return session({
     ...defaultSessionOptions,
     ...sessionOptions,
-    store,
+    store
   });
 }
 

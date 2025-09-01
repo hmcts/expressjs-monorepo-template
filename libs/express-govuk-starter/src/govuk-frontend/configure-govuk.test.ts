@@ -37,7 +37,7 @@ describe("configureGovuk", () => {
     mkdirSync(customViewPath, { recursive: true });
 
     const env = await configureGovuk(app, {
-      viewPaths: [customViewPath],
+      viewPaths: [customViewPath]
     });
 
     expect(env).toBeDefined();
@@ -81,7 +81,7 @@ describe("configureGovuk", () => {
     const useSpy = vi.spyOn(app, "use");
 
     await configureGovuk(app, {
-      i18nContentPath: localesPath,
+      i18nContentPath: localesPath
     });
 
     // Check that middleware was added
@@ -106,8 +106,8 @@ describe("configureGovuk", () => {
     const manifest = {
       "src/index.js": {
         file: "assets/index-abc123.js",
-        css: ["assets/index-def456.css"],
-      },
+        css: ["assets/index-def456.css"]
+      }
     };
     writeFileSync(manifestPath, JSON.stringify(manifest));
 
@@ -125,9 +125,9 @@ describe("configureGovuk", () => {
         publicPath: "/assets/",
         viteRoot: testDir,
         entries: {
-          main: "src/index.js", // Add required entries property
-        },
-      },
+          main: "src/index.js" // Add required entries property
+        }
+      }
     });
 
     // The assets should be configured (checking that no error was thrown)
@@ -149,7 +149,7 @@ describe("configureGovuk", () => {
       get: vi.fn((header: string) => {
         if (header === "host") return "example.com";
         return undefined;
-      }),
+      })
     };
     const res = { locals: {} };
     const next = vi.fn();
@@ -201,7 +201,7 @@ describe("configureGovuk", () => {
     mkdirSync(viewPath2, { recursive: true });
 
     const env = await configureGovuk(app, {
-      viewPaths: [viewPath1, viewPath2],
+      viewPaths: [viewPath1, viewPath2]
     });
 
     expect(env).toBeDefined();

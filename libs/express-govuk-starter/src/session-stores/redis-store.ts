@@ -9,7 +9,7 @@ export function expressSessionRedis(options: ExpressSessionRedisOptions): Reques
     store: new RedisStore({
       client: redisConnection,
       prefix: "sess:",
-      ...storeOptions,
+      ...storeOptions
     }),
     secret: process.env.SESSION_SECRET || "default-secret-change-in-production",
     resave: false,
@@ -17,13 +17,13 @@ export function expressSessionRedis(options: ExpressSessionRedisOptions): Reques
     cookie: {
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
-      maxAge: options.cookieMaxAge || 1000 * 60 * 60 * 4, // 4 hours
-    },
+      maxAge: options.cookieMaxAge || 1000 * 60 * 60 * 4 // 4 hours
+    }
   };
 
   return session({
     ...defaultSessionOptions,
-    ...sessionOptions,
+    ...sessionOptions
   });
 }
 

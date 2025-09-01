@@ -45,7 +45,7 @@ export class PostgresStore extends Store {
       const createTableQuery = format(
         "CREATE TABLE IF NOT EXISTS %I.%I (sid VARCHAR(255) PRIMARY KEY, sess JSONB NOT NULL, expire TIMESTAMPTZ NOT NULL)",
         this.schemaName,
-        this.tableName,
+        this.tableName
       );
       await client.query(createTableQuery);
 
@@ -127,7 +127,7 @@ export class PostgresStore extends Store {
       const query = format(
         "INSERT INTO %I.%I (sid, sess, expire) VALUES ($1, $2, $3) ON CONFLICT (sid) DO UPDATE SET sess = $2, expire = $3",
         this.schemaName,
-        this.tableName,
+        this.tableName
       );
       await client.query(query, [sid, JSON.stringify(session), expire]);
 

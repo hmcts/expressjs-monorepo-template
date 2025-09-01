@@ -19,18 +19,18 @@ export function createBaseViteConfig(): UserConfig {
               return "css/[name]-[hash][extname]";
             }
             return "assets/[name]-[hash][extname]";
-          },
-        },
+          }
+        }
       },
       sourcemap: process.env.NODE_ENV !== "production",
       minify: process.env.NODE_ENV === "production",
-      manifest: true,
+      manifest: true
     },
     server: {
       middlewareMode: true,
       hmr: {
-        port: 5173,
-      },
+        port: 5173
+      }
     },
     // In dev, Vite serves from root. In production, assets are under /assets/
     base: process.env.NODE_ENV === "production" ? "/assets/" : "/",
@@ -38,14 +38,14 @@ export function createBaseViteConfig(): UserConfig {
       preprocessorOptions: {
         scss: {
           quietDeps: true,
-          loadPaths: ["node_modules"],
-        },
+          loadPaths: ["node_modules"]
+        }
       },
-      devSourcemap: true,
+      devSourcemap: true
     },
     resolve: {
       extensions: [".ts", ".js", ".scss", ".css"],
-      preserveSymlinks: true,
+      preserveSymlinks: true
     },
     publicDir: false,
     plugins: [
@@ -54,20 +54,20 @@ export function createBaseViteConfig(): UserConfig {
           {
             // Copy GOV.UK Frontend fonts
             src: "../../node_modules/govuk-frontend/dist/govuk/assets/fonts/*",
-            dest: "fonts",
+            dest: "fonts"
           },
           {
             // Copy GOV.UK Frontend images
             src: "../../node_modules/govuk-frontend/dist/govuk/assets/images/*",
-            dest: "images",
+            dest: "images"
           },
           {
             // Copy GOV.UK Frontend manifest.json
             src: "../../node_modules/govuk-frontend/dist/govuk/assets/manifest.json",
-            dest: ".",
-          },
-        ],
-      }),
-    ],
+            dest: "."
+          }
+        ]
+      })
+    ]
   };
 }

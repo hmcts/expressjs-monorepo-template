@@ -23,7 +23,7 @@ export async function configureGovuk(app: Express, options: GovukSetupOptions = 
     autoescape: true,
     express: app,
     watch: process.env.NODE_ENV === "development",
-    noCache: process.env.NODE_ENV === "development",
+    noCache: process.env.NODE_ENV === "development"
   });
 
   app.set("view engine", "njk");

@@ -37,7 +37,7 @@ export function errorHandler(logger: Logger = console): ErrorRequestHandler {
       // In development, show more detailed error
       res.status(500).render("errors/500", {
         error: err.message,
-        stack: err.stack,
+        stack: err.stack
       });
     }
   };

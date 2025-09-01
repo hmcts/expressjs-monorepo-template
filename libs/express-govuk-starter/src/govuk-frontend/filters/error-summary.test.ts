@@ -5,20 +5,20 @@ describe("govukErrorSummaryFilter", () => {
   it("should transform errors object to error summary format", () => {
     const errors = {
       name: "Name is required",
-      email: "Email is invalid",
+      email: "Email is invalid"
     };
 
     const result = govukErrorSummaryFilter(errors);
 
     expect(result).toEqual([
       { text: "Name is required", href: "#name" },
-      { text: "Email is invalid", href: "#email" },
+      { text: "Email is invalid", href: "#email" }
     ]);
   });
 
   it("should handle single error", () => {
     const errors = {
-      password: "Password must be at least 8 characters",
+      password: "Password must be at least 8 characters"
     };
 
     const result = govukErrorSummaryFilter(errors);
@@ -41,14 +41,14 @@ describe("govukErrorSummaryFilter", () => {
   it("should handle field names with special characters", () => {
     const errors = {
       "user.email": "Email is required",
-      "address[postcode]": "Postcode is invalid",
+      "address[postcode]": "Postcode is invalid"
     };
 
     const result = govukErrorSummaryFilter(errors);
 
     expect(result).toEqual([
       { text: "Email is required", href: "#user.email" },
-      { text: "Postcode is invalid", href: "#address[postcode]" },
+      { text: "Postcode is invalid", href: "#address[postcode]" }
     ]);
   });
 
@@ -57,7 +57,7 @@ describe("govukErrorSummaryFilter", () => {
       firstName: "First name is required",
       lastName: "Last name is required",
       email: "Email is required",
-      phone: "Phone is required",
+      phone: "Phone is required"
     };
 
     const result = govukErrorSummaryFilter(errors);

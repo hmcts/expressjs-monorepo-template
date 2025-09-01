@@ -8,11 +8,11 @@ describe("localeMiddleware", () => {
     const req = {
       query: { lng: "cy" },
       session: {},
-      cookies: {},
+      cookies: {}
     } as unknown as Request;
     const res = {
       locals: {},
-      cookie: vi.fn(),
+      cookie: vi.fn()
     } as unknown as Response;
     const next = vi.fn();
 
@@ -29,11 +29,11 @@ describe("localeMiddleware", () => {
     const req = {
       query: {},
       session: { locale: "cy" },
-      cookies: {},
+      cookies: {}
     } as unknown as Request;
     const res = {
       locals: {},
-      cookie: vi.fn(),
+      cookie: vi.fn()
     } as unknown as Response;
     const next = vi.fn();
 
@@ -49,11 +49,11 @@ describe("localeMiddleware", () => {
     const req = {
       query: {},
       session: {},
-      cookies: { locale: "cy" },
+      cookies: { locale: "cy" }
     } as unknown as Request;
     const res = {
       locals: {},
-      cookie: vi.fn(),
+      cookie: vi.fn()
     } as unknown as Response;
     const next = vi.fn();
 
@@ -69,11 +69,11 @@ describe("localeMiddleware", () => {
     const req = {
       query: {},
       session: {},
-      cookies: {},
+      cookies: {}
     } as unknown as Request;
     const res = {
       locals: {},
-      cookie: vi.fn(),
+      cookie: vi.fn()
     } as unknown as Response;
     const next = vi.fn();
 
@@ -89,11 +89,11 @@ describe("localeMiddleware", () => {
     const req = {
       query: { lng: "fr" },
       session: {},
-      cookies: {},
+      cookies: {}
     } as unknown as Request;
     const res = {
       locals: {},
-      cookie: vi.fn(),
+      cookie: vi.fn()
     } as unknown as Response;
     const next = vi.fn();
 
@@ -109,28 +109,28 @@ describe("translationMiddleware", () => {
     en: {
       welcome: "Welcome",
       navigation: {
-        home: "Home",
+        home: "Home"
       },
       language: {
-        switch: "Cymraeg",
-      },
+        switch: "Cymraeg"
+      }
     },
     cy: {
       welcome: "Croeso",
       navigation: {
-        home: "Hafan",
+        home: "Hafan"
       },
       language: {
-        switch: "English",
-      },
-    },
+        switch: "English"
+      }
+    }
   };
 
   it("should inject English translations into res.locals", () => {
     const middleware = translationMiddleware(translations);
     const req = {} as Request;
     const res = {
-      locals: { locale: "en" },
+      locals: { locale: "en" }
     } as Response;
     const next = vi.fn();
 
@@ -147,7 +147,7 @@ describe("translationMiddleware", () => {
     const middleware = translationMiddleware(translations);
     const req = {} as Request;
     const res = {
-      locals: { locale: "cy" },
+      locals: { locale: "cy" }
     } as Response;
     const next = vi.fn();
 
@@ -164,7 +164,7 @@ describe("translationMiddleware", () => {
     const middleware = translationMiddleware(translations);
     const req = {} as Request;
     const res = {
-      locals: {},
+      locals: {}
     } as Response;
     const next = vi.fn();
 
@@ -183,7 +183,7 @@ describe("renderInterceptorMiddleware", () => {
     const req = {} as Request;
     const res = {
       locals: { locale: "en", serviceName: "Test Service" },
-      render: originalRender,
+      render: originalRender
     } as unknown as Response;
     const next = vi.fn();
 
@@ -192,7 +192,7 @@ describe("renderInterceptorMiddleware", () => {
     // Call the intercepted render with language-specific content
     res.render("test-view", {
       en: { title: "English Title", description: "English Description" },
-      cy: { title: "Welsh Title", description: "Welsh Description" },
+      cy: { title: "Welsh Title", description: "Welsh Description" }
     });
 
     expect(originalRender).toHaveBeenCalledWith(
@@ -201,9 +201,9 @@ describe("renderInterceptorMiddleware", () => {
         locale: "en",
         serviceName: "Test Service",
         title: "English Title",
-        description: "English Description",
+        description: "English Description"
       },
-      undefined,
+      undefined
     );
     expect(next).toHaveBeenCalled();
   });
@@ -214,7 +214,7 @@ describe("renderInterceptorMiddleware", () => {
     const req = {} as Request;
     const res = {
       locals: { locale: "cy", serviceName: "Test Service" },
-      render: originalRender,
+      render: originalRender
     } as unknown as Response;
     const next = vi.fn();
 
@@ -223,7 +223,7 @@ describe("renderInterceptorMiddleware", () => {
     // Call the intercepted render with language-specific content
     res.render("test-view", {
       en: { title: "English Title", description: "English Description" },
-      cy: { title: "Welsh Title", description: "Welsh Description" },
+      cy: { title: "Welsh Title", description: "Welsh Description" }
     });
 
     expect(originalRender).toHaveBeenCalledWith(
@@ -232,9 +232,9 @@ describe("renderInterceptorMiddleware", () => {
         locale: "cy",
         serviceName: "Test Service",
         title: "Welsh Title",
-        description: "Welsh Description",
+        description: "Welsh Description"
       },
-      undefined,
+      undefined
     );
     expect(next).toHaveBeenCalled();
   });
@@ -245,7 +245,7 @@ describe("renderInterceptorMiddleware", () => {
     const req = {} as Request;
     const res = {
       locals: { locale: "en", serviceName: "Test Service" },
-      render: originalRender,
+      render: originalRender
     } as unknown as Response;
     const next = vi.fn();
 
@@ -254,7 +254,7 @@ describe("renderInterceptorMiddleware", () => {
     // Call the intercepted render with regular content (no language keys)
     res.render("test-view", {
       title: "Regular Title",
-      description: "Regular Description",
+      description: "Regular Description"
     });
 
     expect(originalRender).toHaveBeenCalledWith(
@@ -263,9 +263,9 @@ describe("renderInterceptorMiddleware", () => {
         locale: "en",
         serviceName: "Test Service",
         title: "Regular Title",
-        description: "Regular Description",
+        description: "Regular Description"
       },
-      undefined,
+      undefined
     );
     expect(next).toHaveBeenCalled();
   });
@@ -276,7 +276,7 @@ describe("renderInterceptorMiddleware", () => {
     const req = {} as Request;
     const res = {
       locals: { locale: "en", serviceName: "Test Service" },
-      render: originalRender,
+      render: originalRender
     } as unknown as Response;
     const next = vi.fn();
     const callback = vi.fn();
@@ -288,9 +288,9 @@ describe("renderInterceptorMiddleware", () => {
       "test-view",
       {
         en: { title: "English Title" },
-        cy: { title: "Welsh Title" },
+        cy: { title: "Welsh Title" }
       },
-      callback,
+      callback
     );
 
     expect(originalRender).toHaveBeenCalledWith(
@@ -298,9 +298,9 @@ describe("renderInterceptorMiddleware", () => {
       {
         locale: "en",
         serviceName: "Test Service",
-        title: "English Title",
+        title: "English Title"
       },
-      callback,
+      callback
     );
     expect(next).toHaveBeenCalled();
   });
@@ -311,7 +311,7 @@ describe("renderInterceptorMiddleware", () => {
     const req = {} as Request;
     const res = {
       locals: { locale: "en", serviceName: "Test Service" },
-      render: originalRender,
+      render: originalRender
     } as unknown as Response;
     const next = vi.fn();
     const callback = vi.fn();
@@ -325,9 +325,9 @@ describe("renderInterceptorMiddleware", () => {
       "test-view",
       {
         locale: "en",
-        serviceName: "Test Service",
+        serviceName: "Test Service"
       },
-      callback,
+      callback
     );
     expect(next).toHaveBeenCalled();
   });
@@ -338,7 +338,7 @@ describe("renderInterceptorMiddleware", () => {
     const req = {} as Request;
     const res = {
       locals: { locale: "en", serviceName: "Test Service" },
-      render: originalRender,
+      render: originalRender
     } as unknown as Response;
     const next = vi.fn();
 
@@ -351,9 +351,9 @@ describe("renderInterceptorMiddleware", () => {
       "test-view",
       {
         locale: "en",
-        serviceName: "Test Service",
+        serviceName: "Test Service"
       },
-      undefined,
+      undefined
     );
     expect(next).toHaveBeenCalled();
   });
@@ -364,7 +364,7 @@ describe("renderInterceptorMiddleware", () => {
     const req = {} as Request;
     const res = {
       locals: { locale: "fr", serviceName: "Test Service" },
-      render: originalRender,
+      render: originalRender
     } as unknown as Response;
     const next = vi.fn();
 
@@ -373,7 +373,7 @@ describe("renderInterceptorMiddleware", () => {
     // Call the intercepted render with language content
     res.render("test-view", {
       en: { title: "English Title" },
-      cy: { title: "Welsh Title" },
+      cy: { title: "Welsh Title" }
     });
 
     expect(originalRender).toHaveBeenCalledWith(
@@ -381,9 +381,9 @@ describe("renderInterceptorMiddleware", () => {
       {
         locale: "fr",
         serviceName: "Test Service",
-        title: "English Title",
+        title: "English Title"
       },
-      undefined,
+      undefined
     );
     expect(next).toHaveBeenCalled();
   });
@@ -394,7 +394,7 @@ describe("renderInterceptorMiddleware", () => {
     const req = {} as Request;
     const res = {
       locals: { serviceName: "Test Service" },
-      render: originalRender,
+      render: originalRender
     } as unknown as Response;
     const next = vi.fn();
 
@@ -403,16 +403,16 @@ describe("renderInterceptorMiddleware", () => {
     // Call the intercepted render with language content
     res.render("test-view", {
       en: { title: "English Title" },
-      cy: { title: "Welsh Title" },
+      cy: { title: "Welsh Title" }
     });
 
     expect(originalRender).toHaveBeenCalledWith(
       "test-view",
       {
         serviceName: "Test Service",
-        title: "English Title",
+        title: "English Title"
       },
-      undefined,
+      undefined
     );
     expect(next).toHaveBeenCalled();
   });
@@ -423,7 +423,7 @@ describe("renderInterceptorMiddleware", () => {
     const req = {} as Request;
     const res = {
       locals: { locale: "en", serviceName: "Test Service" },
-      render: originalRender,
+      render: originalRender
     } as unknown as Response;
     const next = vi.fn();
 
@@ -436,9 +436,9 @@ describe("renderInterceptorMiddleware", () => {
       "test-view",
       {
         locale: "en",
-        serviceName: "Test Service",
+        serviceName: "Test Service"
       },
-      undefined,
+      undefined
     );
     expect(next).toHaveBeenCalled();
   });
@@ -450,7 +450,7 @@ describe("renderInterceptorMiddleware", () => {
     const res = {
       locals: { locale: "en" },
       render: originalRender,
-      statusCode: 200,
+      statusCode: 200
     } as unknown as Response;
     const next = vi.fn();
 

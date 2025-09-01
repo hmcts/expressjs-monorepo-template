@@ -4,13 +4,13 @@ import { expressSessionRedis } from "./redis-store.js";
 vi.mock("connect-redis", () => ({
   default: vi.fn().mockImplementation((options) => {
     return { redisStoreOptions: options };
-  }),
+  })
 }));
 
 vi.mock("express-session", () => ({
   default: vi.fn().mockImplementation((options) => {
     return { sessionOptions: options };
-  }),
+  })
 }));
 
 describe("expressSessionRedis", () => {
@@ -24,7 +24,7 @@ describe("expressSessionRedis", () => {
     const mockRedisClient = { connect: vi.fn() };
 
     const middleware = expressSessionRedis({
-      redisConnection: mockRedisClient,
+      redisConnection: mockRedisClient
     });
 
     expect(middleware).toEqual({
@@ -35,15 +35,15 @@ describe("expressSessionRedis", () => {
         cookie: expect.objectContaining({
           secure: false,
           httpOnly: true,
-          maxAge: 1000 * 60 * 60 * 4,
+          maxAge: 1000 * 60 * 60 * 4
         }),
         store: expect.objectContaining({
           redisStoreOptions: expect.objectContaining({
             client: mockRedisClient,
-            prefix: "sess:",
-          }),
-        }),
-      }),
+            prefix: "sess:"
+          })
+        })
+      })
     });
   });
 
@@ -52,13 +52,13 @@ describe("expressSessionRedis", () => {
     const mockRedisClient = { connect: vi.fn() };
 
     const middleware = expressSessionRedis({
-      redisConnection: mockRedisClient,
+      redisConnection: mockRedisClient
     });
 
     expect(middleware).toEqual({
       sessionOptions: expect.objectContaining({
-        secret: "my-secret-key",
-      }),
+        secret: "my-secret-key"
+      })
     });
   });
 
@@ -67,15 +67,15 @@ describe("expressSessionRedis", () => {
     const mockRedisClient = { connect: vi.fn() };
 
     const middleware = expressSessionRedis({
-      redisConnection: mockRedisClient,
+      redisConnection: mockRedisClient
     });
 
     expect(middleware).toEqual({
       sessionOptions: expect.objectContaining({
         cookie: expect.objectContaining({
-          secure: true,
-        }),
-      }),
+          secure: true
+        })
+      })
     });
   });
 
@@ -87,8 +87,8 @@ describe("expressSessionRedis", () => {
       storeOptions: {
         prefix: "myapp:",
         ttl: 3600,
-        disableTouch: true,
-      },
+        disableTouch: true
+      }
     });
 
     expect(middleware).toEqual({
@@ -98,10 +98,10 @@ describe("expressSessionRedis", () => {
             client: mockRedisClient,
             prefix: "myapp:",
             ttl: 3600,
-            disableTouch: true,
-          }),
-        }),
-      }),
+            disableTouch: true
+          })
+        })
+      })
     });
   });
 
@@ -116,9 +116,9 @@ describe("expressSessionRedis", () => {
         cookie: {
           secure: true,
           httpOnly: false,
-          maxAge: 1000 * 60 * 30, // 30 minutes
-        },
-      },
+          maxAge: 1000 * 60 * 30 // 30 minutes
+        }
+      }
     });
 
     expect(middleware).toEqual({
@@ -128,9 +128,9 @@ describe("expressSessionRedis", () => {
         cookie: expect.objectContaining({
           secure: true,
           httpOnly: false,
-          maxAge: 1000 * 60 * 30,
-        }),
-      }),
+          maxAge: 1000 * 60 * 30
+        })
+      })
     });
   });
 
@@ -139,11 +139,11 @@ describe("expressSessionRedis", () => {
     const ioredisClient = {
       connect: vi.fn(),
       set: vi.fn(),
-      get: vi.fn(),
+      get: vi.fn()
     };
 
     const middleware1 = expressSessionRedis({
-      redisConnection: ioredisClient,
+      redisConnection: ioredisClient
     });
 
     expect(middleware1).toBeDefined();
@@ -151,11 +151,11 @@ describe("expressSessionRedis", () => {
     // Test with node-redis-like client
     const nodeRedisClient = {
       connect: vi.fn().mockResolvedValue(undefined),
-      quit: vi.fn(),
+      quit: vi.fn()
     };
 
     const middleware2 = expressSessionRedis({
-      redisConnection: nodeRedisClient,
+      redisConnection: nodeRedisClient
     });
 
     expect(middleware2).toBeDefined();

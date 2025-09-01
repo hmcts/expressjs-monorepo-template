@@ -21,13 +21,13 @@ export function configureHelmet(options: SecurityOptions = {}) {
     "'self'",
     (_req: any, res: any) => `'nonce-${res.locals.cspNonce}'`,
     ...(enableGoogleTagManager ? ["https://*.googletagmanager.com"] : []),
-    ...(isDevelopment ? ["ws://localhost:5173"] : []),
+    ...(isDevelopment ? ["ws://localhost:5173"] : [])
   ];
 
   const connectSources = [
     "'self'",
     ...(enableGoogleTagManager ? ["https://*.google-analytics.com", "https://*.googletagmanager.com"] : []),
-    ...(isDevelopment ? ["ws://localhost:5173", "ws://localhost:24678"] : []),
+    ...(isDevelopment ? ["ws://localhost:5173", "ws://localhost:24678"] : [])
   ];
 
   const imageSources = ["'self'", "data:", ...(enableGoogleTagManager ? ["https://*.google-analytics.com", "https://*.googletagmanager.com"] : [])];
@@ -43,8 +43,8 @@ export function configureHelmet(options: SecurityOptions = {}) {
         imgSrc: imageSources,
         fontSrc: ["'self'", "data:"],
         connectSrc: connectSources,
-        ...(frameSources.length > 0 && { frameSrc: frameSources }),
-      },
-    },
+        ...(frameSources.length > 0 && { frameSrc: frameSources })
+      }
+    }
   });
 }

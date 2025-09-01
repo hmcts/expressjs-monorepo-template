@@ -3,6 +3,6 @@ export const govukErrorSummaryFilter = (errors: Record<string, string>) => {
 
   return Object.entries(errors).map(([field, message]) => ({
     text: message,
-    href: `#${field}`,
+    href: `#${field}`
   }));
 };

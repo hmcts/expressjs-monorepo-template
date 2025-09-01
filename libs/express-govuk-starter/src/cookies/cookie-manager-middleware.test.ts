@@ -16,13 +16,13 @@ describe("configureCookieManager", () => {
       body: {},
       headers: {},
       path: "/test",
-      query: {},
+      query: {}
     };
     res = {
       locals: {},
       cookie: vi.fn(),
       redirect: vi.fn(),
-      render: vi.fn(),
+      render: vi.fn()
     };
     next = vi.fn();
   });
@@ -34,7 +34,7 @@ describe("configureCookieManager", () => {
       const getSpy = vi.spyOn(app, "get");
 
       await configureCookieManager(app, {
-        categories: { analytics: ["_ga"] },
+        categories: { analytics: ["_ga"] }
       });
 
       // Should register middleware
@@ -56,7 +56,7 @@ describe("configureCookieManager", () => {
 
       await configureCookieManager(app, {
         categories: { analytics: ["_ga"] },
-        preferencesPath: "/custom-cookies",
+        preferencesPath: "/custom-cookies"
       });
 
       expect(getSpy).toHaveBeenCalledWith("/custom-cookies", expect.any(Function));
@@ -68,7 +68,7 @@ describe("configureCookieManager", () => {
       const useSpy = vi.spyOn(app, "use");
 
       await configureCookieManager(app, {
-        categories: { analytics: ["_ga"] },
+        categories: { analytics: ["_ga"] }
       });
 
       // Get the middleware function that was registered
@@ -80,10 +80,10 @@ describe("configureCookieManager", () => {
       expect(res.locals?.cookieManager).toEqual({
         cookiesAccepted: false,
         cookiePreferences: {},
-        showBanner: true,
+        showBanner: true
       });
       expect(res.locals?.cookieConfig).toEqual({
-        categories: { analytics: ["_ga"] },
+        categories: { analytics: ["_ga"] }
       });
       expect(next).toHaveBeenCalled();
     });
@@ -92,7 +92,7 @@ describe("configureCookieManager", () => {
       const useSpy = vi.spyOn(app, "use");
 
       await configureCookieManager(app, {
-        categories: { analytics: ["_ga"] },
+        categories: { analytics: ["_ga"] }
       });
 
       const middleware = useSpy.mock.calls[0][0] as any;
@@ -107,7 +107,7 @@ describe("configureCookieManager", () => {
       const useSpy = vi.spyOn(app, "use");
 
       await configureCookieManager(app, {
-        categories: { analytics: ["_ga"] },
+        categories: { analytics: ["_ga"] }
       });
 
       const middleware = useSpy.mock.calls[0][0] as any;
@@ -124,7 +124,7 @@ describe("configureCookieManager", () => {
       const useSpy = vi.spyOn(app, "use");
 
       await configureCookieManager(app, {
-        categories: { analytics: ["_ga"] },
+        categories: { analytics: ["_ga"] }
       });
 
       const middleware = useSpy.mock.calls[0][0] as any;
@@ -139,7 +139,7 @@ describe("configureCookieManager", () => {
       const useSpy = vi.spyOn(app, "use");
 
       await configureCookieManager(app, {
-        categories: { analytics: ["_ga"] },
+        categories: { analytics: ["_ga"] }
       });
 
       const middleware = useSpy.mock.calls[0][0] as any;
@@ -159,9 +159,9 @@ describe("configureCookieManager", () => {
       await configureCookieManager(app, {
         categories: {
           analytics: ["_ga"],
-          preferences: ["lang"],
+          preferences: ["lang"]
         },
-        onAccept,
+        onAccept
       });
 
       // Get the accept handler that was registered
@@ -175,16 +175,16 @@ describe("configureCookieManager", () => {
         "%7B%22analytics%22%3Atrue%2C%22preferences%22%3Atrue%7D",
         expect.objectContaining({
           httpOnly: false,
-          sameSite: "strict",
-        }),
+          sameSite: "strict"
+        })
       );
       expect(res.cookie).toHaveBeenCalledWith(
         "cookies_preferences_set",
         "true",
         expect.objectContaining({
           httpOnly: true,
-          sameSite: "strict",
-        }),
+          sameSite: "strict"
+        })
       );
       expect(onAccept).toHaveBeenCalledWith("analytics");
       expect(onAccept).toHaveBeenCalledWith("preferences");
@@ -195,7 +195,7 @@ describe("configureCookieManager", () => {
       const postSpy = vi.spyOn(app, "post");
 
       await configureCookieManager(app, {
-        categories: { analytics: ["_ga"] },
+        categories: { analytics: ["_ga"] }
       });
 
       const acceptHandler = postSpy.mock.calls[0][1] as any;
@@ -210,7 +210,7 @@ describe("configureCookieManager", () => {
       const postSpy = vi.spyOn(app, "post");
 
       await configureCookieManager(app, {
-        categories: { analytics: ["_ga"] },
+        categories: { analytics: ["_ga"] }
       });
 
       const acceptHandler = postSpy.mock.calls[0][1] as any;
@@ -229,9 +229,9 @@ describe("configureCookieManager", () => {
       await configureCookieManager(app, {
         categories: {
           analytics: ["_ga"],
-          preferences: ["lang"],
+          preferences: ["lang"]
         },
-        onReject,
+        onReject
       });
 
       // Get the reject handler (second post call)
@@ -245,8 +245,8 @@ describe("configureCookieManager", () => {
         "%7B%22analytics%22%3Afalse%2C%22preferences%22%3Afalse%7D",
         expect.objectContaining({
           httpOnly: false,
-          sameSite: "strict",
-        }),
+          sameSite: "strict"
+        })
       );
       expect(onReject).toHaveBeenCalledWith("analytics");
       expect(onReject).toHaveBeenCalledWith("preferences");
@@ -263,17 +263,17 @@ describe("configureCookieManager", () => {
       await configureCookieManager(app, {
         categories: {
           analytics: ["_ga"],
-          preferences: ["lang"],
+          preferences: ["lang"]
         },
         onAccept,
-        onReject,
+        onReject
       });
 
       // Get the save preferences handler (third post call)
       const saveHandler = postSpy.mock.calls[2][1] as any;
       req.body = {
         analytics: "on",
-        preferences: "off",
+        preferences: "off"
       };
 
       saveHandler(req, res);
@@ -289,7 +289,7 @@ describe("configureCookieManager", () => {
 
       await configureCookieManager(app, {
         categories: { analytics: ["_ga"] },
-        preferencesPath: "/custom-cookies",
+        preferencesPath: "/custom-cookies"
       });
 
       const saveHandler = postSpy.mock.calls[2][1] as any;
@@ -308,8 +308,8 @@ describe("configureCookieManager", () => {
       await configureCookieManager(app, {
         categories: {
           analytics: ["_ga"],
-          preferences: ["lang"],
-        },
+          preferences: ["lang"]
+        }
       });
 
       // Get the preferences page handler
@@ -324,14 +324,14 @@ describe("configureCookieManager", () => {
           title: "Cookie preferences",
           analyticsTitle: "Analytics cookies",
           cookiePreferences: { analytics: true, preferences: false },
-          saved: true,
+          saved: true
         }),
         cy: expect.objectContaining({
           title: "Dewisiadau cwcis",
           analyticsTitle: "Cwcis dadansoddi",
           cookiePreferences: { analytics: true, preferences: false },
-          saved: true,
-        }),
+          saved: true
+        })
       });
     });
   });
@@ -349,7 +349,7 @@ describe("configureCookieManager", () => {
       expect(res.locals?.cookieManager).toEqual({
         cookiesAccepted: false,
         cookiePreferences: {},
-        showBanner: true,
+        showBanner: true
       });
     });
   });

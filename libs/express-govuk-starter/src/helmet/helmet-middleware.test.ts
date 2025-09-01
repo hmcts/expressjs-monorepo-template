@@ -17,7 +17,7 @@ describe("helmet-middleware", () => {
       vi.clearAllMocks();
       req = {} as Request;
       res = {
-        locals: {},
+        locals: {}
       } as Response;
       next = vi.fn();
     });
@@ -25,7 +25,7 @@ describe("helmet-middleware", () => {
     it("should generate and set a CSP nonce", () => {
       const mockNonce = "mockBase64Nonce==";
       vi.mocked(crypto.randomBytes).mockReturnValue({
-        toString: vi.fn().mockReturnValue(mockNonce),
+        toString: vi.fn().mockReturnValue(mockNonce)
       } as any);
 
       const middleware = configureNonce();
@@ -41,8 +41,8 @@ describe("helmet-middleware", () => {
       vi.mocked(crypto.randomBytes).mockImplementation(
         () =>
           ({
-            toString: vi.fn().mockReturnValue(`nonce${++nonceCounter}`),
-          }) as any,
+            toString: vi.fn().mockReturnValue(`nonce${++nonceCounter}`)
+          }) as any
       );
 
       const middleware = configureNonce();
@@ -62,7 +62,7 @@ describe("helmet-middleware", () => {
       const reqSpy = {} as Request;
 
       vi.mocked(crypto.randomBytes).mockReturnValue({
-        toString: vi.fn().mockReturnValue("nonce"),
+        toString: vi.fn().mockReturnValue("nonce")
       } as any);
 
       middleware(reqSpy, res, next);
@@ -97,9 +97,9 @@ describe("helmet-middleware", () => {
               imgSrc: expect.arrayContaining(["'self'", "data:", "https://*.google-analytics.com", "https://*.googletagmanager.com"]),
               fontSrc: ["'self'", "data:"],
               connectSrc: expect.arrayContaining(["'self'", "https://*.google-analytics.com", "https://*.googletagmanager.com"]),
-              frameSrc: ["https://*.googletagmanager.com"],
-            }),
-          },
+              frameSrc: ["https://*.googletagmanager.com"]
+            })
+          }
         });
       });
 
