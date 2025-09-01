@@ -37,7 +37,7 @@ const config = {
       categoryName: "essential",
       optional: false,
       matchBy: "exact",
-      cookies: ["session", "_csrf", "cookie_policy", "cookies_preferences_set"],
+      cookies: ["connect.sid", "_csrf", "cookie_policy", "cookies_preferences_set", "locale"],
     },
     {
       categoryName: "analytics",
@@ -47,7 +47,7 @@ const config = {
     {
       categoryName: "preferences",
       optional: true,
-      cookies: ["language", "theme"],
+      cookies: ["language"],
     },
   ],
 };

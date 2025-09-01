@@ -9,11 +9,13 @@ export async function configureCookieManager(app: Express, options: CookieManage
 }
 
 function createCookieManagerMiddleware(options: CookieManagerOptions): RequestHandler {
+  const cookiePath = options.preferencesPath || "/cookies";
+
   return (req: Request, res: Response, next: NextFunction) => {
     const cookiePolicy = parseCookiePolicy(req.cookies?.[COOKIE_POLICY_NAME]);
     const bannerSeen = req.cookies?.[COOKIE_BANNER_SEEN] === "true";
 
-    const isOnCookiesPage = req.path === "/cookies" || req.path?.startsWith("/cookies/") || false;
+    const isOnCookiesPage = req.path === cookiePath || req.path?.startsWith(`${cookiePath}/`) || false;
 
     const state: CookieManagerState = {
       cookiesAccepted: Object.keys(cookiePolicy).length > 0,
@@ -46,105 +48,32 @@ function setCookiePolicy(res: Response, preferences: CookiePreferences): void {
     httpOnly: false,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
-    maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
+    maxAge: 365 * 24 * 60 * 60 * 1000, 
   });
 }
 
-function createAcceptCookiesHandler(options: CookieManagerOptions): RequestHandler {
-  return (req: Request, res: Response) => {
-    const preferences: CookiePreferences = {};
-
-    if (options.categories?.analytics) {
-      preferences.analytics = true;
-      options.onAccept?.("analytics");
-    }
-
-    if (options.categories?.preferences) {
-      preferences.preferences = true;
-      options.onAccept?.("preferences");
-    }
-
-    setCookiePolicy(res, preferences);
-    res.cookie(COOKIE_BANNER_SEEN, "true", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-    });
-
-    const returnUrl = req.body?.returnUrl || req.headers.referer || "/";
-    res.redirect(returnUrl);
-  };
-}
-
-function createRejectCookiesHandler(options: CookieManagerOptions): RequestHandler {
-  return (req: Request, res: Response) => {
-    const preferences: CookiePreferences = {};
-
-    if (options.categories?.analytics) {
-      preferences.analytics = false;
-      options.onReject?.("analytics");
-    }
-
-    if (options.categories?.preferences) {
-      preferences.preferences = false;
-      options.onReject?.("preferences");
-    }
-
-    setCookiePolicy(res, preferences);
-    res.cookie(COOKIE_BANNER_SEEN, "true", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-    });
-
-    const returnUrl = req.body?.returnUrl || req.headers.referer || "/";
-    res.redirect(returnUrl);
-  };
-}
-
-function createSavePreferencesHandler(options: CookieManagerOptions): RequestHandler {
-  return (req: Request, res: Response) => {
-    const preferences: CookiePreferences = {};
-
-    if (options.categories?.analytics) {
-      const analyticsEnabled = req.body?.analytics === "on" || req.body?.analytics === true;
-      preferences.analytics = analyticsEnabled;
-
-      if (analyticsEnabled) {
-        options.onAccept?.("analytics");
-      } else {
-        options.onReject?.("analytics");
-      }
-    }
-
-    if (options.categories?.preferences) {
-      const preferencesEnabled = req.body?.preferences === "on" || req.body?.preferences === true;
-      preferences.preferences = preferencesEnabled;
-
-      if (preferencesEnabled) {
-        options.onAccept?.("preferences");
-      } else {
-        options.onReject?.("preferences");
-      }
-    }
-
-    setCookiePolicy(res, preferences);
-    res.cookie(COOKIE_BANNER_SEEN, "true", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-    });
-
-    res.redirect(`${options.preferencesPath || "/cookies"}?saved=true`);
-  };
-}
-
 function configureCookieRoutes(app: Express, config: CookieManagerOptions): void {
-  app.post("/cookies/accept", createAcceptCookiesHandler(config));
-  app.post("/cookies/reject", createRejectCookiesHandler(config));
-  app.post("/cookies/save-preferences", createSavePreferencesHandler(config));
+  const cookiePath = config.preferencesPath || "/cookies";
 
-  app.get(config.preferencesPath || "/cookies", (req: Request, res: Response) => {
+  app.post(`${cookiePath}/save-preferences`, (req: Request, res: Response) => {
+    const preferences: CookiePreferences = {};
+
+    for (const category of Object.keys(config.categories || {})) {
+      const isEnabled = req.body?.[category] === "on" || req.body?.[category] === true;
+      preferences[category] = isEnabled;
+    }
+
+    setCookiePolicy(res, preferences);
+    res.cookie(COOKIE_BANNER_SEEN, "true", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+    });
+
+    res.redirect(`${cookiePath}?saved=true`);
+  });
+
+  app.get(cookiePath, (req: Request, res: Response) => {
     const cookiePolicy = parseCookiePolicy(req.cookies?.[COOKIE_POLICY_NAME]);
 
     const en = {
@@ -163,10 +92,7 @@ function configureCookieRoutes(app: Express, config: CookieManagerOptions): void
       doNotUsePreferences: "Do not use settings cookies",
       saveButton: "Save cookie preferences",
       successBanner: "Success",
-      successMessage: "Your cookie settings have been saved",
-      cookiePreferences: cookiePolicy,
-      categories: config.categories,
-      saved: req.query.saved === "true",
+      successMessage: "Your cookie settings have been saved"      
     };
 
     const cy = {
@@ -186,24 +112,24 @@ function configureCookieRoutes(app: Express, config: CookieManagerOptions): void
       saveButton: "Cadw dewisiadau cwcis",
       successBanner: "Llwyddiant",
       successMessage: "Mae eich gosodiadau cwcis wedi'u cadw",
-      cookiePreferences: cookiePolicy,
-      categories: config.categories,
-      saved: req.query.saved === "true",
     };
 
-    res.render("cookie-preferences", { en, cy });
+    res.render("cookie-preferences", { 
+      en, 
+      cy, 
+      cookiePreferences: cookiePolicy,
+      categories: config.categories,
+      saved: req.query.saved === "true"
+    });
   });
 }
 
 export interface CookieManagerOptions {
-  essential?: string[];
   categories?: {
     analytics?: string[];
     preferences?: string[];
     [key: string]: string[] | undefined;
   };
-  onAccept?: (category: string) => void;
-  onReject?: (category: string) => void;
   preferencesPath?: string;
 }
 

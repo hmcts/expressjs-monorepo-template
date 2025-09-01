@@ -1,4 +1,3 @@
-import type RedisStoreOptions from "connect-redis";
 import RedisStore from "connect-redis";
 import type { RequestHandler } from "express";
 import session, { type SessionOptions } from "express-session";
@@ -29,7 +28,7 @@ export function expressSessionRedis(options: ExpressSessionRedisOptions): Reques
 }
 
 export type ExpressSessionRedisOptions = {
-  redisConnection: RedisStoreOptions["client"];
+  redisConnection: any; // Redis client instance from 'redis' package
   sessionOptions?: Partial<SessionOptions>;
   storeOptions?: {
     prefix?: string;

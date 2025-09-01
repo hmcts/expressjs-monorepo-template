@@ -1,9 +1,14 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { healthcheck } from "@hmcts/cloud-native-platform";
 import { createSimpleRouter } from "@hmcts/simple-router";
 import compression from "compression";
 import cors from "cors";
 import type { Express } from "express";
 import express from "express";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 export async function createApp(): Promise<Express> {
   const app = express();
@@ -23,7 +28,7 @@ export async function createApp(): Promise<Express> {
 
   app.use(
     await createSimpleRouter({
-      pagesDir: "./src/routes",
+      pagesDir: path.join(__dirname, "routes"),
     }),
   );
 

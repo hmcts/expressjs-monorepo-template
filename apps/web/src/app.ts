@@ -1,14 +1,22 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { configurePropertiesVolume, healthcheck, monitoringMiddleware } from "@hmcts/cloud-native-platform";
-import { configureCookieManager, configureGovuk, configureHelmet, configureNonce, errorHandler, notFoundHandler } from "@hmcts/express-govuk-starter";
+import {
+  configureCookieManager,
+  configureGovuk,
+  configureHelmet,
+  configureNonce,
+  errorHandler,
+  expressSessionRedis,
+  notFoundHandler,
+} from "@hmcts/express-govuk-starter";
 import { createSimpleRouter } from "@hmcts/simple-router";
 import compression from "compression";
 import config from "config";
 import cookieParser from "cookie-parser";
 import type { Express } from "express";
 import express from "express";
-import session from "express-session";
+import { createClient } from "redis";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -25,20 +33,7 @@ export async function createApp(): Promise<Express> {
   app.use(monitoringMiddleware(config.get("applicationInsights")));
   app.use(configureNonce());
   app.use(configureHelmet());
-
-  // TODO move to session package with redis set up
-  app.use(
-    session({
-      secret: config.get("session.secret"),
-      resave: false,
-      saveUninitialized: false,
-      cookie: {
-        secure: process.env.NODE_ENV === "production",
-        httpOnly: true,
-        maxAge: 1000 * 60 * 60 * 4,
-      },
-    }),
-  );
+  app.use(expressSessionRedis({ redisConnection: await getRedisClient() }));
 
   await configureGovuk(app, {
     i18nContentPath: path.join(__dirname, "locales"),
@@ -58,7 +53,6 @@ export async function createApp(): Promise<Express> {
   });
 
   await configureCookieManager(app, {
-    essential: ["session", "csrf_token"],
     categories: {
       analytics: ["_ga", "_gid", "dtCookie", "dtSa", "rxVisitor", "rxvt"],
       preferences: ["language"],
@@ -71,3 +65,11 @@ export async function createApp(): Promise<Express> {
 
   return app;
 }
+
+const getRedisClient = async () => {
+  const redisClient = createClient({ url: config.get("redis.url") });
+  redisClient.on("error", (err) => console.error("Redis Client Error", err));
+
+  await redisClient.connect();
+  return redisClient;
+};

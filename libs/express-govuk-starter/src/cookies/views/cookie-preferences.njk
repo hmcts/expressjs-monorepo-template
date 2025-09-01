@@ -37,7 +37,23 @@
             </h2>
           </legend>
           <div class="govuk-hint">
-            {{ categories.analytics.description | default(analyticsDescription) }}
+            {{ analyticsDescription }}
+            {% if categories.analytics %}
+            <details class="govuk-details govuk-!-margin-top-2" data-module="govuk-details">
+              <summary class="govuk-details__summary">
+                <span class="govuk-details__summary-text">
+                  Cookies used
+                </span>
+              </summary>
+              <div class="govuk-details__text">
+                <ul class="govuk-list govuk-list--bullet">
+                  {% for cookie in categories.analytics %}
+                  <li>{{ cookie }}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </details>
+            {% endif %}
           </div>
           <div class="govuk-radios" data-module="govuk-radios">
             <div class="govuk-radios__item">
@@ -66,7 +82,23 @@
             </h2>
           </legend>
           <div class="govuk-hint">
-            {{ categories.preferences.description | default(preferencesDescription) }}
+            {{ preferencesDescription }}
+            {% if categories.preferences %}
+            <details class="govuk-details govuk-!-margin-top-2" data-module="govuk-details">
+              <summary class="govuk-details__summary">
+                <span class="govuk-details__summary-text">
+                  Cookies used
+                </span>
+              </summary>
+              <div class="govuk-details__text">
+                <ul class="govuk-list govuk-list--bullet">
+                  {% for cookie in categories.preferences %}
+                  <li>{{ cookie }}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </details>
+            {% endif %}
           </div>
           <div class="govuk-radios" data-module="govuk-radios">
             <div class="govuk-radios__item">
