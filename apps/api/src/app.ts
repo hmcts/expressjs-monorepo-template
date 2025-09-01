@@ -19,8 +19,8 @@ export async function createApp(): Promise<Express> {
   app.use(
     cors({
       origin: process.env.CORS_ORIGIN?.split(",") || ["http://localhost:3000"],
-      credentials: true,
-    }),
+      credentials: true
+    })
   );
 
   app.use(express.json());
@@ -28,8 +28,8 @@ export async function createApp(): Promise<Express> {
 
   app.use(
     await createSimpleRouter({
-      pagesDir: path.join(__dirname, "routes"),
-    }),
+      pagesDir: path.join(__dirname, "routes")
+    })
   );
 
   app.use((_req, res) => {

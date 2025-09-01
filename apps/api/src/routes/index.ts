@@ -7,7 +7,7 @@ export const GET = async (_req: Request, res: Response) => {
     endpoints: {
       health: "/health",
       liveness: "/health/liveness",
-      readiness: "/health/readiness",
-    },
+      readiness: "/health/readiness"
+    }
   });
 };

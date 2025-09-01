@@ -11,17 +11,17 @@ vi.mock("node:fs", () => {
 
   return {
     default: {
-      existsSync: existsSyncMock,
+      existsSync: existsSyncMock
     },
     existsSync: existsSyncMock,
     readdirSync: readdirSyncMock,
-    readFileSync: readFileSyncMock,
+    readFileSync: readFileSyncMock
   };
 });
 
 // Mock Azure vault module
 vi.mock("./azure-vault.js", () => ({
-  addFromAzureVault: vi.fn(),
+  addFromAzureVault: vi.fn()
 }));
 
 const mockFs = vi.mocked(fs);
@@ -56,7 +56,7 @@ describe("configurePropertiesVolume", () => {
     expect(config).toEqual({
       existing: "value",
       secret1: "value1",
-      secret2: "value2",
+      secret2: "value2"
     });
   });
 
@@ -71,7 +71,7 @@ describe("configurePropertiesVolume", () => {
     expect(mockReaddirSync).toHaveBeenCalledWith("/custom/path");
     expect(config).toEqual({
       existing: "value",
-      "custom-secret": "custom-value",
+      "custom-secret": "custom-value"
     });
   });
 
@@ -103,7 +103,7 @@ describe("configurePropertiesVolume", () => {
     expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining("Warning: Failed to read property file"));
     expect(config).toEqual({
       existing: "value",
-      secret1: "value1",
+      secret1: "value1"
     });
   });
 
@@ -125,7 +125,7 @@ describe("configurePropertiesVolume", () => {
     await setupPropertiesVolume(config);
 
     expect(config).toEqual({
-      existing: "new-value", // Should overwrite existing value
+      existing: "new-value" // Should overwrite existing value
     });
   });
 
@@ -138,7 +138,7 @@ describe("configurePropertiesVolume", () => {
 
     expect(config).toEqual({
       existing: "value",
-      secret: "value with spaces",
+      secret: "value with spaces"
     });
   });
 
@@ -174,7 +174,7 @@ describe("configurePropertiesVolume", () => {
       expect(mockReaddirSync).toHaveBeenCalledWith("/mnt/secrets");
       expect(config).toEqual({
         existing: "value",
-        secret: "value",
+        secret: "value"
       });
 
       process.env.NODE_ENV = originalEnv;
@@ -195,7 +195,7 @@ describe("configurePropertiesVolume", () => {
       expect(mockReaddirSync).toHaveBeenCalledWith("/mnt/secrets");
       expect(config).toEqual({
         existing: "value",
-        secret: "value",
+        secret: "value"
       });
 
       process.env.NODE_ENV = originalEnv;
@@ -276,8 +276,8 @@ describe("configurePropertiesVolume", () => {
         existing: "value",
         nested: {
           key1: "old",
-          key2: "keep",
-        },
+          key2: "keep"
+        }
       };
 
       mockExistsSync.mockReturnValue(true);
@@ -290,10 +290,10 @@ describe("configurePropertiesVolume", () => {
         existing: "value",
         nested: {
           key1: "old",
-          key2: "keep",
+          key2: "keep"
         },
         "nested.key1": "new",
-        top: "level",
+        top: "level"
       });
     });
 
@@ -316,7 +316,7 @@ describe("configurePropertiesVolume", () => {
       expect(config).toEqual({
         existing: "value",
         empty: "",
-        normal: "value",
+        normal: "value"
       });
     });
   });

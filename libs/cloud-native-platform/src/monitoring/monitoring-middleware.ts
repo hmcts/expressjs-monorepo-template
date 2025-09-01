@@ -26,8 +26,8 @@ export function monitoringMiddleware(config: MonitoringMiddlewareConfig): (req: 
           properties: {
             method: req.method,
             path: req.path,
-            userAgent: req.headers["user-agent"],
-          },
+            userAgent: req.headers["user-agent"]
+          }
         });
       }
     });

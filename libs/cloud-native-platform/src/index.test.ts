@@ -20,8 +20,8 @@ describe("healthcheck export", () => {
 
     const middleware = healthcheck({
       checks: {
-        test: hc.raw(() => hc.down()),
-      },
+        test: hc.raw(() => hc.down())
+      }
     });
     expect(middleware).toBeInstanceOf(Function);
   });

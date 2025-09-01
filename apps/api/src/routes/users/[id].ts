@@ -8,7 +8,7 @@ export const GET = async (req: Request, res: Response) => {
   res.json({
     id: Number.parseInt(id, 10),
     name: "John Doe",
-    email: "john@example.com",
+    email: "john@example.com"
   });
 };
 
@@ -25,7 +25,7 @@ export const PUT = async (req: Request, res: Response) => {
   res.json({
     id: Number.parseInt(id, 10),
     name,
-    email,
+    email
   });
 };
 
@@ -35,6 +35,6 @@ export const DELETE = async (req: Request, res: Response) => {
 
   // Example response - replace with actual implementation
   res.json({
-    message: `User ${id} deleted successfully`,
+    message: `User ${id} deleted successfully`
   });
 };

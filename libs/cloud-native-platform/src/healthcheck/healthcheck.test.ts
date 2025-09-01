@@ -27,7 +27,7 @@ describe("healthcheck", () => {
 
     it("should return UP for successful response", async () => {
       vi.mocked(global.fetch).mockResolvedValue({
-        ok: true,
+        ok: true
       } as Response);
 
       const check = web("https://example.com/health");
@@ -36,7 +36,7 @@ describe("healthcheck", () => {
 
     it("should return DOWN for failed response", async () => {
       vi.mocked(global.fetch).mockResolvedValue({
-        ok: false,
+        ok: false
       } as Response);
 
       const check = web("https://example.com/health");
@@ -59,8 +59,8 @@ describe("healthcheck", () => {
       expect(global.fetch).toHaveBeenCalledWith(
         "https://example.com/health",
         expect.objectContaining({
-          signal: expect.any(AbortSignal),
-        }),
+          signal: expect.any(AbortSignal)
+        })
       );
     });
   });

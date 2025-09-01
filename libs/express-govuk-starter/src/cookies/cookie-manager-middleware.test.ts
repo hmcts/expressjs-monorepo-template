@@ -40,10 +40,8 @@ describe("configureCookieManager", () => {
       // Should register middleware
       expect(useSpy).toHaveBeenCalledTimes(1);
 
-      // Should register POST routes for accept, reject, and save-preferences
-      expect(postSpy).toHaveBeenCalledTimes(3);
-      expect(postSpy).toHaveBeenCalledWith("/cookies/accept", expect.any(Function));
-      expect(postSpy).toHaveBeenCalledWith("/cookies/reject", expect.any(Function));
+      // Should register POST route for save-preferences
+      expect(postSpy).toHaveBeenCalledTimes(1);
       expect(postSpy).toHaveBeenCalledWith("/cookies/save-preferences", expect.any(Function));
 
       // Should register GET route for preferences page
@@ -151,126 +149,19 @@ describe("configureCookieManager", () => {
     });
   });
 
-  describe("accept cookies handler", () => {
-    it("should accept all categories and trigger callbacks", async () => {
-      const onAccept = vi.fn();
-      const postSpy = vi.spyOn(app, "post");
-
-      await configureCookieManager(app, {
-        categories: {
-          analytics: ["_ga"],
-          preferences: ["lang"]
-        },
-        onAccept
-      });
-
-      // Get the accept handler that was registered
-      const acceptHandler = postSpy.mock.calls[0][1] as any;
-      req.body = { returnUrl: "/test-return" };
-
-      acceptHandler(req, res);
-
-      expect(res.cookie).toHaveBeenCalledWith(
-        "cookie_policy",
-        "%7B%22analytics%22%3Atrue%2C%22preferences%22%3Atrue%7D",
-        expect.objectContaining({
-          httpOnly: false,
-          sameSite: "strict"
-        })
-      );
-      expect(res.cookie).toHaveBeenCalledWith(
-        "cookies_preferences_set",
-        "true",
-        expect.objectContaining({
-          httpOnly: true,
-          sameSite: "strict"
-        })
-      );
-      expect(onAccept).toHaveBeenCalledWith("analytics");
-      expect(onAccept).toHaveBeenCalledWith("preferences");
-      expect(res.redirect).toHaveBeenCalledWith("/test-return");
-    });
-
-    it("should use referer as fallback", async () => {
-      const postSpy = vi.spyOn(app, "post");
-
-      await configureCookieManager(app, {
-        categories: { analytics: ["_ga"] }
-      });
-
-      const acceptHandler = postSpy.mock.calls[0][1] as any;
-      req.headers = { referer: "/from-page" };
-
-      acceptHandler(req, res);
-
-      expect(res.redirect).toHaveBeenCalledWith("/from-page");
-    });
-
-    it("should default to root", async () => {
-      const postSpy = vi.spyOn(app, "post");
-
-      await configureCookieManager(app, {
-        categories: { analytics: ["_ga"] }
-      });
-
-      const acceptHandler = postSpy.mock.calls[0][1] as any;
-
-      acceptHandler(req, res);
-
-      expect(res.redirect).toHaveBeenCalledWith("/");
-    });
-  });
-
-  describe("reject cookies handler", () => {
-    it("should reject all categories and trigger callbacks", async () => {
-      const onReject = vi.fn();
-      const postSpy = vi.spyOn(app, "post");
-
-      await configureCookieManager(app, {
-        categories: {
-          analytics: ["_ga"],
-          preferences: ["lang"]
-        },
-        onReject
-      });
-
-      // Get the reject handler (second post call)
-      const rejectHandler = postSpy.mock.calls[1][1] as any;
-      req.body = { returnUrl: "/test-return" };
-
-      rejectHandler(req, res);
-
-      expect(res.cookie).toHaveBeenCalledWith(
-        "cookie_policy",
-        "%7B%22analytics%22%3Afalse%2C%22preferences%22%3Afalse%7D",
-        expect.objectContaining({
-          httpOnly: false,
-          sameSite: "strict"
-        })
-      );
-      expect(onReject).toHaveBeenCalledWith("analytics");
-      expect(onReject).toHaveBeenCalledWith("preferences");
-      expect(res.redirect).toHaveBeenCalledWith("/test-return");
-    });
-  });
-
   describe("save preferences handler", () => {
     it("should save selected preferences", async () => {
-      const onAccept = vi.fn();
-      const onReject = vi.fn();
       const postSpy = vi.spyOn(app, "post");
 
       await configureCookieManager(app, {
         categories: {
           analytics: ["_ga"],
           preferences: ["lang"]
-        },
-        onAccept,
-        onReject
+        }
       });
 
-      // Get the save preferences handler (third post call)
-      const saveHandler = postSpy.mock.calls[2][1] as any;
+      // Get the save preferences handler (first post call)
+      const saveHandler = postSpy.mock.calls[0][1] as any;
       req.body = {
         analytics: "on",
         preferences: "off"
@@ -279,8 +170,6 @@ describe("configureCookieManager", () => {
       saveHandler(req, res);
 
       expect(res.cookie).toHaveBeenCalledWith("cookie_policy", "%7B%22analytics%22%3Atrue%2C%22preferences%22%3Afalse%7D", expect.any(Object));
-      expect(onAccept).toHaveBeenCalledWith("analytics");
-      expect(onReject).toHaveBeenCalledWith("preferences");
       expect(res.redirect).toHaveBeenCalledWith("/cookies?saved=true");
     });
 
@@ -292,7 +181,7 @@ describe("configureCookieManager", () => {
         preferencesPath: "/custom-cookies"
       });
 
-      const saveHandler = postSpy.mock.calls[2][1] as any;
+      const saveHandler = postSpy.mock.calls[0][1] as any;
       req.body = { analytics: "on" };
 
       saveHandler(req, res);
@@ -322,16 +211,15 @@ describe("configureCookieManager", () => {
       expect(res.render).toHaveBeenCalledWith("cookie-preferences", {
         en: expect.objectContaining({
           title: "Cookie preferences",
-          analyticsTitle: "Analytics cookies",
-          cookiePreferences: { analytics: true, preferences: false },
-          saved: true
+          analyticsTitle: "Analytics cookies"
         }),
         cy: expect.objectContaining({
           title: "Dewisiadau cwcis",
-          analyticsTitle: "Cwcis dadansoddi",
-          cookiePreferences: { analytics: true, preferences: false },
-          saved: true
-        })
+          analyticsTitle: "Cwcis dadansoddi"
+        }),
+        cookiePreferences: { analytics: true, preferences: false },
+        categories: { analytics: ["_ga"], preferences: ["lang"] },
+        saved: true
       });
     });
   });

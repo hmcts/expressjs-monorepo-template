@@ -56,7 +56,7 @@ export const DELETE = (req, res) => res.send('DELETE');
         GET: vi.fn((_req, _res) => {}),
         POST: vi.fn((_req, _res) => {}),
         PUT: vi.fn((_req, _res) => {}),
-        notAMethod: vi.fn(),
+        notAMethod: vi.fn()
       };
 
       const handlers = extractHandlers(module);
@@ -72,7 +72,7 @@ export const DELETE = (req, res) => res.send('DELETE');
       const module = {
         get: vi.fn((_req, _res) => {}),
         Post: vi.fn((_req, _res) => {}),
-        DELETE: vi.fn((_req, _res) => {}),
+        DELETE: vi.fn((_req, _res) => {})
       };
 
       const handlers = extractHandlers(module);
@@ -85,7 +85,7 @@ export const DELETE = (req, res) => res.send('DELETE');
 
     it("should normalize 'del' to 'delete'", () => {
       const module = {
-        del: vi.fn((_req, _res) => {}),
+        del: vi.fn((_req, _res) => {})
       };
 
       const handlers = extractHandlers(module);
@@ -100,7 +100,7 @@ export const DELETE = (req, res) => res.send('DELETE');
       const handler2 = vi.fn((_req, res) => res.send("ok"));
 
       const module = {
-        GET: [handler1, handler2],
+        GET: [handler1, handler2]
       };
 
       const handlers = extractHandlers(module);
@@ -114,7 +114,7 @@ export const DELETE = (req, res) => res.send('DELETE');
     it("should throw on duplicate method exports with different casing", () => {
       const module = {
         get: vi.fn((_req, _res) => {}),
-        GET: vi.fn((_req, _res) => {}),
+        GET: vi.fn((_req, _res) => {})
       };
 
       expect(() => extractHandlers(module)).toThrow("Duplicate method export found: GET");
@@ -122,7 +122,7 @@ export const DELETE = (req, res) => res.send('DELETE');
 
     it("should throw on invalid handler (not a function)", () => {
       const module = {
-        GET: "not a function",
+        GET: "not a function"
       };
 
       expect(() => extractHandlers(module)).toThrow("Invalid handler for method GET");
@@ -130,7 +130,7 @@ export const DELETE = (req, res) => res.send('DELETE');
 
     it("should throw on invalid handler (function with wrong arity)", () => {
       const module = {
-        GET: vi.fn(() => {}),
+        GET: vi.fn(() => {})
       };
 
       expect(() => extractHandlers(module)).toThrow("Invalid handler for method GET");
@@ -138,7 +138,7 @@ export const DELETE = (req, res) => res.send('DELETE');
 
     it("should throw on empty array of handlers", () => {
       const module = {
-        GET: [],
+        GET: []
       };
 
       expect(() => extractHandlers(module)).toThrow("Invalid handler for method GET");
@@ -148,7 +148,7 @@ export const DELETE = (req, res) => res.send('DELETE');
       const module = {
         GET: vi.fn((_req, _res) => {}),
         POST: vi.fn((_req, _res, _next) => {}),
-        PUT: vi.fn((_err, _req, _res, _next) => {}),
+        PUT: vi.fn((_err, _req, _res, _next) => {})
       };
 
       const handlers = extractHandlers(module);
@@ -158,7 +158,7 @@ export const DELETE = (req, res) => res.send('DELETE');
 
     it("should handle 'all' method", () => {
       const module = {
-        all: vi.fn((_req, _res) => {}),
+        all: vi.fn((_req, _res) => {})
       };
 
       const handlers = extractHandlers(module);

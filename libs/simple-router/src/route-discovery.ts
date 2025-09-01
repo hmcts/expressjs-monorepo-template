@@ -36,14 +36,14 @@ function scanDirectory(dir: string, rootDir: string, routes: DiscoveredRoute[]):
             routes[index] = {
               relativePath,
               urlPath,
-              absolutePath: fullPath,
+              absolutePath: fullPath
             };
           }
         } else {
           routes.push({
             relativePath,
             urlPath,
-            absolutePath: fullPath,
+            absolutePath: fullPath
           });
         }
       }

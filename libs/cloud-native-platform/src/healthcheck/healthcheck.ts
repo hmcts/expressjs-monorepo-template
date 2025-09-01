@@ -17,7 +17,7 @@ export function web(url: string, timeout = 10000): HealthCheck {
 
     try {
       const response = await fetch(url, {
-        signal: controller.signal,
+        signal: controller.signal
       });
       clearTimeout(timeoutId);
       return response.ok ? "UP" : "DOWN";

@@ -13,5 +13,5 @@ export const hc = {
   web,
   raw,
   up,
-  down,
+  down
 };

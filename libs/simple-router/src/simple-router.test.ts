@@ -181,7 +181,7 @@ export const Post = (req, res) => res.send('mixed case post');
         { prefix: "/api", expected: "/api" },
         { prefix: "/api/", expected: "/api" },
         { prefix: "", expected: "/" },
-        { prefix: "/", expected: "/" },
+        { prefix: "/", expected: "/" }
       ];
 
       for (const { prefix, expected } of variations) {

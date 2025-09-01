@@ -7,19 +7,19 @@ import { addFromAzureVault } from "./azure-vault.js";
 
 // Mock all external dependencies
 vi.mock("@azure/identity", () => ({
-  DefaultAzureCredential: vi.fn(),
+  DefaultAzureCredential: vi.fn()
 }));
 
 vi.mock("@azure/keyvault-secrets", () => ({
-  SecretClient: vi.fn(),
+  SecretClient: vi.fn()
 }));
 
 vi.mock("node:fs", () => ({
-  readFileSync: vi.fn(),
+  readFileSync: vi.fn()
 }));
 
 vi.mock("js-yaml", () => ({
-  load: vi.fn(),
+  load: vi.fn()
 }));
 
 const mockDefaultAzureCredential = vi.mocked(DefaultAzureCredential);
@@ -38,7 +38,7 @@ describe("addFromAzureVault", () => {
 
     // Set up mock client
     mockClient = {
-      getSecret: vi.fn(),
+      getSecret: vi.fn()
     };
 
     // Configure mocks
@@ -56,9 +56,9 @@ describe("addFromAzureVault", () => {
     const helmChart = {
       keyVaults: {
         "test-vault": {
-          secrets: ["secret1", { name: "secret2", alias: "custom-alias" }],
-        },
-      },
+          secrets: ["secret1", { name: "secret2", alias: "custom-alias" }]
+        }
+      }
     };
 
     mockReadFileSync.mockReturnValue("helm-chart-content");
@@ -76,7 +76,7 @@ describe("addFromAzureVault", () => {
     expect(config).toEqual({
       existing: "value",
       secret1: "secret-value-1",
-      "custom-alias": "secret-value-2",
+      "custom-alias": "secret-value-2"
     });
   });
 
@@ -84,12 +84,12 @@ describe("addFromAzureVault", () => {
     const helmChart = {
       keyVaults: {
         vault1: {
-          secrets: ["secret1"],
+          secrets: ["secret1"]
         },
         vault2: {
-          secrets: ["secret2"],
-        },
-      },
+          secrets: ["secret2"]
+        }
+      }
     };
 
     mockReadFileSync.mockReturnValue("helm-chart-content");
@@ -104,7 +104,7 @@ describe("addFromAzureVault", () => {
     expect(config).toEqual({
       existing: "value",
       secret1: "value1",
-      secret2: "value2",
+      secret2: "value2"
     });
   });
 
@@ -124,8 +124,8 @@ describe("addFromAzureVault", () => {
     const helmChart = {
       keyVaults: {
         "valid-vault": { secrets: ["secret1"] },
-        "incomplete-vault": {}, // Missing secrets
-      },
+        "incomplete-vault": {} // Missing secrets
+      }
     };
 
     mockReadFileSync.mockReturnValue("helm-chart-content");
@@ -137,7 +137,7 @@ describe("addFromAzureVault", () => {
     expect(consoleWarnSpy).toHaveBeenCalledWith("Azure Vault: Invalid vault configuration, missing name or secrets");
     expect(config).toEqual({
       existing: "value",
-      secret1: "value1",
+      secret1: "value1"
     });
   });
 
@@ -145,9 +145,9 @@ describe("addFromAzureVault", () => {
     const helmChart = {
       keyVaults: {
         "test-vault": {
-          secrets: ["failing-secret"],
-        },
-      },
+          secrets: ["failing-secret"]
+        }
+      }
     };
 
     mockReadFileSync.mockReturnValue("helm-chart-content");
@@ -155,7 +155,7 @@ describe("addFromAzureVault", () => {
     mockClient.getSecret.mockRejectedValue(new Error("Access denied"));
 
     await expect(addFromAzureVault(config, { pathToHelmChart: "/path/to/chart.yaml" })).rejects.toThrow(
-      "Azure Key Vault: Vault 'test-vault': Failed to retrieve secret failing-secret: Access denied",
+      "Azure Key Vault: Vault 'test-vault': Failed to retrieve secret failing-secret: Access denied"
     );
   });
 
@@ -163,9 +163,9 @@ describe("addFromAzureVault", () => {
     const helmChart = {
       keyVaults: {
         "test-vault": {
-          secrets: ["redis-access-key"],
-        },
-      },
+          secrets: ["redis-access-key"]
+        }
+      }
     };
 
     mockReadFileSync.mockReturnValue("helm-chart-content");
@@ -175,7 +175,7 @@ describe("addFromAzureVault", () => {
     mockClient.getSecret.mockRejectedValue(permissionError);
 
     await expect(addFromAzureVault(config, { pathToHelmChart: "/path/to/chart.yaml" })).rejects.toThrow(
-      "Azure Key Vault: Vault 'test-vault': Could not load secret 'redis-access-key'. Check it exists and you have access to it.",
+      "Azure Key Vault: Vault 'test-vault': Could not load secret 'redis-access-key'. Check it exists and you have access to it."
     );
   });
 
@@ -183,9 +183,9 @@ describe("addFromAzureVault", () => {
     const helmChart = {
       keyVaults: {
         "test-vault": {
-          secrets: ["empty-secret"],
-        },
-      },
+          secrets: ["empty-secret"]
+        }
+      }
     };
 
     mockReadFileSync.mockReturnValue("helm-chart-content");
@@ -193,7 +193,7 @@ describe("addFromAzureVault", () => {
     mockClient.getSecret.mockResolvedValue({ value: null });
 
     await expect(addFromAzureVault(config, { pathToHelmChart: "/path/to/chart.yaml" })).rejects.toThrow(
-      "Azure Key Vault: Vault 'test-vault': Failed to retrieve secret empty-secret: Secret empty-secret has no value",
+      "Azure Key Vault: Vault 'test-vault': Failed to retrieve secret empty-secret: Secret empty-secret has no value"
     );
   });
 
@@ -201,9 +201,9 @@ describe("addFromAzureVault", () => {
     const helmChart = {
       keyVaults: {
         "test-vault": {
-          secrets: ["secret-with-dashes", "secret.with.dots"],
-        },
-      },
+          secrets: ["secret-with-dashes", "secret.with.dots"]
+        }
+      }
     };
 
     mockReadFileSync.mockReturnValue("helm-chart-content");
@@ -215,7 +215,7 @@ describe("addFromAzureVault", () => {
     expect(config).toEqual({
       existing: "value",
       secret_with_dashes: "value1",
-      secret_with_dots: "value2",
+      secret_with_dots: "value2"
     });
   });
 
@@ -225,18 +225,18 @@ describe("addFromAzureVault", () => {
         nested: {
           keyVaults: {
             "deep-vault": {
-              secrets: ["deep-secret"],
-            },
-          },
-        },
+              secrets: ["deep-secret"]
+            }
+          }
+        }
       },
       someOther: {
         keyVaults: {
           "other-vault": {
-            secrets: ["other-secret"],
-          },
-        },
-      },
+            secrets: ["other-secret"]
+          }
+        }
+      }
     };
 
     mockReadFileSync.mockReturnValue("helm-chart-content");
@@ -250,13 +250,13 @@ describe("addFromAzureVault", () => {
     expect(config).toEqual({
       existing: "value",
       deep_secret: "deep-value",
-      other_secret: "other-value",
+      other_secret: "other-value"
     });
   });
 
   it("should handle keyVaults that are not objects", async () => {
     const helmChart = {
-      keyVaults: "not-an-object",
+      keyVaults: "not-an-object"
     };
 
     mockReadFileSync.mockReturnValue("helm-chart-content");
@@ -288,8 +288,8 @@ describe("addFromAzureVault", () => {
   it("should handle vault config as simple string", async () => {
     const helmChart = {
       keyVaults: {
-        "vault-name": "simple-string",
-      },
+        "vault-name": "simple-string"
+      }
     };
 
     mockReadFileSync.mockReturnValue("helm-chart-content");
@@ -305,16 +305,16 @@ describe("addFromAzureVault", () => {
     config = {
       existing: "value",
       nested: {
-        prop: "old",
-      },
+        prop: "old"
+      }
     };
 
     const helmChart = {
       keyVaults: {
         "test-vault": {
-          secrets: ["nested"],
-        },
-      },
+          secrets: ["nested"]
+        }
+      }
     };
 
     mockReadFileSync.mockReturnValue("helm-chart-content");
@@ -325,7 +325,7 @@ describe("addFromAzureVault", () => {
 
     expect(config).toEqual({
       existing: "value",
-      nested: "new-value",
+      nested: "new-value"
     });
   });
 
@@ -333,9 +333,9 @@ describe("addFromAzureVault", () => {
     const helmChart = {
       keyVaults: {
         "test-vault": {
-          secrets: ["secret1"],
-        },
-      },
+          secrets: ["secret1"]
+        }
+      }
     };
 
     mockReadFileSync.mockReturnValue("helm-chart-content");
@@ -343,7 +343,7 @@ describe("addFromAzureVault", () => {
     mockClient.getSecret.mockRejectedValue("String error");
 
     await expect(addFromAzureVault(config, { pathToHelmChart: "/path/to/chart.yaml" })).rejects.toThrow(
-      "Azure Key Vault: Vault 'test-vault': Failed to retrieve secret secret1: String error",
+      "Azure Key Vault: Vault 'test-vault': Failed to retrieve secret secret1: String error"
     );
   });
 
@@ -351,9 +351,9 @@ describe("addFromAzureVault", () => {
     const helmChart = {
       keyVaults: {
         "test-vault": {
-          secrets: ["secret1"],
-        },
-      },
+          secrets: ["secret1"]
+        }
+      }
     };
 
     mockReadFileSync.mockReturnValue("helm-chart-content");
@@ -362,7 +362,7 @@ describe("addFromAzureVault", () => {
     mockClient.getSecret.mockRejectedValue(error);
 
     await expect(addFromAzureVault(config, { pathToHelmChart: "/path/to/chart.yaml" })).rejects.toThrow(
-      "Azure Key Vault: Failed to retrieve secret secret1: test-vault: Already contains vault name",
+      "Azure Key Vault: Failed to retrieve secret secret1: test-vault: Already contains vault name"
     );
   });
 });

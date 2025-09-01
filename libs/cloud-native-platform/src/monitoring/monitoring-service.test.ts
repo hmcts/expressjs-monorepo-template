@@ -14,9 +14,9 @@ vi.mock("applicationinsights", () => {
     context: {
       tags: {},
       keys: {
-        cloudRole: "cloudRole",
-      },
-    },
+        cloudRole: "cloudRole"
+      }
+    }
   };
 
   const mockSetup = {
@@ -28,15 +28,15 @@ vi.mock("applicationinsights", () => {
     setAutoCollectConsole: vi.fn(() => mockSetup),
     setUseDiskRetryCaching: vi.fn(() => mockSetup),
     setDistributedTracingMode: vi.fn(() => mockSetup),
-    start: vi.fn(() => mockSetup),
+    start: vi.fn(() => mockSetup)
   };
 
   return {
     setup: vi.fn(() => mockSetup),
     defaultClient: mockClient,
     DistributedTracingModes: {
-      AI_AND_W3C: "AI_AND_W3C",
-    },
+      AI_AND_W3C: "AI_AND_W3C"
+    }
   };
 });
 
@@ -51,7 +51,7 @@ describe("MonitoringService", () => {
       log: vi.fn(),
       info: vi.fn(),
       warn: vi.fn(),
-      error: vi.fn(),
+      error: vi.fn()
     };
   });
 
@@ -94,8 +94,8 @@ describe("MonitoringService", () => {
         success: true,
         properties: {
           userId: "user-123",
-          tenantId: "tenant-456",
-        },
+          tenantId: "tenant-456"
+        }
       };
 
       service.trackRequest(options);
@@ -108,8 +108,8 @@ describe("MonitoringService", () => {
         success: true,
         properties: {
           userId: "user-123",
-          tenantId: "tenant-456",
-        },
+          tenantId: "tenant-456"
+        }
       });
     });
 
@@ -119,15 +119,15 @@ describe("MonitoringService", () => {
         url: "/api/test",
         duration: 50,
         resultCode: 404,
-        success: false,
+        success: false
       };
 
       service.trackRequest(options);
 
       expect(appInsights.defaultClient.trackRequest).toHaveBeenCalledWith(
         expect.objectContaining({
-          resultCode: "404",
-        }),
+          resultCode: "404"
+        })
       );
     });
   });
@@ -145,12 +145,12 @@ describe("MonitoringService", () => {
 
       expect(mockLogger.error).toHaveBeenCalledWith("Test error", {
         error,
-        userId: "user-123",
+        userId: "user-123"
       });
 
       expect(appInsights.defaultClient.trackException).toHaveBeenCalledWith({
         exception: error,
-        properties,
+        properties
       });
     });
 
@@ -160,12 +160,12 @@ describe("MonitoringService", () => {
       service.trackException(error);
 
       expect(mockLogger.error).toHaveBeenCalledWith("Another error", {
-        error,
+        error
       });
 
       expect(appInsights.defaultClient.trackException).toHaveBeenCalledWith({
         exception: error,
-        properties: undefined,
+        properties: undefined
       });
     });
   });
@@ -185,7 +185,7 @@ describe("MonitoringService", () => {
 
       expect(appInsights.defaultClient.trackEvent).toHaveBeenCalledWith({
         name: eventName,
-        properties,
+        properties
       });
     });
 
@@ -198,7 +198,7 @@ describe("MonitoringService", () => {
 
       expect(appInsights.defaultClient.trackEvent).toHaveBeenCalledWith({
         name: eventName,
-        properties: undefined,
+        properties: undefined
       });
     });
   });
@@ -218,7 +218,7 @@ describe("MonitoringService", () => {
       expect(appInsights.defaultClient.trackMetric).toHaveBeenCalledWith({
         name: metricName,
         value,
-        properties,
+        properties
       });
     });
 
@@ -231,7 +231,7 @@ describe("MonitoringService", () => {
       expect(appInsights.defaultClient.trackMetric).toHaveBeenCalledWith({
         name: metricName,
         value,
-        properties: undefined,
+        properties: undefined
       });
     });
   });
@@ -266,7 +266,7 @@ describe("MonitoringService", () => {
         log: vi.fn(),
         info: vi.fn(),
         warn: vi.fn(),
-        error: vi.fn(),
+        error: vi.fn()
       };
 
       service = new MonitoringService(connectionString, "test-service", customLogger);
@@ -275,7 +275,7 @@ describe("MonitoringService", () => {
       service.trackException(error);
 
       expect(customLogger.error).toHaveBeenCalledWith("Custom logger test", {
-        error,
+        error
       });
     });
   });

@@ -6,8 +6,8 @@ export const GET = async (_req: Request, res: Response) => {
   res.json({
     users: [
       { id: 1, name: "John Doe", email: "john@example.com" },
-      { id: 2, name: "Jane Smith", email: "jane@example.com" },
-    ],
+      { id: 2, name: "Jane Smith", email: "jane@example.com" }
+    ]
   });
 };
 
@@ -23,6 +23,6 @@ export const POST = async (req: Request, res: Response) => {
   res.status(201).json({
     id: Date.now(),
     name,
-    email,
+    email
   });
 };

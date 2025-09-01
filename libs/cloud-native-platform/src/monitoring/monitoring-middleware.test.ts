@@ -20,13 +20,13 @@ describe("monitoringMiddleware", () => {
       url: "/test?query=value",
       route: { path: "/test" },
       headers: {
-        "user-agent": "Mozilla/5.0",
-      },
+        "user-agent": "Mozilla/5.0"
+      }
     };
 
     res = {
       statusCode: 200,
-      on: vi.fn(),
+      on: vi.fn()
     };
 
     next = vi.fn();
@@ -34,7 +34,7 @@ describe("monitoringMiddleware", () => {
     config = {
       serviceName: "test-service",
       appInsightsConnectionString: "InstrumentationKey=test",
-      enabled: true,
+      enabled: true
     };
   });
 
@@ -64,8 +64,8 @@ describe("monitoringMiddleware", () => {
           trackException: vi.fn(),
           trackEvent: vi.fn(),
           trackMetric: vi.fn(),
-          flush: vi.fn(),
-        }) as any,
+          flush: vi.fn()
+        }) as any
     );
 
     const middleware = monitoringMiddleware(config);
@@ -86,8 +86,8 @@ describe("monitoringMiddleware", () => {
           trackException: mockTrackException,
           trackEvent: vi.fn(),
           trackMetric: vi.fn(),
-          flush: vi.fn(),
-        }) as any,
+          flush: vi.fn()
+        }) as any
     );
 
     const middleware = monitoringMiddleware(config);
@@ -114,8 +114,8 @@ describe("monitoringMiddleware", () => {
       properties: {
         method: "GET",
         path: "/test",
-        userAgent: "Mozilla/5.0",
-      },
+        userAgent: "Mozilla/5.0"
+      }
     });
   });
 
@@ -129,8 +129,8 @@ describe("monitoringMiddleware", () => {
           trackException: mockTrackException,
           trackEvent: vi.fn(),
           trackMetric: vi.fn(),
-          flush: vi.fn(),
-        }) as any,
+          flush: vi.fn()
+        }) as any
     );
 
     const middleware = monitoringMiddleware(config);
@@ -162,8 +162,8 @@ describe("monitoringMiddleware", () => {
           trackException: vi.fn(),
           trackEvent: vi.fn(),
           trackMetric: vi.fn(),
-          flush: vi.fn(),
-        }) as any,
+          flush: vi.fn()
+        }) as any
     );
 
     delete req.route;
@@ -189,8 +189,8 @@ describe("monitoringMiddleware", () => {
       properties: {
         method: "GET",
         path: "/test",
-        userAgent: "Mozilla/5.0",
-      },
+        userAgent: "Mozilla/5.0"
+      }
     });
   });
 
@@ -204,8 +204,8 @@ describe("monitoringMiddleware", () => {
           trackException: vi.fn(),
           trackEvent: vi.fn(),
           trackMetric: vi.fn(),
-          flush: vi.fn(),
-        }) as any,
+          flush: vi.fn()
+        }) as any
     );
 
     res.statusCode = 500;
@@ -231,8 +231,8 @@ describe("monitoringMiddleware", () => {
       properties: {
         method: "GET",
         path: "/test",
-        userAgent: "Mozilla/5.0",
-      },
+        userAgent: "Mozilla/5.0"
+      }
     });
   });
 });

@@ -140,7 +140,7 @@ describe("route-discovery", () => {
       const routes = [
         { relativePath: "posts/[id]/index.ts", urlPath: "/posts/:id", absolutePath: "" },
         { relativePath: "posts/index.ts", urlPath: "/posts", absolutePath: "" },
-        { relativePath: "index.ts", urlPath: "/", absolutePath: "" },
+        { relativePath: "index.ts", urlPath: "/", absolutePath: "" }
       ];
 
       const sorted = sortRoutes(routes);
@@ -152,7 +152,7 @@ describe("route-discovery", () => {
       const routes = [
         { relativePath: "[a]/[b]/[c]/index.ts", urlPath: "/:a/:b/:c", absolutePath: "" },
         { relativePath: "[a]/index.ts", urlPath: "/:a", absolutePath: "" },
-        { relativePath: "[a]/[b]/index.ts", urlPath: "/:a/:b", absolutePath: "" },
+        { relativePath: "[a]/[b]/index.ts", urlPath: "/:a/:b", absolutePath: "" }
       ];
 
       const sorted = sortRoutes(routes);
@@ -163,7 +163,7 @@ describe("route-discovery", () => {
     it("should sort by path length when param count is equal", () => {
       const routes = [
         { relativePath: "posts/[id]/edit/index.ts", urlPath: "/posts/:id/edit", absolutePath: "" },
-        { relativePath: "posts/[id]/index.ts", urlPath: "/posts/:id", absolutePath: "" },
+        { relativePath: "posts/[id]/index.ts", urlPath: "/posts/:id", absolutePath: "" }
       ];
 
       const sorted = sortRoutes(routes);
@@ -174,7 +174,7 @@ describe("route-discovery", () => {
     it("should prioritize static segments over dynamic at same position", () => {
       const routes = [
         { relativePath: "posts/[id]/index.ts", urlPath: "/posts/:id", absolutePath: "" },
-        { relativePath: "posts/new/index.ts", urlPath: "/posts/new", absolutePath: "" },
+        { relativePath: "posts/new/index.ts", urlPath: "/posts/new", absolutePath: "" }
       ];
 
       const sorted = sortRoutes(routes);

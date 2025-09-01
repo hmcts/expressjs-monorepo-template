@@ -11,12 +11,12 @@ describe("healthcheck middleware", () => {
     vi.clearAllMocks();
 
     req = {
-      path: "/health",
+      path: "/health"
     };
 
     res = {
       status: vi.fn().mockReturnThis(),
-      json: vi.fn().mockReturnThis(),
+      json: vi.fn().mockReturnThis()
     };
 
     next = vi.fn();
@@ -36,8 +36,8 @@ describe("healthcheck middleware", () => {
       const middleware = configure({
         checks: {
           database: async () => "UP",
-          api: async () => "UP",
-        },
+          api: async () => "UP"
+        }
       });
 
       await middleware(req as Request, res as Response, next);
@@ -46,8 +46,8 @@ describe("healthcheck middleware", () => {
         status: "UP",
         services: {
           database: "UP",
-          api: "UP",
-        },
+          api: "UP"
+        }
       });
       expect(res.status).toHaveBeenCalledWith(200);
     });
@@ -58,8 +58,8 @@ describe("healthcheck middleware", () => {
       const middleware = configure({
         checks: {
           database: async () => "UP",
-          api: async () => "DOWN",
-        },
+          api: async () => "DOWN"
+        }
       });
 
       await middleware(req as Request, res as Response, next);
@@ -68,8 +68,8 @@ describe("healthcheck middleware", () => {
         status: "DOWN",
         services: {
           database: "UP",
-          api: "DOWN",
-        },
+          api: "DOWN"
+        }
       });
       expect(res.status).toHaveBeenCalledWith(503);
     });
@@ -81,8 +81,8 @@ describe("healthcheck middleware", () => {
         checks: {
           database: async () => {
             throw new Error("Connection failed");
-          },
-        },
+          }
+        }
       });
 
       await middleware(req as Request, res as Response, next);
@@ -90,8 +90,8 @@ describe("healthcheck middleware", () => {
       expect(res.json).toHaveBeenCalledWith({
         status: "DOWN",
         services: {
-          database: "DOWN",
-        },
+          database: "DOWN"
+        }
       });
       expect(res.status).toHaveBeenCalledWith(503);
     });
@@ -104,7 +104,7 @@ describe("healthcheck middleware", () => {
 
       expect(res.json).toHaveBeenCalledWith({
         status: "UP",
-        services: {},
+        services: {}
       });
       expect(res.status).toHaveBeenCalledWith(200);
     });
@@ -117,11 +117,11 @@ describe("healthcheck middleware", () => {
       const middleware = configure({
         checks: {
           database: async () => "UP",
-          api: async () => "UP",
+          api: async () => "UP"
         },
         readinessChecks: {
-          database: async () => "DOWN",
-        },
+          database: async () => "DOWN"
+        }
       });
 
       await middleware(req as Request, res as Response, next);
@@ -129,8 +129,8 @@ describe("healthcheck middleware", () => {
       expect(res.json).toHaveBeenCalledWith({
         status: "DOWN",
         services: {
-          database: "DOWN",
-        },
+          database: "DOWN"
+        }
       });
       expect(res.status).toHaveBeenCalledWith(503);
     });
@@ -140,8 +140,8 @@ describe("healthcheck middleware", () => {
 
       const middleware = configure({
         checks: {
-          database: async () => "UP",
-        },
+          database: async () => "UP"
+        }
       });
 
       await middleware(req as Request, res as Response, next);
@@ -149,8 +149,8 @@ describe("healthcheck middleware", () => {
       expect(res.json).toHaveBeenCalledWith({
         status: "UP",
         services: {
-          database: "UP",
-        },
+          database: "UP"
+        }
       });
       expect(res.status).toHaveBeenCalledWith(200);
     });
@@ -160,8 +160,8 @@ describe("healthcheck middleware", () => {
 
       const middleware = configure({
         checks: {
-          test: async () => "UP",
-        },
+          test: async () => "UP"
+        }
       });
 
       await middleware(req as Request, res as Response, next);
@@ -169,8 +169,8 @@ describe("healthcheck middleware", () => {
       expect(res.json).toHaveBeenCalledWith({
         status: "UP",
         services: {
-          test: "UP",
-        },
+          test: "UP"
+        }
       });
       expect(res.status).toHaveBeenCalledWith(200);
     });

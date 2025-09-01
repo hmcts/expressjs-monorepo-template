@@ -64,7 +64,7 @@ function discoverAndSortRoutes(pagesDir: string) {
 async function loadModuleRoutes(
   route: { absolutePath: string; urlPath: string; relativePath: string },
   prefix: string,
-  mountSpec: MountSpec,
+  mountSpec: MountSpec
 ): Promise<RouteEntry[]> {
   const module = await loadRouteModule(route.absolutePath);
   const handlers = extractHandlers(module);
@@ -79,7 +79,7 @@ async function loadModuleRoutes(
       method,
       handlers: normalizeHandlers(handlerExport),
       sourcePath: route.absolutePath,
-      mountSpec,
+      mountSpec
     });
   }
 
@@ -94,7 +94,7 @@ async function loadModuleRoutes(
       // Express internally handles both 3-param and 4-param handlers
       handlers: [module.onError] as any as Handler[],
       sourcePath: route.absolutePath,
-      mountSpec,
+      mountSpec
     });
   }
 
@@ -139,7 +139,7 @@ function validateRoutes(routes: RouteEntry[]): void {
           `  ${key}\n` +
           `  Defined in:\n` +
           `    1. ${existing.sourcePath} (mount: ${existing.mountSpec.pagesDir})\n` +
-          `    2. ${route.sourcePath} (mount: ${route.mountSpec.pagesDir})`,
+          `    2. ${route.sourcePath} (mount: ${route.mountSpec.pagesDir})`
       );
     }
 

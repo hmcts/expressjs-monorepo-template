@@ -6,7 +6,7 @@ export class MonitoringService {
   constructor(
     connectionString: string,
     serviceName: string,
-    private readonly logger: Logger = console,
+    private readonly logger: Logger = console
   ) {
     appInsights
       .setup(connectionString)
@@ -32,7 +32,7 @@ export class MonitoringService {
       duration: options.duration,
       resultCode: options.resultCode.toString(),
       success: options.success,
-      properties: options.properties,
+      properties: options.properties
     });
   }
 
@@ -41,7 +41,7 @@ export class MonitoringService {
 
     this.client.trackException({
       exception: error,
-      properties,
+      properties
     });
   }
 
@@ -50,7 +50,7 @@ export class MonitoringService {
 
     this.client.trackEvent({
       name,
-      properties,
+      properties
     });
   }
 
@@ -58,14 +58,14 @@ export class MonitoringService {
     this.client.trackMetric({
       name,
       value,
-      properties,
+      properties
     });
   }
 
   flush(): Promise<void> {
     return new Promise((resolve) => {
       this.client.flush({
-        callback: () => resolve(),
+        callback: () => resolve()
       });
     });
   }

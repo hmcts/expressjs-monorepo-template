@@ -11,7 +11,7 @@ describe("deepMerge", () => {
     expect(result).toEqual({
       a: 1,
       b: { c: 2, d: 3 },
-      e: 4,
+      e: 4
     });
   });
 
@@ -24,7 +24,7 @@ describe("deepMerge", () => {
     expect(result).toEqual({
       a: 1,
       b: "new",
-      c: 3,
+      c: 3
     });
   });
 
@@ -48,7 +48,7 @@ describe("deepMerge", () => {
     expect(result).toEqual({
       a: 1,
       b: { c: 2 },
-      d: undefined,
+      d: undefined
     });
   });
 });
@@ -59,10 +59,10 @@ describe("getProperty", () => {
     b: {
       c: 2,
       d: {
-        e: "deep value",
-      },
+        e: "deep value"
+      }
     },
-    array: [1, 2, 3],
+    array: [1, 2, 3]
   };
 
   it("should get top-level properties", () => {
@@ -105,9 +105,9 @@ describe("setProperty", () => {
     expect(obj).toEqual({
       a: {
         b: {
-          c: "value",
-        },
-      },
+          c: "value"
+        }
+      }
     });
   });
 
@@ -124,9 +124,9 @@ describe("setProperty", () => {
       a: 1,
       b: {
         c: {
-          d: "value",
-        },
-      },
+          d: "value"
+        }
+      }
     });
   });
 
@@ -136,9 +136,9 @@ describe("setProperty", () => {
     expect(obj).toEqual({
       a: {
         b: {
-          c: "value",
-        },
-      },
+          c: "value"
+        }
+      }
     });
   });
 });
@@ -148,20 +148,20 @@ describe("deepSearch", () => {
     keyVaults: [
       {
         name: "vault1",
-        keyVaults: [{ name: "nested" }],
-      },
+        keyVaults: [{ name: "nested" }]
+      }
     ],
     other: {
-      keyVaults: "string-value",
+      keyVaults: "string-value"
     },
     array: [
       { keyVaults: "in-array" },
       {
         nested: {
-          keyVaults: "deeply-nested",
-        },
-      },
-    ],
+          keyVaults: "deeply-nested"
+        }
+      }
+    ]
   };
 
   it("should find all occurrences of a key", () => {

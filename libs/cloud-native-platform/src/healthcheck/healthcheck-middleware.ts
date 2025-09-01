@@ -38,7 +38,7 @@ const runChecks = async (checks: Record<string, HealthCheck>) => {
         results[name] = "DOWN";
         allUp = false;
       }
-    }),
+    })
   );
 
   return { status: allUp ? "UP" : "DOWN", services: results };

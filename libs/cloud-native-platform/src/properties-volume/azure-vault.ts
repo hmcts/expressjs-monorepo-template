@@ -115,7 +115,7 @@ async function processSecret(client: SecretClient, secret: StructuredOrUnstructu
 
     return {
       key: configKey,
-      value: secretResponse.value,
+      value: secretResponse.value
     };
   } catch (error: any) {
     // Extract cleaner error message for common Azure Key Vault permission issues
