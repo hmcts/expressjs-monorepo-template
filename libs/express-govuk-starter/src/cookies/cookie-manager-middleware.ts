@@ -48,7 +48,7 @@ function setCookiePolicy(res: Response, preferences: CookiePreferences): void {
     httpOnly: false,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
-    maxAge: 365 * 24 * 60 * 60 * 1000, 
+    maxAge: 365 * 24 * 60 * 60 * 1000,
   });
 }
 
@@ -92,7 +92,7 @@ function configureCookieRoutes(app: Express, config: CookieManagerOptions): void
       doNotUsePreferences: "Do not use settings cookies",
       saveButton: "Save cookie preferences",
       successBanner: "Success",
-      successMessage: "Your cookie settings have been saved"      
+      successMessage: "Your cookie settings have been saved",
     };
 
     const cy = {
@@ -114,12 +114,12 @@ function configureCookieRoutes(app: Express, config: CookieManagerOptions): void
       successMessage: "Mae eich gosodiadau cwcis wedi'u cadw",
     };
 
-    res.render("cookie-preferences", { 
-      en, 
-      cy, 
+    res.render("cookie-preferences", {
+      en,
+      cy,
       cookiePreferences: cookiePolicy,
       categories: config.categories,
-      saved: req.query.saved === "true"
+      saved: req.query.saved === "true",
     });
   });
 }
