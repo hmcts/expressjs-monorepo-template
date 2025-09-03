@@ -71,7 +71,13 @@ function filePathToUrlPath(filePath: string): string {
       const nameWithoutExt = segment.replace(/\.(ts|js)$/, "");
       // Only add if it's not 'index' (already filtered above)
       if (nameWithoutExt !== "index") {
-        processedSegments.push(nameWithoutExt);
+        // Check if the filename (without extension) is a parameter pattern
+        const paramMatch = nameWithoutExt.match(PARAM_PATTERN);
+        if (paramMatch) {
+          processedSegments.push(`:${paramMatch[1]}`);
+        } else {
+          processedSegments.push(nameWithoutExt);
+        }
       }
       continue;
     }
