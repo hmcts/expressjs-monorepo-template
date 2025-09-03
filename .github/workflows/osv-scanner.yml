@@ -9,60 +9,82 @@ on:
     # Run daily at 2 AM UTC
     - cron: '0 2 * * *'
 
+permissions:
+  contents: read
+  security-events: write
+  actions: read
+
 jobs:
-  scan:
+  scan-pr:
+    if: github.event_name == 'pull_request'
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@v2.2.2
+    with:
+      scan-args: |-
+        --config=osv-scanner.toml
+        ./
+      results-file-name: osv-results.sarif
+      fail-on-vuln: false  # We'll handle this in the check-critical step
+
+  scan-scheduled:
+    if: github.event_name == 'push' || github.event_name == 'schedule'
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2.2.2
+    with:
+      scan-args: |-
+        --config=osv-scanner.toml
+        ./
+      results-file-name: osv-results.sarif
+      fail-on-vuln: false  # We'll handle this in the check-critical step
+
+  check-critical:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      security-events: write
-      actions: read
+    needs: [scan-pr, scan-scheduled]
+    if: always() && (needs.scan-pr.result == 'success' || needs.scan-scheduled.result == 'success')
     
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      - name: Run OSV Scanner
-        uses: google/osv-scanner-action@v1
-        id: osv-scanner
+      - name: Download scan results
+        uses: actions/download-artifact@v4
         with:
-          to-scan: .
-          format: sarif
-          output: osv-scanner-report.sarif
-        continue-on-error: true
-      
-      - name: Upload OSV Scanner report
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: osv-scanner-report
-          path: osv-scanner-report.sarif
-          retention-days: 30
-      
-      - name: Upload SARIF results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: osv-scanner-report.sarif
-      
+          name: osv-results
+          
       - name: Check for critical vulnerabilities
         run: |
-          # Run OSV Scanner again in JSON format to check severity
-          npx --yes osv-scanner --format json --output osv-results.json . || true
+          # Install jq if not available
+          if ! command -v jq &> /dev/null; then
+            sudo apt-get update && sudo apt-get install -y jq
+          fi
           
-          # Check if the file exists and parse for critical vulnerabilities
-          if [ -f "osv-results.json" ]; then
-            # Count critical vulnerabilities
-            critical_count=$(jq '[.results[]?.packages[]?.vulnerabilities[]? | select(.database_specific.severity == "CRITICAL" or .severity[]?.type == "CVSS_V3" and .severity[]?.score >= 9.0)] | length' osv-results.json 2>/dev/null || echo "0")
+          # Parse SARIF for critical vulnerabilities
+          if [ -f "osv-results.sarif" ]; then
+            # Count critical vulnerabilities (CVSS >= 9.0)
+            critical_count=$(jq '[.runs[].results[]? | select(
+              .rule.properties.precision == "very-high" or
+              (.rule.properties.tags[]? | contains("CRITICAL")) or
+              (.rule.properties.security_severity_level? == "critical") or
+              (.rule.properties.cvss_score? >= 9.0)
+            )] | length' osv-results.sarif 2>/dev/null || echo "0")
             
             echo "Found $critical_count critical vulnerabilities"
             
             if [ "$critical_count" -gt 0 ]; then
               echo "❌ Critical vulnerabilities detected!"
-              jq '.results[]?.packages[]?.vulnerabilities[]? | select(.database_specific.severity == "CRITICAL" or .severity[]?.type == "CVSS_V3" and .severity[]?.score >= 9.0) | {id: .id, summary: .summary, severity: .database_specific.severity}' osv-results.json 2>/dev/null || true
+              jq '.runs[].results[]? | select(
+                .rule.properties.precision == "very-high" or
+                (.rule.properties.tags[]? | contains("CRITICAL")) or
+                (.rule.properties.security_severity_level? == "critical") or
+                (.rule.properties.cvss_score? >= 9.0)
+              ) | {
+                id: .ruleId,
+                message: .message.text,
+                severity: .rule.properties.security_severity_level,
+                cvss: .rule.properties.cvss_score
+              }' osv-results.sarif 2>/dev/null || true
               exit 1
             else
               echo "✅ No critical vulnerabilities found"
             fi
           else
-            echo "⚠️ Could not generate vulnerability report for severity check"
+            echo "⚠️ Could not find vulnerability report"
           fi
