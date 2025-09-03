@@ -1,4 +1,4 @@
-name: Security Review
+name: Security
 
 permissions:
   pull-requests: write
@@ -9,6 +9,7 @@ on:
 
 jobs:
   security:
+    name: Claude Security Review
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
