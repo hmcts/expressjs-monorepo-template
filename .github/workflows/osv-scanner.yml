@@ -15,76 +15,79 @@ permissions:
   actions: read
 
 jobs:
-  scan-pr:
-    if: github.event_name == 'pull_request'
-    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@v2.2.2
-    with:
-      scan-args: |-
-        --config=osv-scanner.toml
-        ./
-      results-file-name: osv-results.sarif
-      fail-on-vuln: false  # We'll handle this in the check-critical step
-
-  scan-scheduled:
-    if: github.event_name == 'push' || github.event_name == 'schedule'
-    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2.2.2
-    with:
-      scan-args: |-
-        --config=osv-scanner.toml
-        ./
-      results-file-name: osv-results.sarif
-      fail-on-vuln: false  # We'll handle this in the check-critical step
-
-  check-critical:
+  scan:
     runs-on: ubuntu-latest
-    needs: [scan-pr, scan-scheduled]
-    if: always() && (needs.scan-pr.result == 'success' || needs.scan-scheduled.result == 'success')
     
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
       
-      - name: Download scan results
-        uses: actions/download-artifact@v4
+      - name: Run OSV Scanner
+        uses: google/osv-scanner-action@v2.2.2
         with:
-          name: osv-results
-          
+          scan-args: |-
+            --config=osv-scanner.toml
+            --format=sarif
+            --output=osv-results.sarif
+            ./
+        continue-on-error: true
+      
+      - name: Upload scan results as artifact
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: osv-scan-results
+          path: osv-results.sarif
+          retention-days: 30
+      
+      - name: Upload SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: osv-results.sarif
+          category: osv-scanner
+      
       - name: Check for critical vulnerabilities
         run: |
-          # Install jq if not available
-          if ! command -v jq &> /dev/null; then
-            sudo apt-get update && sudo apt-get install -y jq
-          fi
+          # Run OSV Scanner again in JSON format for detailed parsing
+          npx --yes @google/osv-scanner --config=osv-scanner.toml --format=json --output=osv-results.json . || true
           
-          # Parse SARIF for critical vulnerabilities
-          if [ -f "osv-results.sarif" ]; then
+          # Check if the file exists and parse for critical vulnerabilities
+          if [ -f "osv-results.json" ]; then
+            # Install jq if not available
+            if ! command -v jq &> /dev/null; then
+              sudo apt-get update && sudo apt-get install -y jq
+            fi
+            
             # Count critical vulnerabilities (CVSS >= 9.0)
-            critical_count=$(jq '[.runs[].results[]? | select(
-              .rule.properties.precision == "very-high" or
-              (.rule.properties.tags[]? | contains("CRITICAL")) or
-              (.rule.properties.security_severity_level? == "critical") or
-              (.rule.properties.cvss_score? >= 9.0)
-            )] | length' osv-results.sarif 2>/dev/null || echo "0")
+            critical_count=$(jq '[
+              .results[]?.packages[]?.vulnerabilities[]? | 
+              select(
+                .database_specific.severity == "CRITICAL" or 
+                (.severity[]? | select(.type == "CVSS_V3" and .score >= 9.0))
+              )
+            ] | length' osv-results.json 2>/dev/null || echo "0")
             
             echo "Found $critical_count critical vulnerabilities"
             
             if [ "$critical_count" -gt 0 ]; then
               echo "❌ Critical vulnerabilities detected!"
-              jq '.runs[].results[]? | select(
-                .rule.properties.precision == "very-high" or
-                (.rule.properties.tags[]? | contains("CRITICAL")) or
-                (.rule.properties.security_severity_level? == "critical") or
-                (.rule.properties.cvss_score? >= 9.0)
-              ) | {
-                id: .ruleId,
-                message: .message.text,
-                severity: .rule.properties.security_severity_level,
-                cvss: .rule.properties.cvss_score
-              }' osv-results.sarif 2>/dev/null || true
+              echo ""
+              echo "Critical vulnerabilities:"
+              jq -r '.results[]?.packages[]? | 
+                . as $pkg | 
+                .vulnerabilities[]? | 
+                select(
+                  .database_specific.severity == "CRITICAL" or 
+                  (.severity[]? | select(.type == "CVSS_V3" and .score >= 9.0))
+                ) | 
+                "- \(.id): \(.summary // "No summary available") (Package: \($pkg.package.name))"' osv-results.json 2>/dev/null || true
               exit 1
             else
               echo "✅ No critical vulnerabilities found"
             fi
           else
-            echo "⚠️ Could not find vulnerability report"
+            echo "⚠️ Could not generate vulnerability report for severity check"
+            echo "Checking if OSV Scanner is available..."
+            npx --yes @google/osv-scanner --version || echo "OSV Scanner installation failed"
           fi
