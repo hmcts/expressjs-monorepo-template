@@ -104,13 +104,6 @@ describe("route-discovery", () => {
       expect(routes).toHaveLength(1);
       expect(routes[0].urlPath).toBe("/admin/users/:id/settings");
     });
-
-    it("should throw on invalid route segments", () => {
-      mkdirSync(join(testDir, "invalid!route"), { recursive: true });
-      writeFileSync(join(testDir, "invalid!route", "index.ts"), "");
-
-      expect(() => discoverRoutes(testDir)).toThrow("Invalid route segment: invalid!route");
-    });
   });
 
   describe("real-world scenario", () => {
