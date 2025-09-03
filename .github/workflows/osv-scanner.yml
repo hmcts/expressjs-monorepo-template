@@ -1,91 +1,37 @@
 name: OSV Scanner
 
 on:
-  push:
-    branches: [ master, main ]
   pull_request:
-    branches: [ master, main ]
+    branches: [master, main]
+  merge_group:
+    branches: [master, main]
+  push:
+    branches: [master, main]
   schedule:
     # Run daily at 2 AM UTC
     - cron: '0 2 * * *'
 
 permissions:
-  contents: read
-  security-events: write
+  # Required to upload SARIF file to CodeQL
   actions: read
+  # Required to upload SARIF file to security tab
+  security-events: write
+  # Only need to read contents
+  contents: read
 
 jobs:
-  scan:
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      
-      - name: Run OSV Scanner
-        run: |
-          # Install OSV Scanner
-          npm install -g @google/osv-scanner
-          
-          # Run scan and generate SARIF report
-          osv-scanner --config=osv-scanner.toml --format=sarif --output=osv-results.sarif . || true
-          
-          # Also generate JSON for parsing
-          osv-scanner --config=osv-scanner.toml --format=json --output=osv-results.json . || true
-      
-      - name: Upload scan results as artifact
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: osv-scan-results
-          path: |
-            osv-results.sarif
-            osv-results.json
-          retention-days: 30
-      
-      - name: Upload SARIF to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
-        if: always()
-        with:
-          sarif_file: osv-results.sarif
-          category: osv-scanner
-      
-      - name: Check for critical vulnerabilities
-        run: |
-          # Check if the JSON file exists and parse for critical vulnerabilities
-          if [ -f "osv-results.json" ]; then
-            # Install jq if not available
-            if ! command -v jq &> /dev/null; then
-              sudo apt-get update && sudo apt-get install -y jq
-            fi
-            
-            # Count critical vulnerabilities (CVSS >= 9.0)
-            critical_count=$(jq '[
-              .results[]?.packages[]?.vulnerabilities[]? | 
-              select(
-                .database_specific.severity == "CRITICAL" or 
-                (.severity[]? | select(.type == "CVSS_V3" and .score >= 9.0))
-              )
-            ] | length' osv-results.json 2>/dev/null || echo "0")
-            
-            echo "Found $critical_count critical vulnerabilities"
-            
-            if [ "$critical_count" -gt 0 ]; then
-              echo "❌ Critical vulnerabilities detected!"
-              echo ""
-              echo "Critical vulnerabilities:"
-              jq -r '.results[]?.packages[]? | 
-                . as $pkg | 
-                .vulnerabilities[]? | 
-                select(
-                  .database_specific.severity == "CRITICAL" or 
-                  (.severity[]? | select(.type == "CVSS_V3" and .score >= 9.0))
-                ) | 
-                "- \(.id): \(.summary // "No summary available") (Package: \($pkg.package.name))"' osv-results.json 2>/dev/null || true
-              exit 1
-            else
-              echo "✅ No critical vulnerabilities found"
-            fi
-          else
-            echo "⚠️ Could not generate vulnerability report for severity check"
-          fi
+  scan-pr:
+    if: github.event_name == 'pull_request' || github.event_name == 'merge_group'
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable-pr.yml@v2.2.2
+    with:
+      scan-args: |-
+        --config=osv-scanner.toml
+        ./
+
+  scan-scheduled:
+    if: github.event_name == 'push' || github.event_name == 'schedule'
+    uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2.2.2
+    with:
+      scan-args: |-
+        --config=osv-scanner.toml
+        ./
