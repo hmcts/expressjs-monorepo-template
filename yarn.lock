@@ -716,7 +716,7 @@ __metadata:
     "@types/cookie-parser": "npm:1.4.9"
     "@types/express": "npm:5.0.3"
     "@types/express-session": "npm:1.18.2"
-    "@types/govuk-frontend": "npm:5.9.0"
+    "@types/govuk-frontend": "npm:5.11.0"
     "@types/nunjucks": "npm:3.2.6"
     "@types/supertest": "npm:6.0.3"
     compression: "npm:1.8.1"
@@ -1543,10 +1543,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/govuk-frontend@npm:5.9.0":
-  version: 5.9.0
-  resolution: "@types/govuk-frontend@npm:5.9.0"
-  checksum: 10c0/b6f8f62092b5a58d87ca130c3abdaefa849371f31c649ec0695a41ed724273bee08bcbd50b53b0086ad4d155353ae952dbdcb68bbf050fbbd57bb745592c75bd
+"@types/govuk-frontend@npm:5.11.0":
+  version: 5.11.0
+  resolution: "@types/govuk-frontend@npm:5.11.0"
+  checksum: 10c0/ba7862ba291ccd4503cf0dcda427dfe1acf10c80227559d07483a7724f445748b550475e5df517e80db6bb7baf6c3ad0c852e9e392e1039f399c508a4d22df99
   languageName: node
   linkType: hard
 
