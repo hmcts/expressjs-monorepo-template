@@ -32,7 +32,7 @@
     "express": "5.1.0",
     "express-session": "1.18.2",
     "glob": "11.0.3",
-    "govuk-frontend": "5.11.2",
+    "govuk-frontend": "5.12.0",
     "helmet": "8.1.0",
     "nunjucks": "3.2.4",
     "redis": "5.8.2"
