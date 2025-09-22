@@ -52,6 +52,6 @@
   },
   "packageManager": "yarn@4.10.0",
   "resolutions": {
-    "vite": "7.1.6"
+    "vite": "7.1.7"
   }
 }
