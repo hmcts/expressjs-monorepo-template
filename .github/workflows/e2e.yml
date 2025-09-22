@@ -88,7 +88,7 @@ jobs:
       # Publish test results to PR checks
       - name: Test Report
         id: test-report
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v2
         if: always()
         with:
           name: E2E Test Results
