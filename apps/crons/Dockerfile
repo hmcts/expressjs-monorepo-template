@@ -14,5 +14,3 @@ RUN yarn build:prod
 FROM build AS runtime
 COPY --from=build $WORKDIR/src/main ./src/main
 RUN yarn build
-
-EXPOSE 3001

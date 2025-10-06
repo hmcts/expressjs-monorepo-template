@@ -1,43 +1,18 @@
-# Multi-stage build for Express + Nunjucks web app
-FROM node:22-alpine AS dependencies
-WORKDIR /app
-COPY package.json yarn.lock .yarnrc.yml ./
-COPY .yarn .yarn
-COPY apps/web/package.json apps/web/
-COPY libs/*/package.json libs/*/
-RUN yarn workspaces focus @hmcts/web --production
+# ---- Base image ----
+FROM hmctspublic.azurecr.io/base/node:22-alpine AS base
+USER root
+RUN corepack enable
+COPY --chown=hmcts:hmcts . .
+USER hmcts
 
-FROM node:22-alpine AS build
-WORKDIR /app
-COPY package.json yarn.lock .yarnrc.yml ./
-COPY .yarn .yarn
-COPY . .
-RUN yarn install --immutable
-RUN yarn workspace @hmcts/web build
-# Compile SCSS to CSS
-RUN yarn workspace @hmcts/web sass
+# ---- Build image ----
+FROM base AS build
+RUN yarn --version && yarn install
+RUN yarn build:prod
 
-FROM node:22-alpine AS runtime
-WORKDIR /app
-ENV NODE_ENV=production
-RUN apk add --no-cache dumb-init
+# ---- Runtime image ----
+FROM build AS runtime
+COPY --from=build $WORKDIR/src/main ./src/main
+RUN yarn build
 
-# Non-root user
-RUN addgroup -g 1001 nodejs && \
-    adduser -S -u 1001 -G nodejs nodejs
-
-# TODO: correct and test this. Set NODE_ENV=production
-COPY --from=dependencies --chown=nodejs:nodejs /app/node_modules ./node_modules
-COPY --from=dependencies --chown=nodejs:nodejs /app/apps/web/node_modules ./apps/web/node_modules
-COPY --from=build --chown=nodejs:nodejs /app/apps/web/dist ./apps/web/dist
-COPY --from=build --chown=nodejs:nodejs /app/apps/web/public ./apps/web/public
-COPY --chown=nodejs:nodejs /app/libs/*/src/views ./libs/
-
-# Copy GOV.UK Frontend assets
-COPY --from=dependencies --chown=nodejs:nodejs /app/node_modules/govuk-frontend/dist/govuk ./apps/web/public/govuk
-
-USER nodejs
 EXPOSE 3000
-
-ENTRYPOINT ["dumb-init", "--"]
-CMD ["node", "apps/web/dist/server.js"]
