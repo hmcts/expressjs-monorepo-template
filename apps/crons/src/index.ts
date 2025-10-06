@@ -7,10 +7,15 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const chartPath = path.join(__dirname, "../helm/values.yaml");
 
-const main = async () => {
+export const main = async () => {
   await configurePropertiesVolume(config, { chartPath });
 
-  const scriptName = process.env.SCRIPT_NAME || "example";
+  const scriptName = process.env.SCRIPT_NAME;
+
+  if (!scriptName) {
+    throw new Error("SCRIPT_NAME environment variable is required");
+  }
+
   const script = await import(`./${scriptName}.js`);
 
   if (script && typeof script.default === "function") {
@@ -20,7 +25,9 @@ const main = async () => {
   }
 };
 
-main().catch((error) => {
-  console.error("Cron job failed:", error);
-  process.exit(1);
-});
+if (import.meta.url === `file://${process.argv[1]}`) {
+  main().catch((error) => {
+    console.error("Cron job failed:", error);
+    process.exit(1);
+  });
+}
