@@ -61,6 +61,8 @@ VERIFY: Folder exists at docs/tickets/$ARGUMENT
 ```
 ACTION: Write the contents of the JIRA ticket to docs/tickets/$ARGUMENT/ticket.md
 VERIFY: File exists at docs/tickets/$ARGUMENT/ticket.md
+PROMPT FOR AGENT:
+"Create a markdown file at docs/tickets/$ARGUMENT/ticket.md from the JIRA ticket details. If the ticket has a specification.md file attachment, download it and add to the ticket.md"
 ```
 *Mark "Add ticket details to documentation folder" as completed*
 
