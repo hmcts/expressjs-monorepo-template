@@ -129,6 +129,8 @@ yarn dev
 
 **Analytics Database**: All metrics are automatically stored in `.claude/hooks/tool_analytics.db` (SQLite database). This database file will need to be uploaded periodically for centralized analytics (upload destination and frequency TBD).
 
+**Note**: On your first interaction with Claude in a new repository, there may be a 30-second delay before you can input your second prompt while Claude scans the repository to gather metrics. This is a one-time occurrence per repository.
+
 ### Services
 
 | Service | URL | Description |

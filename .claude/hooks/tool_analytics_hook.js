@@ -44,7 +44,61 @@ class ToolAnalytics {
     }
 
     getDbConnection() {
-        return new sqlite3.Database(this.dbPath);
+        return new sqlite3.Database(this.dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
+            if (err) {
+                this.log(`Database connection error: ${err.message}`);
+            }
+        });
+    }
+
+    async withDatabaseLock(callback) {
+        /**
+         * Execute callback with proper database locking to prevent conflicts
+         */
+        const maxRetries = 3;
+        let retries = 0;
+
+        while (retries < maxRetries) {
+            try {
+                const db = this.getDbConnection();
+
+                // Set WAL mode and busy timeout for better concurrency
+                await new Promise((resolve, reject) => {
+                    db.serialize(() => {
+                        db.run('PRAGMA journal_mode = WAL');
+                        db.run('PRAGMA busy_timeout = 10000'); // 10 second timeout
+                        db.run('BEGIN IMMEDIATE', (err) => {
+                            if (err) reject(err);
+                            else resolve();
+                        });
+                    });
+                });
+
+                const result = await callback(db);
+
+                await new Promise((resolve, reject) => {
+                    db.run('COMMIT', (err) => {
+                        if (err) reject(err);
+                        else resolve();
+                    });
+                });
+
+                db.close();
+                return result;
+
+            } catch (error) {
+                retries++;
+                if (error.message.includes('database is locked') && retries < maxRetries) {
+                    this.log(`Database locked, retrying... (${retries}/${maxRetries})`);
+                    await new Promise(resolve => setTimeout(resolve, 1000 + (retries * 500))); // Progressive delay
+                    continue;
+                } else {
+                    throw error;
+                }
+            }
+        }
+
+        throw new Error(`Failed to acquire database lock after ${maxRetries} retries`);
     }
 
     logError(method, error, context = '') {
@@ -75,6 +129,12 @@ class ToolAnalytics {
             const db = this.getDbConnection();
 
             db.serialize(() => {
+                // Enable WAL mode for better concurrent access
+                db.run('PRAGMA journal_mode = WAL');
+                db.run('PRAGMA busy_timeout = 10000');
+                db.run('PRAGMA synchronous = NORMAL');
+                db.run('PRAGMA cache_size = 10000');
+                db.run('PRAGMA temp_store = MEMORY');
                 // Sessions table - one per conversation
                 db.run(`
                     CREATE TABLE IF NOT EXISTS sessions (
@@ -232,7 +292,7 @@ class ToolAnalytics {
                 db.run(`
                     CREATE TABLE IF NOT EXISTS pull_requests (
                         id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        session_id TEXT NOT NULL,
+                        session_id TEXT,
                         user_id TEXT NOT NULL,
                         turn_id INTEGER,
                         pr_number INTEGER NOT NULL,
@@ -393,6 +453,24 @@ class ToolAnalytics {
                     db.run(`ALTER TABLE sonarqube_metrics ADD COLUMN check_suite_id TEXT`, () => {});
                     db.run(`ALTER TABLE sonarqube_metrics ADD COLUMN details_url TEXT`, () => {});
                     db.run(`ALTER TABLE sonarqube_metrics ADD COLUMN raw_output TEXT`, () => {});
+
+                    // Missing data_source column migration
+                    db.run(`ALTER TABLE git_commits ADD COLUMN data_source TEXT DEFAULT 'claude'`, () => {});
+                    db.run(`ALTER TABLE pull_requests ADD COLUMN data_source TEXT DEFAULT 'claude'`, () => {});
+
+                    // Missing title column migration for pull_requests
+                    db.run(`ALTER TABLE pull_requests ADD COLUMN title TEXT`, () => {});
+
+                    // Missing other columns that might be used
+                    db.run(`ALTER TABLE pull_requests ADD COLUMN head_ref_name TEXT`, () => {});
+                    db.run(`ALTER TABLE pull_requests ADD COLUMN base_ref_name TEXT`, () => {});
+                    db.run(`ALTER TABLE pull_requests ADD COLUMN state TEXT`, () => {});
+                    db.run(`ALTER TABLE pull_requests ADD COLUMN merged_at INTEGER`, () => {});
+                    db.run(`ALTER TABLE pull_requests ADD COLUMN closed_at INTEGER`, () => {});
+                    db.run(`ALTER TABLE pull_requests ADD COLUMN fetched_at INTEGER`, () => {});
+
+                    // Add created_at column to sonarqube_metrics
+                    db.run(`ALTER TABLE sonarqube_metrics ADD COLUMN created_at INTEGER`, () => {});
 
                     // GitHub Checks indexes (NEW)
                     db.run(`CREATE INDEX IF NOT EXISTS idx_sonar_source ON sonarqube_metrics(source)`);
@@ -555,25 +633,32 @@ class ToolAnalytics {
             });
         }
 
-        // Check if this is a git commit command - trigger immediate scan
+        // Check if this is a git commit command - trigger FAST incremental scan
         if (tool_name === 'Bash' && tool_input && tool_input.command && success) {
             const command = tool_input.command.toLowerCase();
             if (command.includes('git commit') || /git\s+commit/.test(command)) {
-                this.log(`🚀 Git commit detected - triggering immediate repository scan: ${tool_input.command.substring(0, 100)}...`);
-                await this.scheduleRepositoryScan(cwd);
+                this.log(`🚀 Git commit detected - triggering fast incremental scan: ${tool_input.command.substring(0, 100)}...`);
+                // Use fast incremental scan instead of full repository scan
+                setImmediate(() => {
+                    this.backgroundScanAllRecentPRs(session_id, cwd || process.cwd()).catch(err => {
+                        this.log(`❌ Fast commit scan failed: ${err.message}`);
+                    });
+                });
             }
         }
 
-        // Check for git push and gh pr create commands - trigger IMMEDIATE scan without cooldown
+        // Check for git push and gh pr create commands - trigger FAST incremental scan
         if (tool_name === 'Bash' && tool_input && tool_input.command && success) {
             const command = tool_input.command.toLowerCase();
             if (command.includes('git push') || /git\s+push/.test(command) ||
                 command.includes('gh pr create') || /gh\s+pr\s+create/.test(command)) {
-                this.log(`🚀 IMMEDIATE SCAN: ${command.includes('git push') ? 'Git push' : 'PR creation'} detected - forcing immediate repository scan: ${tool_input.command.substring(0, 100)}...`);
+                this.log(`🚀 FAST SCAN: ${command.includes('git push') ? 'Git push' : 'PR creation'} detected - triggering fast incremental scan: ${tool_input.command.substring(0, 100)}...`);
 
-                // Use forceRepositoryScan instead of scheduleRepositoryScan to skip cooldown
-                setTimeout(async () => {
-                    await this.forceRepositoryScan(cwd);
+                // Use fast incremental scan instead of full repository scan
+                setTimeout(() => {
+                    this.backgroundScanAllRecentPRs(session_id, cwd || process.cwd()).catch(err => {
+                        this.log(`❌ Fast push/PR scan failed: ${err.message}`);
+                    });
                 }, 2000); // 2 second delay to ensure push/PR creation is complete
             }
         }
@@ -1033,8 +1118,18 @@ class ToolAnalytics {
                     await this.detectAndFetchPRData(session_id, turn.id, cwd || process.cwd());
                 }
 
-                // Enhanced: Background scan for ALL recent PRs (including manually created ones)
-                await this.backgroundScanAllRecentPRs(session_id, cwd || process.cwd());
+                // Enhanced: Background PR scan on session end (disabled only if explicitly set)
+                if (process.env.DISABLE_BACKGROUND_PR_SCAN !== 'true') {
+                    this.log('🔍 Starting background PR scan on session end...');
+                    // Use setImmediate to ensure it runs completely asynchronously
+                    setImmediate(() => {
+                        this.backgroundScanAllRecentPRs(session_id, cwd || process.cwd()).catch(err => {
+                            this.log(`❌ Background PR scan failed: ${err.message}`);
+                        });
+                    });
+                } else {
+                    this.log('⏸️  Background PR scan disabled via DISABLE_BACKGROUND_PR_SCAN=true');
+                }
 
                 // Close the current turn
                 db.run(`
@@ -1273,9 +1368,34 @@ class ToolAnalytics {
             }
 
             this.log(`🔍 Starting repository-wide scan for complete metrics...`);
-            await this.scanRepositoryForAllActivity(cwd);
-            this.setLastScanTime(lastScanKey, now);
-            this.log(`✅ Repository scan completed`);
+
+            // Check if this is a first-time scan by checking if we have any PRs in database
+            const existingPRCount = await this.getExistingPRNumbers();
+            const isFirstTimeScan = existingPRCount.length === 0;
+
+            if (isFirstTimeScan) {
+                console.error('\n🔍 First-time repository setup in progress...');
+                console.error('📊 Analyzing PR history and SonarQube metrics');
+                console.error('⏱️  This one-time setup takes ~30 seconds');
+                console.error('✨ Future scans will be instant!');
+                console.error('🔄 Claude will be ready shortly...\n');
+            } else {
+                console.error('🔍 Quick repository scan in progress - should be instant!');
+            }
+
+            // Use setImmediate to start scan after hook returns
+            setImmediate(() => {
+                // Use the same efficient PR scanning logic for consistency
+                this.backgroundScanAllRecentPRs('schedule-scan', cwd).then(() => {
+                    this.setLastScanTime(lastScanKey, now);
+                    this.log(`✅ Repository scan completed`);
+                    if (isFirstTimeScan) {
+                        console.error('✅ Repository setup complete - Claude is ready!');
+                    }
+                }).catch(error => {
+                    this.log(`Error in background scan: ${error.message}`);
+                });
+            });
 
         } catch (error) {
             this.log(`Error in repository scan: ${error.message}`);
@@ -1284,20 +1404,11 @@ class ToolAnalytics {
 
     async forceRepositoryScan(cwd) {
         /**
-         * Force immediate repository scan without cooldown (for PR creation events)
+         * DEPRECATED: Replaced with fast incremental scans
+         * This function is no longer needed since we use backgroundScanAllRecentPRs instead
          */
-        try {
-            this.log(`🚀 FORCE SCAN: Immediate repository scan triggered for PR/push events`);
-            await this.scanRepositoryForAllActivity(cwd);
-
-            const now = Date.now();
-            const lastScanKey = `last_repo_scan_${this.getRepoIdentifier(cwd)}`;
-            this.setLastScanTime(lastScanKey, now);
-            this.log(`✅ Force scan completed - PRs should now be immediately tracked`);
-
-        } catch (error) {
-            this.log(`Error in force repository scan: ${error.message}`);
-        }
+        this.log(`📝 Force repository scan requested but using fast incremental scan instead`);
+        // No-op - fast scans are handled elsewhere
     }
 
     async scanRepositoryForAllActivity(cwd) {
@@ -1685,49 +1796,88 @@ class ToolAnalytics {
 
     async fetchPRChecksFromGitHub(prNumber, repoPath = null) {
         /**
-         * Fetch CI/CD check runs for a PR using gh CLI
+         * Fetch CI/CD check runs for a PR using GitHub API for detailed data
          */
         try {
             const execOptions = this.getExecOptions(repoPath);
 
-            // gh pr checks outputs plain text, not JSON
+            
+
+            // First, get the PR data to find the head SHA
+            const prData = execSync(`gh pr view ${prNumber} --json headRefOid,headRefName`, execOptions);
+            const pr = JSON.parse(prData);
+            const headSha = pr.headRefOid;
+
+            this.log(`📍 PR #${prNumber} head SHA: ${headSha}`);
+
+            // Get check suites for the head commit
+            const checkSuitesResult = execSync(`gh api repos/{owner}/{repo}/commits/${headSha}/check-suites --jq '.check_suites[] | {id: .id, status: .status, conclusion: .conclusion, url: .url, check_runs_url: .check_runs_url}'`, execOptions);
+
+            if (!checkSuitesResult.trim()) {
+                this.log(`⚠️  No check suites found for PR #${prNumber} (SHA: ${headSha})`);
+                return [];
+            }
+
+            const checkSuites = checkSuitesResult.trim().split('\n').map(line => JSON.parse(line));
+            
+
+            // Get all check runs from all suites
+            const allChecks = [];
+            for (const suite of checkSuites) {
+                try {
+                    const checkRunsResult = execSync(`gh api ${suite.check_runs_url.replace('https://api.github.com', '')} --jq '.check_runs[] | {id: .id, name: .name, status: .status, conclusion: .conclusion, started_at: .started_at, completed_at: .completed_at, details_url: .details_url, output: .output}'`, execOptions);
+
+                    if (checkRunsResult.trim()) {
+                        const checkRuns = checkRunsResult.trim().split('\n').map(line => JSON.parse(line));
+                        allChecks.push(...checkRuns);
+                        
+                    }
+                } catch (suiteError) {
+                    this.log(`⚠️  Could not fetch check runs for suite ${suite.id}: ${suiteError.message}`);
+                }
+            }
+
+            this.log(`✅ Total fetched: ${allChecks.length} detailed check runs for PR #${prNumber}`);
+
+           
+
+        } catch (error) {
+            
+            // Fallback to basic method
+            return await this.fetchPRChecksFromGitHubBasic(prNumber, repoPath);
+        }
+    }
+
+    async fetchPRChecksFromGitHubBasic(prNumber, repoPath = null) {
+        /**
+         * Fallback: Fetch basic PR checks using gh pr checks command
+         */
+        try {
+            const execOptions = this.getExecOptions(repoPath);
             const result = execSync(`gh pr checks ${prNumber}`, execOptions);
 
-            // Parse the text output
             const checks = [];
             const lines = result.trim().split('\n');
 
             for (const line of lines) {
                 if (!line.trim()) continue;
 
-                // Format: "check_name    status    duration    url"
-                // Example: "build	pass	12s	https://github.com/.../actions/runs/123"
                 const parts = line.split('\t').map(p => p.trim());
-
                 if (parts.length >= 3) {
-                    const check = {
+                    checks.push({
                         name: parts[0],
                         status: parts[1] === 'pass' ? 'completed' : 'in_progress',
                         conclusion: parts[1] === 'pass' ? 'success' : (parts[1] === 'fail' ? 'failure' : parts[1]),
-                        startedAt: null, // Not available in basic output
-                        completedAt: null, // Not available in basic output
-                        detailsUrl: parts[3] || null,
+                        details_url: parts[3] || null,
                         duration_text: parts[2] || null
-                    };
-
-                    // Parse duration if available (e.g., "12s" -> 12 seconds)
-                    if (check.duration_text && check.duration_text.match(/\d+s/)) {
-                        check.duration_seconds = parseInt(check.duration_text.replace('s', ''));
-                    }
-
-                    checks.push(check);
+                    });
                 }
             }
 
-            this.log(`Fetched ${checks.length} check runs for PR #${prNumber}`);
+            
             return checks;
         } catch (error) {
-            this.log(`Failed to fetch checks for PR #${prNumber}: ${error.message}`);
+            this.log(`❌ Basic check fetch also failed for PR #${prNumber}: ${error.message}`);
             return [];
         }
     }
@@ -1754,11 +1904,11 @@ class ToolAnalytics {
 
             // Parse line-delimited JSON
             const checks = result.trim().split('\n').map(line => JSON.parse(line));
-            this.log(`Fetched ${checks.length} check runs for commit ${commitSha.substring(0, 7)}`);
+            
 
             return checks;
         } catch (error) {
-            this.logError('fetchCommitChecksFromGitHub', error, `commit ${commitSha}`);
+            
             return [];
         }
     }
@@ -1785,7 +1935,7 @@ class ToolAnalytics {
 
             // Parse line-delimited JSON
             const comments = result.trim().split('\n').map(line => JSON.parse(line));
-            this.log(`Fetched ${comments.length} comments for PR #${prNumber}`);
+            
 
             return comments;
         } catch (error) {
@@ -1796,28 +1946,18 @@ class ToolAnalytics {
 
     async fetchSonarQubeMetrics(prNumber, repoPath = null) {
         /**
-         * Fetch and parse SonarQube metrics from PR comments AND GitHub Checks
+         * Fetch and parse SonarQube metrics from GitHub Checks (optimized - checks only)
          */
         try {
             const sonarMetrics = [];
 
-            // 1. Check PR comments (existing functionality)
-            const comments = await this.fetchPRComments(prNumber, repoPath);
-            for (const comment of comments) {
-                if (this.sonarParser.isSonarQubeComment(comment)) {
-                    const metrics = this.sonarParser.parseMetrics(comment);
-                    if (metrics) {
-                        metrics.pr_number = prNumber;
-                        metrics.source = 'comment';
-                        sonarMetrics.push(metrics);
-                    }
-                }
-            }
-
-            // 2. Check GitHub Check Runs for SonarQube (NEW)
+            // Only check GitHub Check Runs for SonarQube (skipping comments for performance)
+            
             const checks = await this.fetchPRChecksFromGitHub(prNumber, repoPath);
+
             for (const check of checks) {
                 if (this.isSonarQubeCheck(check)) {
+                   
                     const metrics = await this.parseSonarQubeFromCheck(check, prNumber, repoPath);
                     if (metrics) {
                         metrics.pr_number = prNumber;
@@ -1827,10 +1967,10 @@ class ToolAnalytics {
                 }
             }
 
-            this.log(`Found ${sonarMetrics.length} SonarQube metrics for PR #${prNumber} (${sonarMetrics.filter(m => m.source === 'comment').length} from comments, ${sonarMetrics.filter(m => m.source === 'check_run').length} from checks)`);
+            
             return sonarMetrics;
         } catch (error) {
-            this.log(`Failed to fetch SonarQube metrics for PR #${prNumber}: ${error.message}`);
+            this.log(`❌ Failed to fetch SonarQube metrics for PR #${prNumber}: ${error.message}`);
             return [];
         }
     }
@@ -1847,12 +1987,19 @@ class ToolAnalytics {
             'sonarcloud',
             'quality gate',
             'code quality',
-            'static analysis'
+            'static analysis',
+            'analysis'  // Added to catch "SonarQube Analysis"
         ];
 
         const checkName = check.name.toLowerCase();
-        return sonarNames.some(name => checkName.includes(name));
+        const isMatch = sonarNames.some(name => checkName.includes(name));
+
+       
+        
+
+        return isMatch;
     }
+
 
     async parseSonarQubeFromCheck(check, prNumber, repoPath) {
         /**
@@ -1860,6 +2007,8 @@ class ToolAnalytics {
          */
         try {
             if (!check) return null;
+
+           
 
             // Basic metrics from check run
             const metrics = {
@@ -1870,46 +2019,261 @@ class ToolAnalytics {
                 started_at: check.started_at,
                 completed_at: check.completed_at,
                 details_url: check.details_url,
-                check_suite_id: check.check_suite_id
+                check_suite_id: check.check_suite_id,
+                check_run_id: check.id
             };
 
-            // Try to fetch detailed check run info if available
-            if (check.details_url) {
-                try {
-                    // Attempt to get more detailed metrics from check run details
-                    const execOptions = this.getExecOptions(repoPath);
-                    const detailedCheck = execSync(`gh api ${check.details_url.replace('https://api.github.com', '')} --jq '{output: .output, pull_requests: .pull_requests}'`, execOptions);
-
-                    if (detailedCheck.trim()) {
-                        const details = JSON.parse(detailedCheck.trim());
-
-                        // Parse output for SonarQube metrics
-                        if (details.output && details.output.summary) {
-                            // Look for quality gate info in summary
-                            const summary = details.output.summary.toLowerCase();
-                            if (summary.includes('quality gate')) {
-                                if (summary.includes('passed') || summary.includes('success')) {
-                                    metrics.quality_gate_status = 'PASSED';
-                                } else if (summary.includes('failed') || summary.includes('error')) {
-                                    metrics.quality_gate_status = 'FAILED';
-                                }
-                            }
-
-                            // Extract metrics from text if available
-                            const text = details.output.text || details.output.summary || '';
-                            metrics.raw_output = text.substring(0, 2000); // Store first 2000 chars
-                        }
-                    }
-                } catch (detailError) {
-                    // Detailed parsing failed, use basic info
-                    this.log(`Could not fetch detailed check info: ${detailError.message}`);
-                }
+            // Enhanced: Extract detailed metrics from check run output if available
+            if (check.output) {
+                
+                await this.extractSonarQubeMetricsFromCheckOutput(check.output, metrics);
             }
+
+            // Enhanced: Extract metrics from annotations if available
+            if (check.output && check.output.annotations_count > 0) {
+
+                await this.extractSonarQubeMetricsFromAnnotations(check, metrics, repoPath);
+            }
+
+            
+            if (metrics.reliability_rating || metrics.security_rating || metrics.maintainability_rating) {
+                this.log(`🎯 DEBUG: Found SonarQube ratings - reliability: ${metrics.reliability_rating}, security: ${metrics.security_rating}, maintainability: ${metrics.maintainability_rating}`);
+            }
+
+            // Store raw output for debugging
+            if (check.output && (check.output.text || check.output.summary)) {
+                metrics.raw_output = (check.output.text || check.output.summary).substring(0, 3000);
+
+            }
+
+            // Try alternative extraction if we don't have detailed output
+            if (!check.output && check.details_url) {
+
+                await this.tryAlternativeCheckDataExtraction(check, metrics, repoPath);
+            }
+
+
 
             return metrics;
         } catch (error) {
             this.logError('parseSonarQubeFromCheck', error, `check: ${check?.name}`);
             return null;
+        }
+    }
+
+    async tryAlternativeCheckDataExtraction(check, metrics, repoPath) {
+        /**
+         * Try alternative methods to get SonarQube data when direct output is not available
+         */
+        try {
+            if (check.details_url && check.id) {
+                const execOptions = this.getExecOptions(repoPath);
+
+                // Try to get detailed check run data by ID
+                const detailedResult = execSync(`gh api repos/{owner}/{repo}/check-runs/${check.id} --jq '{output: .output, details_url: .details_url}'`, execOptions);
+
+                if (detailedResult.trim()) {
+                    const detailed = JSON.parse(detailedResult.trim());
+                    if (detailed.output) {
+
+                        await this.extractSonarQubeMetricsFromCheckOutput(detailed.output, metrics);
+
+                        if (detailed.output.text || detailed.output.summary) {
+                            metrics.raw_output = (detailed.output.text || detailed.output.summary).substring(0, 3000);
+                        }
+                    }
+                }
+            }
+
+            // Store details URL for manual inspection if needed
+            if (check.details_url && check.details_url.includes('sonar')) {
+                metrics.sonar_details_url = check.details_url;
+            }
+        } catch (error) {
+            this.log(`⚠️  Alternative extraction failed for ${check.name}: ${error.message}`);
+        }
+    }
+
+    async extractSonarQubeMetricsFromCheckOutput(output, metrics) {
+        /**
+         * Extract detailed SonarQube metrics from check run output text
+         */
+        const text = (output.text || output.summary || '').toLowerCase();
+
+
+        if (text.length > 0) {
+
+            if (text.length > 500) {
+            }
+        }
+
+        try {
+            // Quality Gate Status
+            if (text.includes('quality gate')) {
+                if (text.match(/quality gate[:\s]*(passed|ok|success)/i)) {
+                    metrics.quality_gate_status = 'PASSED';
+                } else if (text.match(/quality gate[:\s]*(failed|error|ko)/i)) {
+                    metrics.quality_gate_status = 'FAILED';
+                }
+            }
+
+            // SonarCloud specific parsing - extract from markdown links
+            // Pattern: [X new issues](url) or [X issues](url)
+            const sonarIssuesMatch = text.match(/\[(\d+)\s+(?:new\s+)?issues?\]\(/i);
+            if (sonarIssuesMatch) {
+                metrics.bugs_total = parseInt(sonarIssuesMatch[1]);
+
+            }
+
+            // Alternative: look for general patterns if SonarCloud pattern doesn't match
+            if (!sonarIssuesMatch) {
+                const bugsMatch = text.match(/(\d+)\s*(?:new\s+)?bugs?/i) ||
+                                 text.match(/bugs?[:\s]+(\d+)/i) ||
+                                 text.match(/(\d+)\s+(?:new\s+)?issues?/i) ||
+                                 text.match(/issues?[:\s]+(\d+)/i);
+                if (bugsMatch) {
+                    metrics.bugs_total = parseInt(bugsMatch[1]);
+
+                }
+            }
+
+            // SonarCloud vulnerabilities pattern: [X security hotspots](url)
+            const sonarVulnMatch = text.match(/\[(\d+)\s+security\s+hotspots?\]\(/i);
+            if (sonarVulnMatch) {
+                metrics.security_hotspots = parseInt(sonarVulnMatch[1]);
+                // Map security hotspots to vulnerabilities for consistency
+                if (!metrics.vulnerabilities_total) {
+                    metrics.vulnerabilities_total = metrics.security_hotspots;
+                }
+
+            }
+
+            // Traditional vulnerability patterns (fallback)
+            const vulnMatch = text.match(/(\d+)\s*(?:new\s+)?vulnerabilit(?:y|ies)/i) ||
+                             text.match(/vulnerabilit(?:y|ies)[:\s]+(\d+)/i);
+            if (vulnMatch) {
+                metrics.vulnerabilities_total = parseInt(vulnMatch[1]);
+
+            }
+
+            // Security Hotspots
+            const hotspotsMatch = text.match(/(\d+)\s*(?:new\s+)?security\s+hotspots?/i) || text.match(/security\s+hotspots?[:\s]+(\d+)/i);
+            if (hotspotsMatch) {
+                metrics.security_hotspots = parseInt(hotspotsMatch[1]);
+            }
+
+            // Code Smells - SonarCloud might call them "maintainability issues" or just "smells"
+            const smellsMatch = text.match(/(\d+)\s*(?:new\s+)?code\s+smells?/i) ||
+                               text.match(/code\s+smells?[:\s]+(\d+)/i) ||
+                               text.match(/\[(\d+)\s+maintainability\s+issues?\]\(/i);
+            if (smellsMatch) {
+                metrics.code_smells = parseInt(smellsMatch[1]);
+
+            }
+
+            // SonarCloud coverage pattern: [X.X% coverage](url)
+            // Note: The pattern might have different spacing, so try multiple variations
+            const sonarCoverageMatch = text.match(/\[(\d+(?:\.\d+)?)%\s*coverage\]\(/i);
+            if (sonarCoverageMatch) {
+                metrics.line_coverage_percent = parseFloat(sonarCoverageMatch[1]);
+
+            } else {
+                // Traditional coverage patterns (fallback) - but check if it's finding the wrong value
+                const coverageMatch = text.match(/(\d+(?:\.\d+)?)%\s*(?:line\s+)?coverage/i) || text.match(/(?:line\s+)?coverage[:\s]+(\d+(?:\.\d+)?)%/i);
+                if (coverageMatch) {
+                    metrics.line_coverage_percent = parseFloat(coverageMatch[1]);
+
+
+                    // If we're getting 0% but there might be a SonarCloud link, look for it specifically
+                    if (metrics.line_coverage_percent === 0 && text.includes('coverage')) {
+                        const betterMatch = text.match(/\[(\d+(?:\.\d+)?)%[^\]]*coverage[^\]]*\]\(/i);
+                        if (betterMatch && parseFloat(betterMatch[1]) > 0) {
+                            metrics.line_coverage_percent = parseFloat(betterMatch[1]);
+
+                        }
+                    }
+                }
+            }
+
+            // SonarCloud duplication pattern: [X.X% duplication](url)
+            const sonarDupMatch = text.match(/\[(\d+(?:\.\d+)?)%\s+duplicat(?:ed|ion)\]\(/i);
+            if (sonarDupMatch) {
+                metrics.duplicated_lines_percent = parseFloat(sonarDupMatch[1]);
+
+            } else {
+                // Traditional duplication patterns (fallback)
+                const dupMatch = text.match(/(\d+(?:\.\d+)?)%\s*duplicat(?:ed|ion)/i) || text.match(/duplicat(?:ed|ion)[:\s]+(\d+(?:\.\d+)?)%/i);
+                if (dupMatch) {
+                    metrics.duplicated_lines_percent = parseFloat(dupMatch[1]);
+
+                }
+            }
+
+            // Technical Debt
+            const debtMatch = text.match(/(\d+)(?:min|h)\s*(?:technical\s+)?debt/i) || text.match(/(?:technical\s+)?debt[:\s]+(\d+)(?:min|h)/i);
+            if (debtMatch) {
+                const debtValue = parseInt(debtMatch[1]);
+                const isHours = text.includes('h');
+                metrics.technical_debt_minutes = isHours ? debtValue * 60 : debtValue;
+            }
+
+            // Ratings (A=1, B=2, C=3, D=4, E=5)
+            const ratingMap = { 'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5 };
+
+            const maintainabilityMatch = text.match(/maintainability[:\s]+([abcde])/i);
+            if (maintainabilityMatch) {
+                metrics.maintainability_rating = ratingMap[maintainabilityMatch[1].toLowerCase()];
+            }
+
+            const reliabilityMatch = text.match(/reliability[:\s]+([abcde])/i);
+            if (reliabilityMatch) {
+                metrics.reliability_rating = ratingMap[reliabilityMatch[1].toLowerCase()];
+            }
+
+            const securityMatch = text.match(/security[:\s]+([abcde])/i);
+            if (securityMatch) {
+                metrics.security_rating = ratingMap[securityMatch[1].toLowerCase()];
+            }
+
+        } catch (parseError) {
+            this.log(`Error parsing SonarQube metrics from output: ${parseError.message}`);
+        }
+    }
+
+
+    async extractSonarQubeMetricsFromAnnotations(check, metrics, repoPath) {
+        /**
+         * Extract SonarQube findings from check run annotations
+         */
+        try {
+            const execOptions = this.getExecOptions(repoPath);
+            const annotationsResult = execSync(`gh api repos/{owner}/{repo}/check-runs/${check.id}/annotations --jq '.[] | {level: .annotation_level, message: .message, path: .path, start_line: .start_line}'`, execOptions);
+
+            if (annotationsResult.trim()) {
+                const annotations = annotationsResult.trim().split('\n').map(line => JSON.parse(line));
+
+                // Count different types of issues from annotations
+                let bugs = 0, vulnerabilities = 0, codeSmells = 0;
+
+                annotations.forEach(annotation => {
+                    const message = (annotation.message || '').toLowerCase();
+
+                    if (message.includes('bug') || annotation.level === 'failure') {
+                        bugs++;
+                    } else if (message.includes('vulnerabil') || message.includes('security')) {
+                        vulnerabilities++;
+                    } else if (annotation.level === 'warning' || message.includes('smell') || message.includes('maintainab')) {
+                        codeSmells++;
+                    }
+                });
+
+                // Only override if we got more detailed info than text parsing
+                if (bugs > 0 && !metrics.bugs_total) metrics.bugs_total = bugs;
+                if (vulnerabilities > 0 && !metrics.vulnerabilities_total) metrics.vulnerabilities_total = vulnerabilities;
+                if (codeSmells > 0 && !metrics.code_smells) metrics.code_smells = codeSmells;
+            }
+        } catch (error) {
+            this.log(`Could not extract annotations: ${error.message}`);
         }
     }
 
@@ -2320,34 +2684,582 @@ class ToolAnalytics {
 
     async backgroundScanAllRecentPRs(sessionId, repoPath) {
         /**
-         * Enhanced: Scan ALL recent PRs in the repo (not just session-related ones)
-         * and check if they contain Claude-generated commits
+         * Ultra-fast background scan optimized for hundreds of PRs
          */
         try {
-            this.log('🔍 Starting background scan for recent PRs...');
+            this.log('🚀 Starting ultra-fast background scan...');
+            const startTime = Date.now();
 
-            const execOptions = this.getExecOptions(repoPath);
+            const execOptions = this.getExecOptions(repoPath, 10000); // Even shorter timeout
 
-            // Get all PRs from last 30 days (both open and recently closed)
-            const result = execSync(`gh pr list --limit 50 --state all --json number,title,headRefName,createdAt,closedAt,mergedAt --jq '.[] | select(.createdAt > (now - 30*24*3600) or (.closedAt // .mergedAt // empty) > (now - 7*24*3600))'`, execOptions);
+            // Get existing PRs from database to avoid re-processing
+            const existingPRs = await this.getExistingPRNumbers();
+            const existingSet = new Set(existingPRs);
+
+            this.log(`📊 Found ${existingPRs.length} PRs already in database`);
+
+            // User feedback is now shown at hook level before scan starts
+
+            // Get only the most recent PRs (last 7 days, limit 20 to avoid timeout)
+            const result = execSync(`gh pr list --limit 20 --state all --json number,title,headRefName,headRefOid,createdAt,statusCheckRollup --jq '.[] | select(.createdAt > (now - 7*24*3600))'`, execOptions);
 
             if (!result.trim()) {
-                this.log('📋 No recent PRs found in background scan');
+                this.log('📋 No recent PRs found');
                 return;
             }
 
-            const recentPRs = result.trim().split('\n').map(line => JSON.parse(line));
-            this.log(`📊 Found ${recentPRs.length} recent PRs to analyze`);
+            const allPRs = result.trim().split('\n').map(line => JSON.parse(line));
+            this.log(`📊 Got ${allPRs.length} recent PRs in ${Date.now() - startTime}ms`);
 
-            for (const pr of recentPRs) {
-                await this.analyzeAndProcessPR(pr.number, pr, sessionId, repoPath);
+            // Debug: Show PR #109 if it exists
+            const pr109 = allPRs.find(pr => pr.number === 109);
+            if (pr109) {
+                this.log(`🔍 DEBUG: Found PR #109 data: ${JSON.stringify({
+                    number: pr109.number,
+                    title: pr109.title,
+                    headRefOid: pr109.headRefOid,
+                    statusCheckRollupLength: pr109.statusCheckRollup?.length || 0,
+                    statusCheckRollupSample: pr109.statusCheckRollup?.slice(0, 1)
+                })}`);
             }
 
-            this.log(`✅ Background PR scan complete: analyzed ${recentPRs.length} PRs`);
+            // Filter out PRs we already have (massive speedup!)
+            const newPRs = allPRs.filter(pr => !existingSet.has(pr.number));
+            this.log(`⚡ Only ${newPRs.length} new PRs to process (skipped ${allPRs.length - newPRs.length})`);
+
+            if (newPRs.length === 0) {
+                this.log(`✅ No new PRs to process - scan complete in ${Date.now() - startTime}ms`);
+                return;
+            }
+
+            // Provide user feedback for large batches
+            if (newPRs.length >= 10) {
+                console.error(`\n🚀 Processing ${newPRs.length} new PRs in background...`);
+                console.error('📊 SonarQube metrics analysis in progress');
+                console.error('✨ Claude remains available for use!\n');
+            }
+
+            // Ultra-fast batch processing - process all at once
+            await this.ultraFastBatchProcess(newPRs, sessionId);
+
+            this.log(`🚀 Ultra-fast scan complete in ${Date.now() - startTime}ms: processed ${newPRs.length} new PRs`);
 
         } catch (error) {
-            this.log(`⚠️  Background PR scan failed: ${error.message}`);
+            this.log(`⚠️  Ultra-fast scan failed: ${error.message}`);
         }
+    }
+
+    async getExistingPRNumbers() {
+        /**
+         * Get all existing PR numbers from database in one query
+         */
+        return new Promise((resolve) => {
+            const db = this.getDbConnection();
+            db.all('SELECT DISTINCT pr_number FROM pull_requests', [], (err, rows) => {
+                db.close();
+                if (err) {
+                    resolve([]);
+                } else {
+                    resolve(rows.map(r => r.pr_number));
+                }
+            });
+        });
+    }
+
+    async ultraFastBatchProcess(prs, sessionId) {
+        /**
+         * Ultra-fast batch processing with detailed SonarQube metrics extraction
+         */
+        const startTime = Date.now();
+
+        // Get all Claude commit SHAs in one query for fast lookup
+        const claudeCommits = await this.getAllClaudeCommitSHAs();
+        const claudeSet = new Set(claudeCommits);
+
+        // Prepare all data for batch insert
+        const prDataBatch = [];
+        const metricsDataBatch = [];
+
+        for (const pr of prs) {
+            // Fast Claude vs Human check
+            const isClaudePR = claudeSet.has(pr.headRefOid);
+            const prType = isClaudePR ? 'claude' : 'human';
+
+            // Extract SonarQube from status rollup (basic metrics)
+            const basicSonarMetrics = this.extractSonarFromStatusRollup(pr.statusCheckRollup, pr.number);
+
+
+            // Fetch detailed metrics for each SonarQube check found
+            const detailedSonarMetrics = [];
+            for (const basicMetric of basicSonarMetrics) {
+                try {
+
+                    const detailedMetric = await this.fetchDetailedCheckMetrics(basicMetric, pr.headRefOid, process.cwd());
+                    detailedSonarMetrics.push(detailedMetric);
+
+                } catch (error) {
+                    this.log(`⚠️  Failed to fetch detailed metrics for ${basicMetric.check_name}: ${error.message}`);
+                    // Still use basic metrics
+                    detailedSonarMetrics.push(basicMetric);
+                }
+            }
+
+            // Prepare PR data
+            prDataBatch.push({
+                number: pr.number,
+                sessionId: isClaudePR ? sessionId : null,
+                title: pr.title,
+                headRefName: pr.headRefName,
+                createdAt: pr.createdAt ? new Date(pr.createdAt).getTime() : Date.now(),
+                dataSource: prType,
+                sonarCount: detailedSonarMetrics.length
+            });
+
+            // Prepare metrics data with detailed information
+            for (const metrics of detailedSonarMetrics) {
+                metricsDataBatch.push({
+                    sessionId: isClaudePR ? sessionId : null,
+                    prNumber: pr.number,
+                    qualityGate: metrics.quality_gate_status,
+                    checkName: metrics.check_name,
+                    source: metrics.source,
+                    bugs: metrics.bugs_total || 0,
+                    vulnerabilities: metrics.vulnerabilities_total || 0,
+                    coverage: metrics.line_coverage_percent,
+                    codeSmells: metrics.code_smells || 0,
+                    duplicatedLines: metrics.duplicated_lines_density,
+                    maintainabilityRating: metrics.maintainability_rating,
+                    reliabilityRating: metrics.reliability_rating,
+                    securityRating: metrics.security_rating,
+                    securityHotspots: metrics.security_hotspots || 0,
+                    detailsUrl: metrics.details_url
+                });
+            }
+
+        }
+
+        // Single massive database transaction
+        await this.batchInsertPRsAndMetrics(prDataBatch, metricsDataBatch);
+
+        this.log(`⚡ Batch processed ${prs.length} PRs with ${metricsDataBatch.length} SonarQube metrics in ${Date.now() - startTime}ms`);
+    }
+
+    async getAllClaudeCommitSHAs() {
+        /**
+         * Get all Claude commit SHAs in one query for fast lookup
+         */
+        return new Promise((resolve) => {
+            const db = this.getDbConnection();
+            db.all('SELECT DISTINCT commit_sha FROM git_commits WHERE session_id IS NOT NULL', [], (err, rows) => {
+                db.close();
+                if (err) {
+                    resolve([]);
+                } else {
+                    resolve(rows.map(r => r.commit_sha));
+                }
+            });
+        });
+    }
+
+    async batchInsertPRsAndMetrics(prDataBatch, metricsDataBatch) {
+        /**
+         * Single transaction to insert PRs and SonarQube metrics
+         */
+        return new Promise((resolve, reject) => {
+            const db = this.getDbConnection();
+            const now = Date.now();
+
+            db.serialize(() => {
+                db.run('BEGIN TRANSACTION');
+
+                const prStmt = db.prepare(`
+                    INSERT OR REPLACE INTO pull_requests (
+                        pr_number, session_id, user_id, title, head_ref_name, base_ref_name,
+                        state, created_at, data_source, fetched_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                `);
+
+                const metricsStmt = db.prepare(`
+                    INSERT OR REPLACE INTO sonarqube_metrics (
+                        session_id, pr_number, quality_gate_status, check_name,
+                        source, bugs_total, vulnerabilities_total, line_coverage_percent,
+                        code_smells, security_hotspots, maintainability_rating,
+                        reliability_rating, security_rating, duplicated_lines_percent,
+                        details_url, fetched_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                `);
+
+
+                // Batch insert PRs
+                for (const pr of prDataBatch) {
+                    prStmt.run([
+                        pr.number,
+                        pr.sessionId,
+                        this.userId || 'background-scan',
+                        pr.title,
+                        pr.headRefName,
+                        'main',
+                        'unknown',
+                        pr.createdAt,
+                        pr.dataSource,
+                        now
+                    ]);
+                }
+
+                // Batch insert metrics with detailed information
+                for (const metrics of metricsDataBatch) {
+                    metricsStmt.run([
+                        metrics.sessionId,
+                        metrics.prNumber,
+                        metrics.qualityGate,
+                        metrics.checkName,
+                        metrics.source,
+                        metrics.bugs,
+                        metrics.vulnerabilities,
+                        metrics.coverage,
+                        metrics.codeSmells,
+                        metrics.securityHotspots,
+                        metrics.maintainabilityRating,
+                        metrics.reliabilityRating,
+                        metrics.securityRating,
+                        metrics.duplicatedLines,
+                        metrics.detailsUrl,
+                        now
+                    ]);
+                }
+
+
+                prStmt.finalize();
+                metricsStmt.finalize();
+
+                db.run('COMMIT', (err) => {
+                    db.close();
+                    if (err) {
+                        this.log(`❌ Batch insert transaction failed: ${err.message}`);
+                        reject(err);
+                    } else {
+                        this.log(`✅ Successfully committed batch insert: ${prDataBatch.length} PRs, ${metricsDataBatch.length} metrics`);
+                        resolve();
+                    }
+                });
+            });
+        });
+    }
+
+    async fastProcessPR(prData, sessionId, repoPath) {
+        /**
+         * Super fast PR processing - minimal database operations
+         */
+        try {
+            const prNumber = prData.number;
+
+            // Skip if we already have this PR processed recently
+            const existing = await this.quickCheckPRExists(prNumber);
+            if (existing) {
+                return; // Skip already processed PRs
+            }
+
+            // Fast check: does this PR have Claude commits?
+            const hasClaudeCommits = await this.quickCheckClaudeCommits(prData.headRefOid);
+            const prType = hasClaudeCommits ? 'claude' : 'human';
+
+            // Fast SonarQube extraction from statusCheckRollup + detailed metrics if SonarQube found
+            const sonarMetrics = await this.extractDetailedSonarMetrics(prData, prNumber, repoPath);
+
+            // Single database write with all data
+            await this.fastSavePRWithMetrics(prNumber, prData, sessionId, prType, sonarMetrics);
+
+            this.log(`⚡ Fast-processed ${prType} PR #${prNumber} with ${sonarMetrics.length} SonarQube metrics`);
+
+        } catch (error) {
+            this.log(`⚠️  Fast PR processing failed for PR #${prNumber}: ${error.message}`);
+        }
+    }
+
+    async extractDetailedSonarMetrics(prData, prNumber, repoPath) {
+        /**
+         * Extract detailed SonarQube metrics: dual-source approach (checks + comments)
+         */
+        const sonarMetrics = [];
+
+        // Step 1: Try GitHub Checks first (for unmerged PRs)
+        this.log(`🔍 DEBUG: PR #${prNumber} statusCheckRollup: ${JSON.stringify(prData.statusCheckRollup?.slice(0, 2))}`);
+
+        const checkBasedMetrics = this.extractSonarFromStatusRollup(prData.statusCheckRollup, prNumber);
+
+        if (checkBasedMetrics.length > 0) {
+            this.log(`📊 Found ${checkBasedMetrics.length} SonarQube checks, fetching detailed metrics...`);
+
+            // Get detailed metrics from checks
+            for (const basicMetric of checkBasedMetrics) {
+                try {
+                    this.log(`🔄 Attempting to fetch detailed metrics for: ${basicMetric.check_name}`);
+                    const detailedMetrics = await this.fetchDetailedCheckMetrics(basicMetric, prData.headRefOid, repoPath);
+                    sonarMetrics.push(detailedMetrics);
+                    this.log(`✅ Successfully processed: ${basicMetric.check_name}`);
+                } catch (error) {
+                    this.log(`⚠️  Failed to fetch detailed metrics for ${basicMetric.check_name}: ${error.message}`);
+                    // Still save basic metrics
+                    sonarMetrics.push(basicMetric);
+                }
+            }
+
+            this.log(`📊 Final SonarQube metrics count: ${sonarMetrics.length}`);
+            return sonarMetrics;
+        }
+
+        // Step 2: Fallback to PR comments (for merged PRs or when checks unavailable)
+        this.log(`⚠️ DEBUG: No SonarQube checks found in statusCheckRollup for PR #${prNumber}, trying comments...`);
+
+        try {
+            const commentBasedMetrics = await this.fetchSonarQubeFromComments(prNumber, repoPath);
+            if (commentBasedMetrics.length > 0) {
+                this.log(`📊 Found ${commentBasedMetrics.length} SonarQube metrics from comments for PR #${prNumber}`);
+                sonarMetrics.push(...commentBasedMetrics);
+            } else {
+                this.log(`⚠️ DEBUG: No SonarQube comments found for PR #${prNumber}`);
+            }
+        } catch (error) {
+            this.log(`⚠️  Failed to fetch SonarQube from comments for PR #${prNumber}: ${error.message}`);
+        }
+
+        return sonarMetrics;
+    }
+
+    async fetchSonarQubeFromComments(prNumber, repoPath) {
+        /**
+         * Fetch SonarQube metrics from PR comments (fallback for merged PRs)
+         */
+        try {
+            const comments = await this.fetchPRComments(prNumber, repoPath);
+            const sonarMetrics = [];
+
+            for (const comment of comments) {
+                if (this.sonarParser.isSonarQubeComment(comment)) {
+                    const metrics = this.sonarParser.parseMetrics(comment);
+                    if (metrics) {
+                        metrics.pr_number = prNumber;
+                        metrics.source = 'comment';
+                        sonarMetrics.push(metrics);
+                        this.log(`📊 Extracted SonarQube metrics from comment: ${Object.keys(metrics).length} fields`);
+                    }
+                }
+            }
+
+            return sonarMetrics;
+        } catch (error) {
+            this.log(`Failed to fetch PR comments for #${prNumber}: ${error.message}`);
+            return [];
+        }
+    }
+
+    extractSonarFromStatusRollup(statusRollup, prNumber) {
+        /**
+         * Extract basic SonarQube data from statusCheckRollup (fast, no API calls)
+         */
+        const sonarMetrics = [];
+
+        if (!statusRollup || !Array.isArray(statusRollup)) {
+            return sonarMetrics;
+        }
+
+        for (const check of statusRollup) {
+            if (this.isSonarQubeCheck(check)) {
+
+
+                const metrics = {
+                    pr_number: prNumber,
+                    quality_gate_status: check.conclusion === 'SUCCESS' ? 'PASSED' : 'FAILED',
+                    check_name: check.name,
+                    check_status: check.status,
+                    check_conclusion: check.conclusion,
+                    details_url: check.detailsUrl,
+                    source: 'status_rollup'
+                };
+
+                // Try to extract metrics from description if available
+                if (check.description) {
+                    this.log(`📝 Found check description: ${check.description}`);
+                    this.extractMetricsFromDescription(check.description, metrics);
+                }
+
+                sonarMetrics.push(metrics);
+
+            }
+        }
+
+        return sonarMetrics;
+    }
+
+
+    async fetchDetailedCheckMetrics(basicMetric, headSha, repoPath) {
+        /**
+         * Fetch detailed SonarQube metrics from GitHub Checks API
+         */
+        try {
+            const execOptions = this.getExecOptions(repoPath, 10000); // 10s timeout
+
+            // Get detailed check runs for this commit
+            const checkRunsResult = execSync(`gh api repos/{owner}/{repo}/commits/${headSha}/check-runs --jq '.check_runs[] | select(.name == "${basicMetric.check_name}") | {id: .id, output: .output, details_url: .details_url}'`, execOptions);
+
+            if (!checkRunsResult.trim()) {
+                return basicMetric; // Fallback to basic metrics
+            }
+
+            const checkRun = JSON.parse(checkRunsResult.trim());
+
+            // Enhanced metrics starting from basic
+            const enhancedMetrics = { ...basicMetric };
+
+            // Extract detailed metrics from check output
+            if (checkRun.output) {
+
+
+
+
+                await this.extractSonarQubeMetricsFromCheckOutput(checkRun.output, enhancedMetrics);
+                enhancedMetrics.source = 'detailed_check_run';
+
+                // Store raw output for debugging
+                if (checkRun.output.text || checkRun.output.summary) {
+                    enhancedMetrics.raw_output = (checkRun.output.text || checkRun.output.summary).substring(0, 2000);
+                }
+            } else {
+                this.log(`⚠️  DEBUG: No check output found for ${basicMetric.check_name}`);
+            }
+
+            // Try to get annotations for additional details
+            if (checkRun.id) {
+                await this.extractSonarQubeMetricsFromAnnotations({ id: checkRun.id }, enhancedMetrics, repoPath);
+            }
+
+
+
+            return enhancedMetrics;
+
+        } catch (error) {
+            this.log(`⚠️  Detailed metrics fetch failed for ${basicMetric.check_name}: ${error.message}`);
+            return basicMetric; // Fallback to basic metrics
+        }
+    }
+
+    extractMetricsFromDescription(description, metrics) {
+        /**
+         * Try to extract basic metrics from check description text
+         */
+        const text = description.toLowerCase();
+
+        // Look for common SonarQube patterns in descriptions
+        const bugsMatch = text.match(/(\d+)\s*bugs?/i);
+        if (bugsMatch) metrics.bugs_total = parseInt(bugsMatch[1]);
+
+        const vulnMatch = text.match(/(\d+)\s*vulnerabilit/i);
+        if (vulnMatch) metrics.vulnerabilities_total = parseInt(vulnMatch[1]);
+
+        const coverageMatch = text.match(/(\d+(?:\.\d+)?)%\s*coverage/i);
+        if (coverageMatch) metrics.line_coverage_percent = parseFloat(coverageMatch[1]);
+    }
+
+    async quickCheckPRExists(prNumber) {
+        /**
+         * Quick check if PR already exists in database
+         */
+        return new Promise((resolve) => {
+            const db = this.getDbConnection();
+            db.get('SELECT id FROM pull_requests WHERE pr_number = ? LIMIT 1', [prNumber], (err, row) => {
+                db.close();
+                resolve(!!row);
+            });
+        });
+    }
+
+    async quickCheckClaudeCommits(headSha) {
+        /**
+         * Quick check if head commit is a Claude commit
+         */
+        return new Promise((resolve) => {
+            const db = this.getDbConnection();
+            db.get('SELECT session_id FROM git_commits WHERE commit_sha = ? AND session_id IS NOT NULL LIMIT 1', [headSha], (err, row) => {
+                db.close();
+                resolve(!!row);
+            });
+        });
+    }
+
+    async fastSavePRWithMetrics(prNumber, prData, sessionId, prType, sonarMetrics) {
+        /**
+         * Single database transaction to save PR and metrics together
+         */
+        return new Promise((resolve, reject) => {
+            const db = this.getDbConnection();
+            const now = Date.now();
+
+            db.serialize(() => {
+                db.run('BEGIN TRANSACTION');
+
+                // Save PR
+                db.run(`
+                    INSERT OR REPLACE INTO pull_requests (
+                        pr_number, session_id, title, head_ref_name, base_ref_name,
+                        state, created_at, merged_at, closed_at, data_source, fetched_at
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                `, [
+                    prNumber,
+                    prType === 'claude' ? sessionId : null,
+                    prData.title,
+                    prData.headRefName,
+                    'main',
+                    'unknown',
+                    prData.createdAt ? new Date(prData.createdAt).getTime() : now,
+                    prData.mergedAt ? new Date(prData.mergedAt).getTime() : null,
+                    prData.closedAt ? new Date(prData.closedAt).getTime() : null,
+                    prType,
+                    now
+                ]);
+
+                // Save SonarQube metrics
+                for (const metrics of sonarMetrics) {
+                    db.run(`
+                        INSERT OR REPLACE INTO sonarqube_metrics (
+                            session_id, pr_number, quality_gate_status, check_name,
+                            source, bugs_total, vulnerabilities_total, line_coverage_percent,
+                            details_url, created_at
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    `, [
+                        prType === 'claude' ? sessionId : null,
+                        prNumber,
+                        metrics.quality_gate_status,
+                        metrics.check_name,
+                        metrics.source,
+                        metrics.bugs_total || 0,
+                        metrics.vulnerabilities_total || 0,
+                        metrics.line_coverage_percent || null,
+                        metrics.details_url,
+                        now
+                    ]);
+                }
+
+                db.run('COMMIT', (err) => {
+                    db.close();
+                    if (err) reject(err);
+                    else resolve();
+                });
+            });
+        });
+    }
+
+    async analyzeAndProcessPRWithTimeout(prNumber, prData, currentSessionId, repoPath) {
+        /**
+         * Analyze a PR with timeout protection to avoid blocking
+         */
+        return Promise.race([
+            this.analyzeAndProcessPR(prNumber, prData, currentSessionId, repoPath),
+            new Promise((_, reject) =>
+                setTimeout(() => reject(new Error(`Timeout processing PR #${prNumber}`)), 10000)
+            )
+        ]).catch(err => {
+            this.log(`⏱️  Skipped PR #${prNumber}: ${err.message}`);
+        });
     }
 
     async analyzeAndProcessPR(prNumber, prData, currentSessionId, repoPath) {
@@ -2384,14 +3296,12 @@ class ToolAnalytics {
                         return;
                     }
 
-                    if (!claudeCommits || claudeCommits.length === 0) {
-                        // No Claude commits in this PR - skip
-                        db.close();
-                        resolve();
-                        return;
-                    }
+                    // Determine PR type: Claude vs Human
+                    const isClaudePR = claudeCommits && claudeCommits.length > 0;
+                    const prType = isClaudePR ? 'Claude' : 'Human';
+                    const sessionId = isClaudePR ? claudeCommits[0].session_id : null;
 
-                    this.log(`🎯 Found PR #${prNumber} with ${claudeCommits.length} Claude commits from ${new Set(claudeCommits.map(c => c.session_id)).size} sessions`);
+                    this.log(`🎯 Analyzing PR #${prNumber} (${prType}): ${isClaudePR ? claudeCommits.length + ' Claude commits from ' + new Set(claudeCommits.map(c => c.session_id)).size + ' sessions' : 'Human-only commits'}`);
 
                     // Check if we've already processed SonarQube metrics for this PR
                     db.get(`
@@ -2404,22 +3314,21 @@ class ToolAnalytics {
                         if (alreadyProcessed) {
                             this.log(`📋 PR #${prNumber} already has SonarQube metrics - skipping`);
                         } else {
-                            // Fetch and save SonarQube metrics for this Claude-related PR
-                            this.log(`📊 Fetching SonarQube metrics for PR #${prNumber} (contains Claude code)`);
+                            // Fetch and save SonarQube metrics for ALL PRs (both Claude and Human)
+                            this.log(`📊 Fetching SonarQube metrics for ${prType} PR #${prNumber}`);
 
                             const sonarMetrics = await this.fetchSonarQubeMetrics(prNumber, repoPath);
                             if (sonarMetrics && sonarMetrics.length > 0) {
-                                // Use the primary Claude session ID for attribution
-                                const primarySessionId = claudeCommits[0].session_id;
-                                await this.saveSonarQubeMetrics(primarySessionId, sonarMetrics);
-                                this.log(`✅ Saved ${sonarMetrics.length} SonarQube metrics for PR #${prNumber} (attributed to session ${primarySessionId})`);
+                                // Save with appropriate attribution
+                                await this.saveSonarQubeMetrics(sessionId, sonarMetrics);
+                                this.log(`✅ Saved ${sonarMetrics.length} SonarQube metrics for ${prType} PR #${prNumber} ${sessionId ? '(attributed to session ' + sessionId + ')' : '(human-only)'}`);
                             } else {
                                 this.log(`📋 No SonarQube metrics found for PR #${prNumber}`);
                             }
                         }
 
-                        // Also save/update PR data if not already tracked
-                        await this.savePRDataIfNeeded(prNumber, prData, claudeCommits[0].session_id, repoPath);
+                        // Save/update PR data with proper Claude vs Human tagging
+                        await this.savePRDataIfNeeded(prNumber, prData, sessionId, repoPath, prType);
 
                         db.close();
                         resolve();
@@ -2451,7 +3360,7 @@ class ToolAnalytics {
         }
     }
 
-    async savePRDataIfNeeded(prNumber, prData, sessionId, repoPath) {
+    async savePRDataIfNeeded(prNumber, prData, sessionId, repoPath, prType = 'Unknown') {
         /**
          * Save PR data if we haven't seen it before
          */
@@ -2467,17 +3376,17 @@ class ToolAnalytics {
                         return;
                     }
 
-                    // Save new PR data
+                    // Save new PR data with Claude vs Human tagging
                     const now = Date.now();
                     db.run(`
                         INSERT INTO pull_requests (
                             pr_number, session_id, title, head_ref_name, base_ref_name,
-                            state, created_at, merged_at, closed_at, repo_url, pr_url
-                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                            state, created_at, merged_at, closed_at, repo_url, pr_url, data_source
+                        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                     `, [
                         prNumber,
                         sessionId,
-                        prData.title || 'Background discovered PR',
+                        prData.title || `Background discovered ${prType} PR`,
                         prData.headRefName || 'unknown',
                         'main', // Default base branch
                         prData.state || 'unknown',
@@ -2485,10 +3394,11 @@ class ToolAnalytics {
                         prData.mergedAt ? new Date(prData.mergedAt).getTime() : null,
                         prData.closedAt ? new Date(prData.closedAt).getTime() : null,
                         null, // We'll derive this from repo context
-                        `https://github.com/owner/repo/pull/${prNumber}` // Generic URL
+                        `https://github.com/owner/repo/pull/${prNumber}`, // Generic URL
+                        prType.toLowerCase() // 'claude' or 'human'
                     ], (err) => {
                         if (!err) {
-                            this.log(`📝 Saved background-discovered PR #${prNumber} data`);
+                            this.log(`📝 Saved background-discovered ${prType} PR #${prNumber} data`);
                         }
                         db.close();
                         resolve();
@@ -2959,9 +3869,11 @@ class ToolAnalytics {
                         this.autoDetectAndLinkPR(sessionId, cwd);
                     }, 1000);
 
-                    // Schedule repository-wide scan for complete metrics
+                    // Schedule fast incremental scan for new PRs only
                     setTimeout(() => {
-                        this.scheduleRepositoryScan(cwd);
+                        this.backgroundScanAllRecentPRs(sessionId, cwd).catch(err => {
+                            this.log(`❌ Fast commit-based scan failed: ${err.message}`);
+                        });
                     }, 5000);
                 }
             }
