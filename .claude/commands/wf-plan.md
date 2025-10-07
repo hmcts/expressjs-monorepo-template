@@ -62,19 +62,18 @@ VERIFY: Folder exists at docs/tickets/$ARGUMENT
 ACTION: Write the contents of the JIRA ticket to docs/tickets/$ARGUMENT/ticket.md
 VERIFY: File exists at docs/tickets/$ARGUMENT/ticket.md
 PROMPT FOR AGENT:
-"Create a markdown file at docs/tickets/$ARGUMENT/ticket.md from the JIRA ticket details."
 
-THEN - MANDATORY STEPS FOR ATTACHMENTS:
-1. Check the JIRA issue response for attachments with "specification" in the filename
-2. If specification attachment(s) found:
-   a. Use mcp__jira__jira_download_attachments with target_dir=/workspace/docs/tickets/$ARGUMENT
+1. Create a markdown file at docs/tickets/$ARGUMENT/ticket.md from the JIRA ticket details.
+2. Check the JIRA issue response for attachments with "specification" in the filename
+3. If specification attachment(s) found:
+   a. Use mcp__jira__jira_download_attachments with target_dir=/workspace/docs/tickets/$ARGUMENT (IMPORTANT: the directory MUST start with /workspace as the tool runs in a container)
    b. For each downloaded specification file:
       - Use Read tool to read the complete file content
       - Use Edit tool to append to ticket.md:
         * Add separator: "\n\n---\n\n# Attached Specification\n\n"
         * Append the ENTIRE UNMODIFIED content from the specification file
       - Use Bash tool to delete the downloaded file: rm docs/tickets/$ARGUMENT/[specification-filename]
-3. If no specification attachments found, proceed without appending
+4. If no specification attachments found, proceed without appending
 
 IMPORTANT:
 - Do NOT modify, summarize, or reformat the specification content
