@@ -73,7 +73,7 @@ function getEntries(modulePaths: string[]): Record<string, string> {
   // Build entries for all modules that have assets
   const entries: Record<string, string> = {};
   for (const modulePath of modulePaths) {
-    const assetsPath = resolve(modulePath, modulePath.endsWith("/src") ? "assets" : "src/assets");
+    const assetsPath = resolve(modulePath);
 
     if (existsSync(assetsPath)) {
       const jsFiles = glob.sync(resolve(assetsPath, "js/*.ts")).filter((f) => !f.endsWith(".d.ts"));

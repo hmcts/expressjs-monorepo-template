@@ -124,8 +124,8 @@ export interface ValidationError {
 
 // Error formatter for GOV.UK components
 export function formatZodErrors(error: z.ZodError): NestedErrors {
-  return error.errors.reduce((acc, curr) => {
-    return recursiveSet(acc, curr.path, {
+  return error.issues.reduce((acc, curr) => {
+    return recursiveSet(acc, curr.path as (string | number)[], {
       field: curr.path.join("."),
       text: curr.message,
       href: `#${curr.path.join("-")}`

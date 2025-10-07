@@ -10,6 +10,8 @@ import {
   expressSessionRedis,
   notFoundHandler
 } from "@hmcts/express-govuk-starter";
+import { pageRoutes as footerPages } from "@hmcts/footer-pages";
+import { pageRoutes as onboardingPages } from "@hmcts/onboarding";
 import { createSimpleRouter } from "@hmcts/simple-router";
 import compression from "compression";
 import config from "config";
@@ -17,7 +19,6 @@ import cookieParser from "cookie-parser";
 import type { Express } from "express";
 import express from "express";
 import { createClient } from "redis";
-import { getModulePaths } from "./modules.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -37,7 +38,7 @@ export async function createApp(): Promise<Express> {
   app.use(configureHelmet());
   app.use(expressSessionRedis({ redisConnection: await getRedisClient() }));
 
-  const modulePaths = getModulePaths();
+  const modulePaths = [__dirname, `${onboardingPages.path}/../`, `${footerPages.path}/../`];
 
   await configureGovuk(app, modulePaths, {
     nunjucksGlobals: {
@@ -57,9 +58,7 @@ export async function createApp(): Promise<Express> {
     }
   });
 
-  const routeMounts = modulePaths.map((dir) => ({ path: `${dir}/pages` }));
-
-  app.use(await createSimpleRouter(...routeMounts));
+  app.use(await createSimpleRouter({ path: `${__dirname}/pages` }, onboardingPages, footerPages));
   app.use(notFoundHandler());
   app.use(errorHandler());
 

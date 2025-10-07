@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@hmcts/cloud-native-platform": "workspace:*",
+    "@hmcts/onboarding": "workspace:*",
     "@hmcts/postgres": "workspace:*",
     "@hmcts/simple-router": "workspace:*",
     "compression": "1.8.1",

@@ -5,6 +5,7 @@
     "baseUrl": ".",
     "paths": {
       "@hmcts/api": ["apps/api/src"],
+      "@hmcts/crons": ["apps/crons/src"],
       "@hmcts/postgres": ["apps/database/src"],
       "@hmcts/web": ["apps/web/src"],
       "@hmcts/express-govuk-starter": ["libs/express-govuk-starter/src"],

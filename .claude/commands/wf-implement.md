@@ -21,9 +21,7 @@ Use TodoWrite to create this checklist:
 ```
 - [ ] Retrieve $ARGUMENT specifications in /docs/tickets/$ARGUMENT/
 - [ ] Execute parallel implementation (engineering, testing, infrastructure)
-- [ ] Perform code review
-- [ ] Apply review feedback
-- [ ] Run code quality checks (lint, format, unit test, e2e tests)
+- [ ] Complete implementation of tests and run tests
 - [ ] Final verification
 ```
 
@@ -53,15 +51,14 @@ PROMPT FOR AGENT:
 "Implement the engineering tasks for ticket $ARGUMENT:
 1. Read the specification at docs/tickets/$ARGUMENT/specification.md
 2. Read the task list at docs/tickets/$ARGUMENT/tasks.md
-3. Implement ALL items under 'Implementation Tasks' section
+3. Implement ALL items assigned to the full-stack-engineer 
 4. AS YOU COMPLETE EACH TASK:
    - Use the Edit tool to update docs/tickets/$ARGUMENT/tasks.md
    - Change '- [ ]' to '- [x]' for each completed task
    - Update the checklist after completing each major section
-5. Follow CLAUDE.md conventions strictly:
-6. Write unit tests for all new code (co-located .test.ts files)
-7. Ensure >80% test coverage on business logic
-8. BEFORE FINISHING: Verify all your tasks in docs/tickets/$ARGUMENT/tasks.md are marked as [x]
+5. Write unit tests for all new code (co-located .test.ts files)
+6. Ensure >80% test coverage on business logic
+7. BEFORE FINISHING: Verify all your tasks in docs/tickets/$ARGUMENT/tasks.md are marked as [x]
 IMPORTANT: You MUST update tasks.md to track your progress"
 ```
 
@@ -73,15 +70,15 @@ TASK: Implement all testing tasks from docs/tickets/$ARGUMENT/tasks.md
 PROMPT FOR AGENT:
 "Implement the testing tasks for ticket $ARGUMENT:
 1. Read the task list at docs/tickets/$ARGUMENT/tasks.md
-2. Implement ALL items under 'Testing Tasks' section
+2. Implement ALL items assigned to the test-engineer
 3. AS YOU COMPLETE EACH TASK:
    - Use the Edit tool to update docs/tickets/$ARGUMENT/tasks.md
    - Change '- [ ]' to '- [x]' for each completed test category
    - Update the checklist after completing each test suite
-4. Create E2E tests for the happy path using Playwright in e2e-tests/
+4. If the ticket involves a user journey, create E2E tests for the happy path using Playwright in e2e-tests/
 5. Include accessibility tests using axe-core in the happy path tests (not separate tests)
 6. BEFORE FINISHING: Verify all your tasks in docs/tickets/$ARGUMENT/tasks.md are marked as [x]
-IMPORTANT: Do not run yarn test:e2e until the full-stack-engineer has completed their work - the orchestrator will handle this"
+IMPORTANT: Create the E2E tests but do not run them yet - they will be run in the final testing phase"
 ```
 
 #### Infrastructure Implementation Agent
@@ -109,125 +106,47 @@ IMPORTANT: Document your infrastructure assessment in tasks.md"
 WAIT FOR ALL AGENTS TO COMPLETE
 VERIFY: All three agents have finished their tasks
 
-### Step 2.2: Validate Task Completion
+### Step 2.2: Code Review and Quality Checks
+*Mark "Complete implementation of tests and run tests" as in_progress*
+
+#### Full Stack Engineer Final Checks 
 ```
-ACTION: Read docs/tickets/$ARGUMENT/tasks.md
-VERIFY:
-- Implementation Tasks section has [x] markers for completed items
-- Testing Tasks section has [x] markers for completed items
-- Infrastructure assessment is documented
-
-IF tasks are NOT properly marked:
-  WARNING: Agents did not update task tracking
-  ACTION: Manually verify implementation by checking:
-    - ls libs/*/src/pages/ for new modules
-    - ls e2e-tests/tests/ for new tests
-    - git status for all changes
-```
-*Mark "Execute parallel implementation" as completed*
-
-
-## PHASE 3: Code Review
-*Mark "Perform code review" as in_progress*
-
-### Step 3.1: Code Review [ISOLATED AGENT]
-```
-AGENT: code-reviewer
-TASK: Review all changes and provide feedback
+AGENT: full-stack-engineer
+TASK: Ensure unit tests are passing and the app is booting
 
 PROMPT FOR AGENT:
-"Review all changes made for ticket $ARGUMENT:
-1. Run git diff to see all changes
-2. Check adherence to CLAUDE.md conventions:
-   - Naming conventions followed
-   - Module structure correct
-   - Welsh translations included
-   - No business logic in apps/
-   - TypeScript strict mode compliance
-3. Verify security requirements:
-   - Input validation present
-   - No hardcoded secrets
-   - Parameterized queries used
-4. Check test coverage and quality
-5. Create a review report with:
-   - Issues that MUST be fixed (blocking)
-   - Suggestions for improvement (non-blocking)
-   - Positive observations
-OUTPUT: Save review to docs/tickets/$ARGUMENT/review.md"
-
-VERIFY: Review document created
+"Finalize your implementation for ticket $ARGUMENT:
+1. Ensure all unit tests pass
+2. Ensure the application boots with `yarn dev` without errors
+3. Address any issues found during testing
+4. Update docs/tickets/$ARGUMENT/tasks.md to reflect your review status
 ```
-*Mark "Perform code review" as completed*
 
-## PHASE 4: Apply Feedback
-*Mark "Apply review feedback" as in_progress*
+#### Test Engineer Final Checks 
 
-### Step 4.1: Process Review Feedback
 ```
-ACTION: Read docs/tickets/$ARGUMENT/review.md
-IDENTIFY: Blocking issues that must be fixed
-
-IF blocking issues exist:
-  LAUNCH APPROPRIATE AGENT(S) TO FIX:
-  - full-stack-engineer for code issues
-  - test-engineer for test issues
-  - infrastructure-engineer for infrastructure issues
-
-  PROMPT: "Fix the following blocking issues from code review:
-  [List specific issues]
-  After fixing, re-run relevant tests to verify"
-
-  AFTER FIXES:
-  - Re-run yarn lint && yarn format
-  - Re-run yarn test && yarn test:e2e
-  - Re-run relevant tests
-  - Verify all blocking issues resolved, if not continue until resolved
+AGENT: test-engineer
+TASK: Ensure E2E tests are passing
+PROMPT FOR AGENT:
+"Finalize your testing for ticket $ARGUMENT:
+1. Run all E2E tests with `yarn test:e2e`
+2. Ensure all tests pass
+3. Address any issues found during testing
+4. Update docs/tickets/$ARGUMENT/tasks.md to reflect your review status
 ```
-*Mark "Apply review feedback" as completed*
 
-## PHASE 5: Code Quality and Testing
-*Mark "Run code quality checks" as in_progress*
-
-### Step 5.1: Code Quality Checks
-```
-EXECUTE IN SEQUENCE:
-1. yarn format (format code with Biome)
-2. yarn lint (run Biome linter)
-3. IF database changes made:
-   - yarn workspace @hmcts/postgres run generate
-   - yarn workspace @hmcts/postgres run migrate
-VERIFY: All checks pass, fix any issues found
-```
-*Mark "Run code quality checks" as completed*
-
-*Mark "Execute all tests" as in_progress*
-
-### Step 5.2: Test Execution
-```
-EXECUTE IN SEQUENCE:
-1. yarn dev (test the app boots)
-2. yarn test (run unit tests)
-3. yarn test:e2e (run Playwright E2E tests)
-4. yarn test:coverage (verify coverage >80%)
-VERIFY: All tests pass
-IF tests fail:
-  - Identify failing tests
-  - Fix implementation or test issues
-  - Re-run until all pass
-```
-*Mark "Execute all tests" as completed*
-
-## PHASE 6: Final Verification
+## PHASE 3: Final Verification
 *Mark "Final verification" as in_progress*
 
-### Step 6.1: Final Checks
+### Step 3.1: Final Checks
 ```
 EXECUTE FINAL VERIFICATION:
 - All tasks from docs/tickets/$ARGUMENT/tasks.md completed
 - All blocking review issues resolved
 ```
-*Mark "Final verification" as completed*
- 
+*Mark "Complete implementation of tests and run tests" as completed*
+*Mark "Final verification" as in_progress*
+
 ## COMPLETION CHECK
 ```
 ACTION: Final validation of task tracking
@@ -254,6 +173,6 @@ FINAL VALIDATION:
 - ✅ All engineering tasks implemented
 - ✅ All tests written and passing
 - ✅ Infrastructure updated (if needed)
-- ✅ Code review completed and feedback applied
-- ✅ Lint and format checks passing
-Ready for PR creation"
+- ✅ Task tracking updated in docs/tickets/$ARGUMENT/tasks.md
+
+Next step: Run /wf-review $ARGUMENT to perform code review and final validation"

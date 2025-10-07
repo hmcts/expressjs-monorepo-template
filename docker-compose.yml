@@ -1,17 +1,17 @@
 services:
   postgres:
-    image: postgres:17-alpine
-    container_name: hmcts-postgres
+    image: postgres:18-alpine
+    container_name: rpe-postgres
     environment:
       POSTGRES_USER: hmcts
       POSTGRES_HOST_AUTH_METHOD: trust
-      POSTGRES_DB: expressjs_monorepo_template
+      POSTGRES_DB: postgres
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U hmcts -d expressjs_monorepo_template"]
+      test: ["CMD-SHELL", "pg_isready -U hmcts -d postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -19,7 +19,7 @@ services:
 
   redis:
     image: redis:8-alpine
-    container_name: hmcts-redis
+    container_name: rpe-redis
     ports:
       - "6379:6379"
     volumes:

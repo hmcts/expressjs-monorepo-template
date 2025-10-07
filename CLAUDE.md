@@ -68,25 +68,41 @@ model Case {
 
 ## Module Development Guidelines
 
-### Module Auto-Discovery System
+### Module Registration System
 
-The web application automatically discovers and loads modules that contain a `pages/` directory. This is handled by the `getModulePaths()` function in `apps/web/src/modules.ts`, which:
-- Scans all directories under `libs/*/src`
-- Filters for modules containing a `pages/` directory
-- Returns paths for automatic route and view registration
+The web and API applications use explicit imports to register modules, enabling turborepo to properly track dependencies and optimize builds. Each module exports standardized interfaces for different types of functionality.
 
 ### Creating a New Feature Module
 
 1. **Create module structure**:
 ```bash
 mkdir -p libs/my-feature/src/pages      # Page controllers and templates
+mkdir -p libs/my-feature/src/routes     # API routes (optional)
 mkdir -p libs/my-feature/src/locales    # Translation files (optional)
 mkdir -p libs/my-feature/src/views      # Shared templates (optional)
 mkdir -p libs/my-feature/src/assets/css # Module styles (optional)
 mkdir -p libs/my-feature/src/assets/js  # Module scripts (optional)
 ```
 
-2. **Package.json requirements**:
+2. **Create src/index.ts with module exports**:
+```typescript
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Business logic exports
+export * from "./my-feature/service.js";
+
+// Module configuration for app registration
+export const pageRoutes = { path: path.join(__dirname, "pages") };
+export const apiRoutes = { path: path.join(__dirname, "routes") };
+export const prismaSchemas = path.join(__dirname, "../prisma");
+export const assets = path.join(__dirname, "assets/");
+```
+
+3. **Package.json requirements**:
 ```json
 {
   "name": "@hmcts/my-feature",
@@ -103,7 +119,10 @@ mkdir -p libs/my-feature/src/assets/js  # Module scripts (optional)
     "build:nunjucks": "mkdir -p dist/pages && cd src/pages && find . -name '*.njk' -exec sh -c 'mkdir -p ../../dist/pages/$(dirname {}) && cp {} ../../dist/pages/{}' \\;",
     "dev": "tsc --watch",
     "test": "vitest run",
-    "test:watch": "vitest watch"
+    "test:watch": "vitest watch",
+    "format": "biome format --write .",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write ."
   },
   "peerDependencies": {
     "express": "^5.1.0"
@@ -139,6 +158,31 @@ mkdir -p libs/my-feature/src/assets/js  # Module scripts (optional)
 }
 ```
 
+5. **Register module in applications**:
+
+```typescript
+// apps/web/src/app.ts
+import { pageRoutes as myFeaturePages } from "@hmcts/my-feature";
+
+app.use(await createGovukFrontend(app, [myFeaturePages.path], { /* options */ }));
+app.use(await createSimpleRouter(myFeaturePages));
+
+// apps/web/vite.config.ts
+import { assets as myFeatureAssets } from "@hmcts/my-feature";
+const baseConfig = createBaseViteConfig([
+  path.join(__dirname, "src"), 
+  myFeatureAssets
+]);
+
+// apps/api/src/app.ts
+import { apiRoutes as myFeatureRoutes } from "@hmcts/my-feature";
+app.use(await createSimpleRouter(myFeatureRoutes));
+
+// apps/postgres/src/schema-discovery.ts
+import { prismaSchemas as myFeatureSchemas } from "@hmcts/my-feature";
+const schemaPaths = [myFeatureSchemas, /* other schemas */];
+```
+
 ### Module Structure
 
 ```
@@ -165,7 +209,7 @@ libs/my-feature/
             └── module.ts
 ```
 
-**NOTE**: Pages in `pages/` are automatically registered as routes based on their file names. For example, `my-page.ts` becomes `/my-page`. To create nested routes, use subdirectories (e.g., `pages/admin/my-page.ts` becomes `/admin/my-page`).
+**NOTE**: Pages are registered through explicit imports in `apps/web/src/app.ts`. Routes are created based on file names within the `pages/` directory. For example, `my-page.ts` becomes `/my-page`. To create nested routes, use subdirectories (e.g., `pages/admin/my-page.ts` becomes `/admin/my-page`).
 
 ### Page Controller Pattern
 

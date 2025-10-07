@@ -1,4 +1,0 @@
-- Find a place for the team name
-- Infrastructure folder for terraform
-- Setup script to add product name to packages, e.g. @hmcts/sptribs-web
-- Update README of govuk-frontend to document the madness of asset loading an the differences between dev and prod. Especially the fact we need the exports field in package.json to make it work in prod because vite.config.ts use the node loader and not the ts loader.

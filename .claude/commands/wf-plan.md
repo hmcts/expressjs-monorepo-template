@@ -1,5 +1,5 @@
 ---
-description: Start working on a JIRA ticket with full specification and planning
+description: Start working on a JIRA ticket with specification and planning
 argument-hint: <ticket-id>
 allowed-tools: 
   - Task
@@ -18,8 +18,8 @@ Use TodoWrite to create this checklist:
 - [ ] Retrieve JIRA ticket $ARGUMENT
 - [ ] Setup git branch
 - [ ] Create documentation folder
-- [ ] Create UI/UX specification
-- [ ] Add technical implementation details
+- [ ] Add ticket details to documentation folder
+- [ ] Add technical specification
 - [ ] Review infrastructure requirements  
 - [ ] Create task assignments
 ```
@@ -57,50 +57,38 @@ VERIFY: Folder exists at docs/tickets/$ARGUMENT
 ```
 *Mark "Create documentation folder" as completed*
 
-## PHASE 2: Specification Development
-*Mark "Create UI/UX specification" as in_progress*
-
-### Step 2.1: UI/UX Specification [ISOLATED AGENT]
+### Step 1.4: Add User Story to Documentation
 ```
-AGENT: ui-ux-engineer
-TASK: Create user-focused specification
-OUTPUT: docs/tickets/$ARGUMENT/specification.md
-
+ACTION: Write the contents of the JIRA ticket to docs/tickets/$ARGUMENT/ticket.md
+VERIFY: File exists at docs/tickets/$ARGUMENT/ticket.md
 PROMPT FOR AGENT:
-"Based on ticket $ARGUMENT requirements:
-1. Design the user journey with clear flow diagram, illustrated with ascii art
-2. Create wireframes for every page using ascii art
-3. Define form structures, including inputs, input types and validation rules
-4. Write content in English and Welsh
-5. If there are any ambiguities, ask the user for clarification
-IMPORTANT: Focus ONLY on user experience, NOT implementation. Only focus on issues related to this ticket, do not try to solve cross-cutting concerns."
-
-VERIFY: File created WITHOUT technical implementation details
+"Create a markdown file at docs/tickets/$ARGUMENT/ticket.md from the JIRA ticket details."
 ```
-*Mark "Create UI/UX specification" as completed*
+*Mark "Add ticket details to documentation folder" as completed*
 
-*Mark "Add technical implementation details" as in_progress*
+## PHASE 2: Specification Development
 
-### Step 2.2: Technical Enhancement [ISOLATED AGENT]
+### Step 2.2: Technical Specification [ISOLATED AGENT]
 ```
 AGENT: full-stack-engineer  
-TASK: Add implementation details to existing specification
-INPUT: docs/tickets/$ARGUMENT/specification.md
-ACTION: SUPPLEMENT with technical details
+TASK: Create a technical specification for the ticket
+INPUT: docs/tickets/$ARGUMENT/ticket.md
+OUTPUT: docs/tickets/$ARGUMENT/specification.md
+ACTION: Provide technical implementation details
 
 PROMPT FOR AGENT:
-"Review the UI/UX specification and ADD:
+"Review the details in ticket.md and create a technical specification in specification.md covering:
 1. High level technical implementation approach
 2. File structure and routing (paying attention to the guidelines in @CLAUDE.md - use libs/ instead of apps/ where possible)
 3. Error handling implementation
 4. RESTful API endpoints if the user story requires them
 5. Database schema if the user story requires it
-6. If there are any ambiguities, ask the user for clarification
-IMPORTANT: ADD to existing content, do not remove UI/UX sections. Only focus on issues related to this ticket, do not try to solve cross-cutting concerns."
+6. Flag any ambiguities in a 'CLARIFICATIONS NEEDED' section at the end
+IMPORTANT: Only focus on issues related to this ticket, do not try to solve cross-cutting concerns."
 
-VERIFY: Implementation details added to specification
+VERIFY: Implementation details in specification
 ```
-*Mark "Add technical implementation details" as completed*
+*Mark "Add technical specification" as completed*
 
 *Mark "Review infrastructure requirements" as in_progress*
 
@@ -153,7 +141,7 @@ EXAMPLE CONTENT STRUCTURE:
 - [ ] Update user journey map based on final implementation
 - [ ] Verify UI matches specification
 
-VERIFY: All agents have assigned tasks
+VERIFY: All tasks specify which agent is responsible
 ```
 *Mark "Create task assignments" as completed*
 
@@ -163,9 +151,28 @@ Review TodoWrite list - all items should be marked completed.
 If any items remain incomplete, identify and complete them.
 ```
 
-### Step 4: Clarifying Questions
+## PHASE 4: Final Review and Clarifications
 
-Consolidate all clarifying questions from the sub-agents and relay to the user.
+### Step 4.1: Consolidate Questions
+```
+ACTION: Review all agent outputs for clarifying questions
+1. Check specification.md for any questions or ambiguities noted
+2. Check infrastructure assessment for any blockers
+3. If questions exist:
+   - Consolidate into a single list
+   - Present to user with context
+   - Wait for user response before proceeding
+4. If no questions:
+   - Proceed to completion
+```
 
 ## Success Output
-"Task $ARGUMENT setup complete. Documentation created at docs/tickets/$ARGUMENT/"
+"Task $ARGUMENT planning phase complete:
+- ✅ JIRA ticket retrieved and documented
+- ✅ Git branch created: feature/$ARGUMENT-[name]
+- ✅ Technical specification created
+- ✅ Infrastructure requirements assessed
+- ✅ Task assignments documented
+
+Documentation created at: docs/tickets/$ARGUMENT/
+Next step: Run /wf-implement $ARGUMENT to begin implementation"
