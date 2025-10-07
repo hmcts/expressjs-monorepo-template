@@ -58,27 +58,41 @@ VERIFY: Folder exists at docs/tickets/$ARGUMENT
 *Mark "Create documentation folder" as completed*
 
 ### Step 1.4: Add User Story to Documentation
+
+**CRITICAL: YOU MUST FOLLOW THESE STEPS IN EXACT ORDER**
+
 ```
-ACTION: Write the contents of the JIRA ticket to docs/tickets/$ARGUMENT/ticket.md
-VERIFY: File exists at docs/tickets/$ARGUMENT/ticket.md
-PROMPT FOR AGENT:
+STEP 1: Check for attachments FIRST (before creating any files)
+   - Look at the JIRA response from Step 1.1
+   - Check if there are attachments with "specification" in the filename
+   - Make a note: Are there specification attachments? YES or NO
 
-1. Create a markdown file at docs/tickets/$ARGUMENT/ticket.md from the JIRA ticket details.
-2. Check the JIRA issue response for attachments with "specification" in the filename
-3. If specification attachment(s) found:
-   a. Use mcp__jira__jira_download_attachments with target_dir=/workspace/docs/tickets/$ARGUMENT (IMPORTANT: the directory MUST start with /workspace as the tool runs in a container)
-   b. For each downloaded specification file:
-      - Use Read tool to read the complete file content
-      - Use Edit tool to append to ticket.md:
-        * Add separator: "\n\n---\n\n# Attached Specification\n\n"
-        * Append the ENTIRE UNMODIFIED content from the specification file
-      - Use Bash tool to delete the downloaded file: rm docs/tickets/$ARGUMENT/[specification-filename]
-4. If no specification attachments found, proceed without appending
+STEP 2: Create the basic ticket.md file
+   - Create docs/tickets/$ARGUMENT/ticket.md
+   - Include: Title, Ticket Information, Description, Acceptance Criteria
+   - DO NOT proceed to Step 3 until this file exists
 
-IMPORTANT:
-- Do NOT modify, summarize, or reformat the specification content
-- Copy the raw content exactly as-is from the downloaded file
-- Delete the separate specification file after appending to ticket.md
+STEP 3: Download and append specifications (ONLY if you noted YES in Step 1)
+   a. Use mcp__jira__jira_download_attachments with:
+      - issue_key=$ARGUMENT
+      - target_dir=/workspace/docs/tickets/$ARGUMENT
+      (CRITICAL: the directory MUST start with /workspace as the tool runs in a container)
+
+   b. For EACH downloaded specification file:
+      i.   Use Read tool to read the COMPLETE file content
+      ii.  Use Edit tool to append to ticket.md (do NOT use bash cat/echo):
+           - Read the existing ticket.md first
+           - Append separator: "\n\n---\n\n# Attached Specification\n\n"
+           - Append the ENTIRE UNMODIFIED content from the specification file
+      iii. Use Bash tool to delete: rm docs/tickets/$ARGUMENT/[specification-filename]
+
+STEP 4: Verify the final ticket.md exists and contains all content
+
+CRITICAL RULES:
+- You MUST check for attachments in Step 1 BEFORE creating ticket.md
+- You MUST NOT modify, summarize, or reformat specification content
+- You MUST delete downloaded specification files after appending
+- If NO specifications found in Step 1, skip Step 3 entirely
 ```
 *Mark "Add ticket details to documentation folder" as completed*
 
