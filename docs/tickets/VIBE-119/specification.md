@@ -91,27 +91,46 @@ The workflow consists of the following jobs:
 - **Purpose**: Build Docker images for affected apps only (detected via Turborepo)
 - **Change Detection**: Use `turbo ls --affected --filter=./apps/* --output=json` to determine which apps changed
 - **Matrix Strategy**: Process only affected apps in parallel
+- **Metadata Extraction**: Each app reads from its own `apps/{app}/helm/Chart.yaml`:
+  - Team name from `annotations.team` field
+  - Application name from `name` field
+  - Produces image path: `${TEAM_NAME}/${TEAM_NAME}-${APPLICATION_NAME}`
 - **Steps per app**:
-  1. Detect affected apps using Turborepo (includes lib dependency changes)
-  2. Build and push Docker image with timestamp tag
+  1. Extract metadata from app's Helm chart
+  2. Build Docker image with app-specific naming
+  3. Tag with `pr-{number}-{sha}-{timestamp}`
+  4. Push to Azure Container Registry
 - **Outputs**:
-  - Image tags: `pr-{number}-{sha}-{timestamp}`
-  - Affected apps list for deployment
+  - `timestamp`: Build timestamp (shared across all apps)
+  - `short-sha`: Short git SHA (shared across all apps)
 - **Artifacts**: Build logs, image manifests
 - **Note**: No Helm charts published to OCI - charts referenced locally via `file://`
 
 #### Job 2: Deploy Root Chart
 - **Purpose**: Deploy umbrella/root Helm chart that references app charts via `file://` paths
 - **Dependencies**: Requires affected app images published
+- **Metadata Extraction**: Reads from root `helm/expressjs-monorepo-template/Chart.yaml`:
+  - Team name from `annotations.team` field
+  - Application name from `name` field
+  - Determines Helm release name and Kubernetes namespace
+- **Dynamic Image Variables**: Sets environment variables for all apps:
+  - Affected apps: `{APP}_IMAGE=pr-{number}-{sha}-{timestamp}`
+  - Unaffected apps: `{APP}_IMAGE=latest`
+  - Example: `WEB_IMAGE=pr-123-abc1234-20241008120000`, `CRONS_IMAGE=latest`
 - **Configuration**: Uses values.preview.template.yaml with PR-specific overrides
 - **Platform Tags**: Sets global tags for Azure resource management (teamName, applicationName, etc.)
-- **GitHub Labels**: Adds labels for automated cleanup (ns:rpe, prd:rpe, rel:rpe-expressjs-monorepo-template-pr-{number})
+- **GitHub Labels**: Adds labels for automated cleanup (ns:{team}, prd:{team}, rel:{team}-{app}-pr-{number})
 - **Environment**: Preview namespace with GitHub environment protection
-- **Outputs**: Preview URLs for testing
+- **Outputs**: Preview URLs as JSON object with per-app URLs
 
 #### Job 3: E2E Tests
 - **Purpose**: Run Playwright tests against deployed preview environment
 - **Dependencies**: Requires successful deployment
+- **URL Configuration**: Sets app-specific URL environment variables:
+  - Converts preview URLs to uppercase env vars
+  - Example: `{"expressjs_monorepo_template_web": "https://..."}` → `EXPRESSJS_MONOREPO_TEMPLATE_WEB_URL=https://...`
+  - Playwright config explicitly references the web app URL
+  - Fallback chain: `EXPRESSJS_MONOREPO_TEMPLATE_WEB_URL` → `TEST_URL` → `http://localhost:3000`
 - **Network Access**: Requires either:
   - Firewall access from GitHub Actions to Preview environment, OR
   - Azure Playwright Service for execution within Azure network
@@ -139,21 +158,51 @@ Using the DCD-CNP-DEV subscription (Tenant: CJS Common Platform)
 **Registry**: `hmctspublic.azurecr.io`
 
 **Image Naming Convention**:
-- `rpe/rpe-expressjs-monorepo-template-{app}:pr-{number}-{sha}-{timestamp}`
+- `${TEAM_NAME}/${TEAM_NAME}-${APPLICATION_NAME}:pr-{number}-{sha}-{timestamp}`
+- Team and application names extracted from app's `helm/Chart.yaml`
 - Example: `rpe/rpe-expressjs-monorepo-template-web:pr-123-abc1234-20240922120000`
+  - Team: `rpe` (from `annotations.team`)
+  - App: `expressjs-monorepo-template-web` (from `name`)
 
 ### 4.2 Build Strategy
 
 - Build only affected apps (from change detection)
-- Use ACR Tasks for building (offloads work to Azure)
+- Metadata extracted from each app's `apps/{app}/helm/Chart.yaml` file
+- Each app independently specifies its team and application name via Helm chart annotations
+- Images built directly in GitHub Actions runners using Docker
 - Tag images with PR number, short SHA, and timestamp for traceability
+- Matrix build strategy enables parallel builds of multiple affected apps
 
 ### 4.3 Cleanup on PR Closure
 
 When a PR is closed or merged:
 
 1. **Helm Release Cleanup**: Platform automatically detects and removes Helm releases based on GitHub PR labels
-2. **Docker Image Cleanup**: Remove all PR-specific images from ACR using tag pattern matching
+2. **Docker Image Cleanup**: Platform automatically removes PR-specific images from ACR
+
+### 4.4 Metadata Extraction Strategy
+
+The pipeline uses a dual-source metadata extraction approach:
+
+**Build Phase** (per app in matrix):
+- Source: `apps/{app}/helm/Chart.yaml`
+- Extracts:
+  - `annotations.team` → Team name (e.g., `rpe`)
+  - `name` → Application name (e.g., `expressjs-monorepo-template-web`)
+- Purpose: Generates unique Docker image names for each app
+- Enables multi-team monorepo support
+
+**Deploy Phase** (root chart):
+- Source: `helm/expressjs-monorepo-template/Chart.yaml`
+- Extracts:
+  - `annotations.team` → Team name (e.g., `rpe`)
+  - `name` → Application name (e.g., `expressjs-monorepo-template`)
+- Purpose: Determines Helm release name and Kubernetes namespace
+- Sets dynamic image variables:
+  - Affected apps use freshly built PR tags
+  - Unaffected apps use `:latest` tag to reuse existing images
+
+This approach allows each app to have independent metadata while maintaining a unified deployment.
 
 ## 5. Helm Chart Deployment Approach for Preview Environment
 
@@ -169,15 +218,22 @@ name: expressjs-monorepo-template
 description: Umbrella chart for deploying all services
 type: application
 version: 0.0.1
+annotations:
+  team: rpe
+home: https://github.com/hmcts/expressjs-monorepo-template
 dependencies:
   - name: expressjs-monorepo-template-web
-    version: 0.1.0
-    repository: "file://../web/helm"
+    version: 0.0.1
+    repository: "file://../../apps/web/helm"
     condition: web.enabled
   - name: expressjs-monorepo-template-api
-    version: 0.1.0
-    repository: "file://../api/helm"
+    version: 0.0.1
+    repository: "file://../../apps/api/helm"
     condition: api.enabled
+  - name: expressjs-monorepo-template-crons
+    version: 0.0.1
+    repository: "file://../../apps/crons/helm"
+    condition: crons.enabled
 ```
 
 ### 5.2 Root Chart Values for Preview
@@ -194,12 +250,15 @@ web:
   enabled: true
   expressjs-monorepo-template-web:
     nodejs:
-      image: "hmctspublic.azurecr.io/rpe/expressjs-monorepo-template-web:pr-${CHANGE_ID}-${SHORT_SHA}-${TIMESTAMP}"
+      image: "hmctspublic.azurecr.io/${TEAM_NAME}/${TEAM_NAME}-${APPLICATION_NAME}-web:${WEB_IMAGE}"
       ingressHost: "web-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+      applicationPort: 3000
+      aadIdentityName: ${TEAM_NAME}
       environment:
         NODE_ENV: "preview"
         API_URL: "http://api-pr-${CHANGE_ID}:3001"
-        DATABASE_URL: "postgresql://{{ .Release.Name }}-postgresql:5432/vibe_pr_${CHANGE_ID}"
+        DATABASE_URL: "postgresql://{{ .Release.Name }}-postgresql:5432/pr-${CHANGE_ID}-${APPLICATION_NAME}"
+        REDIS_HOST: "${TEAM_NAME}-preview.redis.cache.windows.net"
       resources:
         limits:
           memory: "256Mi"
@@ -207,17 +266,25 @@ web:
         requests:
           memory: "128Mi"
           cpu: "50m"
+      keyVaults:
+        ${TEAM_NAME}:
+          secrets:
+            - redis-access-key
+            - app-insights-connection-string
 
 # API application configuration
 api:
   enabled: true
   expressjs-monorepo-template-api:
     nodejs:
-      image: "hmctspublic.azurecr.io/rpe/expressjs-monorepo-template-api:pr-${CHANGE_ID}-${SHORT_SHA}-${TIMESTAMP}"
-      ingressHost: "expressjs-monorepo-template-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+      image: "hmctspublic.azurecr.io/${TEAM_NAME}/${TEAM_NAME}-${APPLICATION_NAME}-api:${API_IMAGE}"
+      ingressHost: "${APPLICATION_NAME}-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+      applicationPort: 3001
+      aadIdentityName: ${TEAM_NAME}
       environment:
         NODE_ENV: "preview"
-        DATABASE_URL: "postgresql://{{ .Release.Name }}-postgresql:5432/pr-${CHANGE_ID}-expressjs-monorepo-template"
+        DATABASE_URL: "postgresql://{{ .Release.Name }}-postgresql:5432/pr-${CHANGE_ID}-${APPLICATION_NAME}"
+        REDIS_HOST: "${TEAM_NAME}-preview.redis.cache.windows.net"
       resources:
         limits:
           memory: "256Mi"
@@ -225,6 +292,11 @@ api:
         requests:
           memory: "128Mi"
           cpu: "50m"
+      keyVaults:
+        ${TEAM_NAME}:
+          secrets:
+            - redis-access-key
+            - app-insights-connection-string
 
 # Shared PostgreSQL database
 postgresql:
@@ -251,23 +323,53 @@ postgresql:
 - `global.disableTraefikTls`: Disable Traefik TLS
 
 **Deployment Process**:
-1. Process values template with PR-specific variables
-2. Update Helm dependencies (pulls from local `file://` paths)
-3. Deploy root chart to preview namespace with all required tags
+1. Extract team and application metadata from root `helm/expressjs-monorepo-template/Chart.yaml`
+2. Set dynamic image variables for all apps:
+   - Affected apps: `{APP}_IMAGE=pr-{number}-{sha}-{timestamp}`
+   - Unaffected apps: `{APP}_IMAGE=latest`
+3. Process values template with `envsubst` to substitute PR-specific variables
+4. Update Helm dependencies (pulls from local `file://` paths)
+5. Deploy root chart to preview namespace with all required tags
+6. Add GitHub PR labels for platform-managed cleanup
 
 
 ## 6. Environment Variables
 
 ### 6.1 Generated Variables
+
+**Workflow-Level Variables**:
 - `CHANGE_ID`: Pull request number
+- `SHORT_SHA`: Short git commit SHA (7 characters)
+- `REGISTRY`: Azure Container Registry URL (`hmctspublic.azurecr.io`)
+
+**Build Job Variables** (per app in matrix):
+- `REGISTRY_PREFIX`: ACR image path (`${TEAM_NAME}/${TEAM_NAME}-${APPLICATION_NAME}`)
+- `IMAGE_TAG`: Full image tag (`pr-{number}-{sha}-{timestamp}`)
+- `TIMESTAMP`: Build timestamp in YYYYMMDDHHmmss format
+
+**Deploy Job Variables**:
+- `TEAM_NAME`: From root chart's `annotations.team` (e.g., `rpe`)
+- `APPLICATION_NAME`: From root chart's `name` (e.g., `expressjs-monorepo-template`)
+- `GIT_REPO`: Git repository URL (converted to HTTPS format)
+- `{APP}_IMAGE`: Dynamic per-app image tags (e.g., `WEB_IMAGE`, `API_IMAGE`, `CRONS_IMAGE`)
+  - Value: `pr-{number}-{sha}-{timestamp}` for affected apps
+  - Value: `latest` for unaffected apps (reuses existing images)
+
+**E2E Test Job Variables**:
+- `{APP_NAME}_URL`: Per-app preview URLs in uppercase (e.g., `EXPRESSJS_MONOREPO_TEMPLATE_WEB_URL`)
+  - Generated from ingress hostnames
+  - Used by Playwright config to target specific app
+  - Example: `EXPRESSJS_MONOREPO_TEMPLATE_WEB_URL=https://web-pr-123.preview.platform.hmcts.net`
 
 ## 7. GitHub PR Labels for Cleanup
 
-The following labels must be added to PRs to enable automated cleanup by the platform:
+The following labels are automatically added to PRs to enable automated cleanup by the platform:
 
-- `ns:rpe` - Namespace identifier
-- `prd:rpe` - Product identifier
-- `rel:rpe-expressjs-monorepo-template-pr-{number}` - Release name (must match Helm release)
+- `ns:{team}` - Namespace identifier (e.g., `ns:rpe`)
+- `prd:{team}` - Product identifier (e.g., `prd:rpe`)
+- `rel:{team}-{application}-pr-{number}` - Release name (e.g., `rel:rpe-expressjs-monorepo-template-pr-123`)
+
+Labels are dynamically generated from the root Helm chart metadata and must match the Helm release name.
 
 These labels enable the platform to:
 - Identify which namespace the preview environment belongs to
