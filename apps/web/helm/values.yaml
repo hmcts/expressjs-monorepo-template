@@ -2,7 +2,7 @@ nodejs:
   applicationPort: 3000
   aadIdentityName: rpe
   ingressHost: expressjs-monorepo-template-web.{{ .Values.global.environment }}.platform.hmcts.net
-  image: 'hmctspublic.azurecr.io/rpe/expressjs-monorepo:latest'
+  image: 'hmctspublic.azurecr.io/rpe/expressjs-monorepo-template-web:latest'
   environment:
     REDIS_HOST: 'rpe-{{ .Values.global.environment }}.redis.cache.windows.net'
   keyVaults:

@@ -7,24 +7,16 @@ web:
   enabled: true
   expressjs-monorepo-template-web:
     nodejs:
-      image: "hmctspublic.azurecr.io/${TEAM_NAME}/${TEAM_NAME}-${APPLICATION_NAME}-web:${WEB_IMAGE}"
-      ingressHost: "web-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+      image: "hmctspublic.azurecr.io/rpe/expressjs-monorepo-template-web:${WEB_IMAGE}"
+      ingressHost: "expressjs-monorepo-template-web-pr-${CHANGE_ID}.preview.platform.hmcts.net"
       applicationPort: 3000
-      aadIdentityName: ${TEAM_NAME}
+      aadIdentityName: rpe
       environment:
         NODE_ENV: "preview"
-        API_URL: "http://api-pr-${CHANGE_ID}:3001"
-        DATABASE_URL: "postgresql://{{ .Release.Name }}-postgresql:5432/pr-${CHANGE_ID}-${APPLICATION_NAME}"
-        REDIS_HOST: "${TEAM_NAME}-preview.redis.cache.windows.net"
-      resources:
-        limits:
-          memory: "256Mi"
-          cpu: "200m"
-        requests:
-          memory: "128Mi"
-          cpu: "50m"
+        DATABASE_URL: "postgresql://{{ .Release.Name }}-postgresql:5432/pr-${CHANGE_ID}-expressjs-monorepo-template"
+        REDIS_HOST: "rpe-preview.redis.cache.windows.net"
       keyVaults:
-        ${TEAM_NAME}:
+        rpe:
           secrets:
             - redis-access-key
             - app-insights-connection-string
@@ -34,23 +26,16 @@ api:
   enabled: true
   expressjs-monorepo-template-api:
     nodejs:
-      image: "hmctspublic.azurecr.io/${TEAM_NAME}/${TEAM_NAME}-${APPLICATION_NAME}-api:${API_IMAGE}"
-      ingressHost: "${APPLICATION_NAME}-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+      image: "hmctspublic.azurecr.io/rpe/expressjs-monorepo-template-api:${API_IMAGE}"
+      ingressHost: "expressjs-monorepo-template-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
       applicationPort: 3001
-      aadIdentityName: ${TEAM_NAME}
+      aadIdentityName: rpe
       environment:
         NODE_ENV: "preview"
-        DATABASE_URL: "postgresql://{{ .Release.Name }}-postgresql:5432/pr-${CHANGE_ID}-${APPLICATION_NAME}"
-        REDIS_HOST: "${TEAM_NAME}-preview.redis.cache.windows.net"
-      resources:
-        limits:
-          memory: "256Mi"
-          cpu: "200m"
-        requests:
-          memory: "128Mi"
-          cpu: "50m"
+        DATABASE_URL: "postgresql://{{ .Release.Name }}-postgresql:5432/pr-${CHANGE_ID}-expressjs-monorepo-template"
+        REDIS_HOST: "rpe-preview.redis.cache.windows.net"
       keyVaults:
-        ${TEAM_NAME}:
+        rpe:
           secrets:
             - redis-access-key
             - app-insights-connection-string
@@ -60,17 +45,17 @@ crons:
   enabled: true
   expressjs-monorepo-template-crons:
     job:
-      image: "hmctspublic.azurecr.io/${TEAM_NAME}/${TEAM_NAME}-${APPLICATION_NAME}-crons:${CRONS_IMAGE}"
+      image: "hmctspublic.azurecr.io/rpe/expressjs-monorepo-template-crons:${CRONS_IMAGE}"
       schedule: "*/5 * * * *"  # Every 5 minutes
       suspend: false
       kind: CronJob
-      aadIdentityName: ${TEAM_NAME}
+      aadIdentityName: rpe
       environment:
         NODE_ENV: "preview"
-        DATABASE_URL: "postgresql://{{ .Release.Name }}-postgresql:5432/pr-${CHANGE_ID}-${APPLICATION_NAME}"
-        REDIS_HOST: "${TEAM_NAME}-preview.redis.cache.windows.net"
+        DATABASE_URL: "postgresql://{{ .Release.Name }}-postgresql:5432/pr-${CHANGE_ID}-expressjs-monorepo-template"
+        REDIS_HOST: "rpe-preview.redis.cache.windows.net"
       keyVaults:
-        ${TEAM_NAME}:
+        rpe:
           secrets:
             - redis-access-key
             - app-insights-connection-string
@@ -78,7 +63,7 @@ crons:
 # PostgreSQL database configuration
 postgresql:
   enabled: true
-  flexibleserver: ${TEAM_NAME}-preview
+  flexibleserver: rpe-preview
   setup:
     databases:
-      - name: "pr-${CHANGE_ID}-${APPLICATION_NAME}"
+      - name: "pr-${CHANGE_ID}-expressjs-monorepo-template"
