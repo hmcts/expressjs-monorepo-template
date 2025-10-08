@@ -29,15 +29,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Enable Corepack
+        run: corepack enable
+
       - name: Setup Node.js
         uses: actions/setup-node@v5
         with:
           node-version-file: '.nvmrc'
           cache: 'yarn'
           cache-dependency-path: '**/yarn.lock'
-
-      - name: Enable Corepack
-        run: corepack enable
 
       - name: Install dependencies
         run: yarn install --immutable
@@ -148,10 +148,11 @@ jobs:
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
+      # TODO change the preview resource group and name
       - name: Get AKS credentials
         run: |
           az aks get-credentials \
-            --resource-group rpe-preview-00-rg \
+            --resource-group rpe-preview-00-rg \ 
             --name rpe-preview-00-aks \
             --overwrite-existing
 
