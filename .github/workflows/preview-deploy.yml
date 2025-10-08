@@ -30,9 +30,11 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version-file: '.nvmrc'
+          cache: 'yarn'
+          cache-dependency-path: '**/yarn.lock'
 
       - name: Enable Corepack
         run: corepack enable
@@ -58,9 +60,6 @@ jobs:
     outputs:
       timestamp: ${{ steps.metadata.outputs.timestamp }}
       short-sha: ${{ steps.metadata.outputs.short-sha }}
-      team-name: ${{ steps.metadata.outputs.team-name }}
-      application-name: ${{ steps.metadata.outputs.application-name }}
-      git-repo: ${{ steps.metadata.outputs.git-repo }}
 
     steps:
       - name: Checkout code
@@ -70,7 +69,7 @@ jobs:
 
       - name: Generate build metadata
         id: metadata
-        run: .github/scripts/generate-build-metadata.sh "${{ env.CHANGE_ID }}" "${{ github.sha }}"
+        run: .github/scripts/generate-build-metadata.sh "${{ env.CHANGE_ID }}" "${{ github.sha }}" "${{ matrix.app }}"
 
       - name: Azure Login
         uses: azure/login@v2
@@ -85,7 +84,7 @@ jobs:
 
       - name: Build and push Docker image
         run: |
-          IMAGE_NAME="${{ env.REGISTRY }}/${{ env.REGISTRY_PREFIX }}-${{ matrix.app }}"
+          IMAGE_NAME="${{ env.REGISTRY }}/${{ env.REGISTRY_PREFIX }}"
           FULL_TAG="${IMAGE_NAME}:${{ env.IMAGE_TAG }}"
 
           echo "Building image: ${FULL_TAG}"
@@ -121,10 +120,16 @@ jobs:
 
       - name: Set environment variables
         run: |
-          # Set basic metadata
-          echo "TEAM_NAME=${{ needs.build-and-publish.outputs.team-name }}" >> $GITHUB_ENV
-          echo "APPLICATION_NAME=${{ needs.build-and-publish.outputs.application-name }}" >> $GITHUB_ENV
-          echo "GIT_REPO=${{ needs.build-and-publish.outputs.git-repo }}" >> $GITHUB_ENV
+          # Read metadata from root Helm chart
+          CHART_PATH="helm/expressjs-monorepo-template/Chart.yaml"
+
+          TEAM_NAME=$(grep -A 1 'annotations:' "$CHART_PATH" | grep 'team:' | awk '{print $2}' | tr -d '"')
+          APPLICATION_NAME=$(grep '^name:' "$CHART_PATH" | awk '{print $2}' | tr -d '"')
+          GIT_REPO=$(git config --get remote.origin.url | sed 's/git@github.com:/https:\/\/github.com\//' | sed 's/\.git$//')
+
+          echo "TEAM_NAME=${TEAM_NAME}" >> $GITHUB_ENV
+          echo "APPLICATION_NAME=${APPLICATION_NAME}" >> $GITHUB_ENV
+          echo "GIT_REPO=${GIT_REPO}" >> $GITHUB_ENV
           echo "TIMESTAMP=${{ needs.build-and-publish.outputs.timestamp }}" >> $GITHUB_ENV
           echo "SHORT_SHA=${{ needs.build-and-publish.outputs.short-sha }}" >> $GITHUB_ENV
 

@@ -2,10 +2,10 @@
 set -euo pipefail
 
 # Script: generate-build-metadata.sh
-# Purpose: Generate build metadata from repository state
+# Purpose: Generate build metadata from app's Helm chart
 # Outputs:
-#   - team_name: Extracted from package.json name (first part before -)
-#   - application_name: Extracted from package.json name (after first -)
+#   - team_name: Extracted from Chart.yaml annotations.team
+#   - application_name: Extracted from Chart.yaml name
 #   - git_repo: Git repository URL (converted to HTTPS)
 #   - timestamp: Current timestamp (YYYYMMDDHHmmss format)
 #   - short_sha: Short git SHA (first 7 characters)
@@ -15,23 +15,35 @@ set -euo pipefail
 main() {
   local change_id="${1:-}"
   local git_sha="${2:-}"
+  local app_name="${3:-}"
 
-  if [ -z "$change_id" ] || [ -z "$git_sha" ]; then
-    echo "Usage: $0 <change_id> <git_sha>"
+  if [ -z "$change_id" ] || [ -z "$git_sha" ] || [ -z "$app_name" ]; then
+    echo "Usage: $0 <change_id> <git_sha> <app_name>"
     exit 1
   fi
 
-  echo "Generating build metadata..."
+  echo "Generating build metadata for app: ${app_name}..."
 
-  # Parse package.json name and extract team/app names
-  local package_name
-  package_name=$(node -p "require('./package.json').name.replace('@hmcts/', '').replace(/^@[^/]+\//, '')")
+  # Path to app's Helm chart
+  local chart_path="apps/${app_name}/helm/Chart.yaml"
 
+  if [ ! -f "$chart_path" ]; then
+    echo "Error: Chart.yaml not found at ${chart_path}"
+    exit 1
+  fi
+
+  # Extract team from Chart.yaml annotations
   local team_name
-  team_name=$(echo "$package_name" | cut -d'-' -f1)
+  team_name=$(grep -A 1 'annotations:' "$chart_path" | grep 'team:' | awk '{print $2}' | tr -d '"')
 
+  if [ -z "$team_name" ]; then
+    echo "Error: team annotation not found in ${chart_path}"
+    exit 1
+  fi
+
+  # Extract application name from Chart.yaml
   local application_name
-  application_name=$(echo "$package_name" | cut -d'-' -f2-)
+  application_name=$(grep '^name:' "$chart_path" | awk '{print $2}' | tr -d '"')
 
   # Get git repository URL (convert git@ to https://)
   local git_repo
@@ -64,7 +76,8 @@ main() {
   fi
 
   # Log results
-  echo "Package name: ${package_name}"
+  echo "App: ${app_name}"
+  echo "Chart: ${chart_path}"
   echo "Team: ${team_name}"
   echo "Application: ${application_name}"
   echo "Git repo: ${git_repo}"
@@ -72,6 +85,7 @@ main() {
   echo "Short SHA: ${short_sha}"
   echo "Registry prefix: ${registry_prefix}"
   echo "Image tag: ${image_tag}"
+  echo "Full image: ${registry_prefix}:${image_tag}"
 }
 
 main "$@"
