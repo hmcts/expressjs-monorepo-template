@@ -166,18 +166,18 @@ jobs:
 
       - name: Process values template
         run: |
-          cd helm/${TEAM_NAME}-${APPLICATION_NAME}
+          cd helm/${APPLICATION_NAME}
           envsubst < values.preview.template.yaml > values.preview.yaml
           cat values.preview.yaml
 
       - name: Update Helm dependencies
         run: |
-          cd helm/${TEAM_NAME}-${APPLICATION_NAME}
+          cd helm/${APPLICATION_NAME}
           helm dependency update
 
       - name: Deploy Helm chart
         run: |
-          cd helm/${TEAM_NAME}-${APPLICATION_NAME}
+          cd helm/${APPLICATION_NAME}
 
           RELEASE_NAME="${TEAM_NAME}-${APPLICATION_NAME}-pr-${{ env.CHANGE_ID }}"
           NAMESPACE="${TEAM_NAME}"
