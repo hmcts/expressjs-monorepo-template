@@ -11,13 +11,14 @@ set -euo pipefail
 main() {
   echo "Detecting affected apps using Turborepo..."
 
-  # Get affected apps using Turborepo (comparing against base branch)
+  # Get affected packages using Turborepo (comparing against base branch)
+  # Note: --affected and --filter cannot be used together
   local affected_json
-  affected_json=$(yarn turbo ls --affected --filter='./apps/*' --output=json 2>/dev/null || echo '{"packages":{"items":[]}}')
+  affected_json=$(yarn turbo ls --affected --output=json 2>/dev/null || echo '{"packages":{"items":[]}}')
 
-  # Extract app names and filter to only those with Dockerfiles
+  # Extract paths, filter to apps directory, strip apps/ prefix, and filter to only those with Dockerfiles
   local affected_apps
-  affected_apps=$(echo "$affected_json" | jq -r '.packages.items[].path' | while read -r app_name; do
+  affected_apps=$(echo "$affected_json" | jq -r '.packages.items[].path' | grep '^apps/' | sed 's|^apps/||' | while read -r app_name; do
     if [ -f "apps/${app_name}/Dockerfile" ]; then
       echo "$app_name"
     fi
