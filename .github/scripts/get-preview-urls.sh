@@ -73,14 +73,9 @@ main() {
   # Output JSON
   echo "$urls_json"
 
-  # Also output as individual variables for GitHub Actions
+  # Output for GitHub Actions
   if [ -n "${GITHUB_OUTPUT:-}" ]; then
     echo "urls=${urls_json}" >> "$GITHUB_OUTPUT"
-
-    # Also output individual URL variables
-    echo "$urls_json" | jq -r 'to_entries[] | "\(.key)_url=\(.value)"' | while IFS='=' read -r key value; do
-      echo "$key=$value" >> "$GITHUB_OUTPUT"
-    done
   fi
 }
 

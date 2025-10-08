@@ -15,7 +15,7 @@ export default defineConfig({
       ]
     : 'list',
   use: {
-    baseURL: process.env.TEST_URL || 'http://localhost:3000',
+    baseURL: process.env.EXPRESSJS_MONOREPO_TEMPLATE_WEB_URL || process.env.TEST_URL || 'http://localhost:3000',
     trace: 'on-first-retry',
     headless: true,
     screenshot: "only-on-failure",
@@ -27,7 +27,7 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  webServer: process.env.TEST_URL ? undefined : {
+  webServer: process.env.EXPRESSJS_MONOREPO_TEMPLATE_WEB_URL || process.env.TEST_URL ? undefined : {
     command: 'yarn dev:nowatch',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,

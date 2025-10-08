@@ -192,7 +192,7 @@ jobs:
             --set global.devMode=true \
             --set global.disableTraefikTls=false \
             --set global.tags.teamName="${TEAM_NAME}" \
-            --set global.tags.applicationName="${TEAM_NAME}-${APPLICATION_NAME}" \
+            --set global.tags.applicationName="${APPLICATION_NAME}" \
             --set global.tags.builtFrom="${GIT_REPO}" \
             --set global.tags.businessArea=CFT \
             --set global.tags.environment=development \
@@ -285,20 +285,22 @@ jobs:
       - name: Install Playwright browsers
         run: yarn playwright install --with-deps chromium
 
-      - name: Set test URL
-        id: test-url
+      - name: Set URL environment variables
         run: |
-          # Get first URL from the urls JSON as the test target
+          # Set all URL variables from preview deployment
           URLS='${{ needs.deploy-preview.outputs.urls }}'
-          FIRST_URL=$(echo "$URLS" | jq -r 'to_entries[0].value // empty')
 
-          if [ -z "$FIRST_URL" ]; then
+          if [ "$URLS" = "{}" ] || [ -z "$URLS" ]; then
             echo "Error: No URLs found in deployment"
             exit 1
           fi
 
-          echo "TEST_URL=${FIRST_URL}" >> $GITHUB_ENV
-          echo "Testing against: ${FIRST_URL}"
+          # Convert JSON to uppercase env vars: {"web": "https://..."} -> WEB_URL=https://...
+          echo "$URLS" | jq -r 'to_entries[] | "\(.key | ascii_upcase)_URL=\(.value)"' >> $GITHUB_ENV
+
+          # Log what we set
+          echo "Set the following URL environment variables:"
+          echo "$URLS" | jq -r 'to_entries[] | "  \(.key | ascii_upcase)_URL=\(.value)"'
 
       - name: Run E2E tests against preview
         run: yarn test:e2e
