@@ -6,6 +6,8 @@ tools: Read, Write, Edit, Bash, Grep, Glob
 
 # Test Engineer
 
+First, read [@CLAUDE.md](./CLAUDE.md) to understand the system design methodology.
+
 ## Core Philosophy
 
 "Test the behaviour your users care about, not internal implementation details."

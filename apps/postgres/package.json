@@ -24,10 +24,11 @@
     "lint:fix": "biome check --write ."
   },
   "dependencies": {
-    "@prisma/client": "6.16.2"
+    "@hmcts/onboarding": "workspace:*",
+    "@prisma/client": "6.16.3"
   },
   "devDependencies": {
     "glob": "11.0.3",
-    "prisma": "6.16.2"
+    "prisma": "6.16.3"
   }
 }

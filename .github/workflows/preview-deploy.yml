@@ -1,0 +1,307 @@
+name: Preview Deployment
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - master
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+env:
+  CHANGE_ID: ${{ github.event.pull_request.number }}
+  SHORT_SHA: ${{ github.sha }}
+  REGISTRY: hmctspublic.azurecr.io
+
+jobs:
+  detect-affected:
+    name: Detect Affected Apps
+    runs-on: ubuntu-latest
+    outputs:
+      affected-apps: ${{ steps.detect.outputs.affected-apps }}
+      helm-apps: ${{ steps.detect.outputs.helm-apps }}
+      has-changes: ${{ steps.detect.outputs.has-changes }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Detect affected apps
+        id: detect
+        run: .github/scripts/detect-affected-apps.sh
+
+  build-and-publish:
+    name: Build & Publish ${{ matrix.app }}
+    runs-on: ubuntu-latest
+    needs: detect-affected
+    if: needs.detect-affected.outputs.has-changes == 'true'
+    strategy:
+      matrix:
+        app: ${{ fromJson(needs.detect-affected.outputs.affected-apps) }}
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      timestamp: ${{ steps.metadata.outputs.timestamp }}
+      short-sha: ${{ steps.metadata.outputs.short-sha }}
+      team-name: ${{ steps.metadata.outputs.team-name }}
+      application-name: ${{ steps.metadata.outputs.application-name }}
+      git-repo: ${{ steps.metadata.outputs.git-repo }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate build metadata
+        id: metadata
+        run: .github/scripts/generate-build-metadata.sh "${{ env.CHANGE_ID }}" "${{ github.sha }}"
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Login to ACR
+        run: |
+          az acr login --name hmctspublic
+
+      - name: Build and push Docker image
+        run: |
+          IMAGE_NAME="${{ env.REGISTRY }}/${{ env.REGISTRY_PREFIX }}-${{ matrix.app }}"
+          FULL_TAG="${IMAGE_NAME}:${{ env.IMAGE_TAG }}"
+
+          echo "Building image: ${FULL_TAG}"
+
+          docker build \
+            --build-arg BUILDPLATFORM=linux/amd64 \
+            --tag "${FULL_TAG}" \
+            --file apps/${{ matrix.app }}/Dockerfile \
+            .
+
+          echo "Pushing image: ${FULL_TAG}"
+          docker push "${FULL_TAG}"
+
+          echo "Successfully pushed ${FULL_TAG}"
+
+  deploy-preview:
+    name: Deploy to Preview
+    runs-on: ubuntu-latest
+    needs: [detect-affected, build-and-publish]
+    if: needs.detect-affected.outputs.has-changes == 'true'
+    environment:
+      name: preview
+    outputs:
+      urls: ${{ steps.preview-urls.outputs.urls }}
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set environment variables
+        run: |
+          # Set basic metadata
+          echo "TEAM_NAME=${{ needs.build-and-publish.outputs.team-name }}" >> $GITHUB_ENV
+          echo "APPLICATION_NAME=${{ needs.build-and-publish.outputs.application-name }}" >> $GITHUB_ENV
+          echo "GIT_REPO=${{ needs.build-and-publish.outputs.git-repo }}" >> $GITHUB_ENV
+          echo "TIMESTAMP=${{ needs.build-and-publish.outputs.timestamp }}" >> $GITHUB_ENV
+          echo "SHORT_SHA=${{ needs.build-and-publish.outputs.short-sha }}" >> $GITHUB_ENV
+
+          # Set dynamic image variables
+          .github/scripts/set-image-variables.sh \
+            '${{ needs.detect-affected.outputs.affected-apps }}' \
+            '${{ needs.detect-affected.outputs.helm-apps }}' \
+            '${{ env.CHANGE_ID }}' \
+            '${{ needs.build-and-publish.outputs.short-sha }}' \
+            '${{ needs.build-and-publish.outputs.timestamp }}'
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Get AKS credentials
+        run: |
+          az aks get-credentials \
+            --resource-group rpe-preview-00-rg \
+            --name rpe-preview-00-aks \
+            --overwrite-existing
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: '3.13.0'
+
+      - name: Login to Helm registry
+        run: |
+          az acr login --name hmctspublic
+
+      - name: Process values template
+        run: |
+          cd helm/${TEAM_NAME}-${APPLICATION_NAME}
+          envsubst < values.preview.template.yaml > values.preview.yaml
+          cat values.preview.yaml
+
+      - name: Update Helm dependencies
+        run: |
+          cd helm/${TEAM_NAME}-${APPLICATION_NAME}
+          helm dependency update
+
+      - name: Deploy Helm chart
+        run: |
+          cd helm/${TEAM_NAME}-${APPLICATION_NAME}
+
+          RELEASE_NAME="${TEAM_NAME}-${APPLICATION_NAME}-pr-${{ env.CHANGE_ID }}"
+          NAMESPACE="${TEAM_NAME}"
+
+          helm upgrade --install "${RELEASE_NAME}" . \
+            --namespace "${NAMESPACE}" \
+            --create-namespace \
+            --values values.preview.yaml \
+            --set global.tenantId="${{ secrets.AZURE_TENANT_ID }}" \
+            --set global.environment=preview \
+            --set global.enableKeyVaults=true \
+            --set global.devMode=true \
+            --set global.disableTraefikTls=false \
+            --set global.tags.teamName="${TEAM_NAME}" \
+            --set global.tags.applicationName="${TEAM_NAME}-${APPLICATION_NAME}" \
+            --set global.tags.builtFrom="${GIT_REPO}" \
+            --set global.tags.businessArea=CFT \
+            --set global.tags.environment=development \
+            --wait \
+            --timeout 10m
+
+      - name: Get preview URLs from ingress
+        id: preview-urls
+        run: |
+          RELEASE_NAME="${TEAM_NAME}-${APPLICATION_NAME}-pr-${{ env.CHANGE_ID }}"
+          .github/scripts/get-preview-urls.sh "${{ env.TEAM_NAME }}" "$RELEASE_NAME"
+
+      - name: Add PR labels for cleanup
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const teamName = '${{ env.TEAM_NAME }}';
+            const applicationName = '${{ env.APPLICATION_NAME }}';
+            const labels = [
+              `ns:${teamName}`,
+              `prd:${teamName}`,
+              `rel:${teamName}-${applicationName}-pr-${{ env.CHANGE_ID }}`
+            ];
+
+            for (const label of labels) {
+              try {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  labels: [label]
+                });
+              } catch (error) {
+                console.log(`Failed to add label ${label}: ${error.message}`);
+              }
+            }
+
+      - name: Comment preview URLs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const urls = JSON.parse('${{ steps.preview-urls.outputs.urls }}' || '{}');
+
+            // Build URL list dynamically from ingress resources
+            const urlList = Object.entries(urls)
+              .map(([app, url]) => {
+                const appName = app.split('_').map(word =>
+                  word.charAt(0).toUpperCase() + word.slice(1)
+                ).join(' ');
+                return `- **${appName}**: ${url}`;
+              })
+              .join('\n            ');
+
+            const body = `## Preview Deployment Successful 🚀
+
+            Your preview environment is ready:
+
+            ${urlList || '_(No ingress URLs found)_'}
+
+            The environment will be automatically cleaned up when this PR is closed.`;
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+
+  e2e-tests:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: deploy-preview
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Install Playwright browsers
+        run: yarn playwright install --with-deps chromium
+
+      - name: Set test URL
+        id: test-url
+        run: |
+          # Get first URL from the urls JSON as the test target
+          URLS='${{ needs.deploy-preview.outputs.urls }}'
+          FIRST_URL=$(echo "$URLS" | jq -r 'to_entries[0].value // empty')
+
+          if [ -z "$FIRST_URL" ]; then
+            echo "Error: No URLs found in deployment"
+            exit 1
+          fi
+
+          echo "TEST_URL=${FIRST_URL}" >> $GITHUB_ENV
+          echo "Testing against: ${FIRST_URL}"
+
+      - name: Run E2E tests against preview
+        run: yarn test:e2e
+
+      - name: Upload test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: e2e-tests/playwright-report/
+          retention-days: 7

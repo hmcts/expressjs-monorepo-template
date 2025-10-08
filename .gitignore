@@ -12,7 +12,6 @@ database/build
 npm-debug.log*
 
 # Environment variables
-.env
 .env.*.local
 .env.local
 
@@ -36,6 +35,6 @@ lcov.info
 # intellij
 .idea/
 
-# mcp env vars
+# agentic env vars
 .mcp.env
-
+.claude/claude.env

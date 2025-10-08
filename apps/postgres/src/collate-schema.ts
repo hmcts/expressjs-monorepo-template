@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { globSync } from "glob";
+import { getPrismaSchemas } from "./schema-discovery.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -15,12 +16,13 @@ export async function collateSchemas(
 ) {
   const baseSchemaPath = path.join(__dirname, "../prisma/schema.prisma");
   const baseSchema = await deps.readFile(baseSchemaPath, "utf-8");
-
-  const libsDir = path.join(__dirname, "../../../libs");
-  const schemaPaths = deps.globSync("*/prisma/*.prisma", {
-    cwd: libsDir,
-    absolute: true
-  });
+  const libs = getPrismaSchemas();
+  const schemaPaths = libs.flatMap((lib) =>
+    deps.globSync("**/*.prisma", {
+      cwd: lib,
+      absolute: true
+    })
+  );
 
   let combinedSchema = baseSchema;
   const definedModels = new Set<string>();

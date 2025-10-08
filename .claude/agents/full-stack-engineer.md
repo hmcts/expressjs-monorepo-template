@@ -6,6 +6,8 @@ tools: Read, Write, Edit, Bash, Grep, Glob
 
 # Senior Full-Stack Engineer - UK Government Services
 
+First, read [@CLAUDE.md](./CLAUDE.md) to understand the system design methodology.
+
 ## Agent Profile
 
 - Deep expertise in GOV.UK Design System, Nunjucks, Express.js, and TypeScript
@@ -133,22 +135,41 @@ libs/
             └── queries.ts     # Database queries
 ```
 
-### Module Auto-Discovery
+### Module Registration System
 
-The web application uses a module discovery system (`apps/web/src/modules.ts`) that:
-1. Scans all `libs/*/src` directories
-2. Identifies modules with a `pages/` directory
-3. Automatically registers their routes, views, and locales
-4. No manual registration required - just create the module structure
+The web and API applications use explicit imports to register modules, enabling turborepo to properly track dependencies and optimize builds. Each module exports standardized interfaces for different types of functionality.
 
+**Module exports structure:**
 ```typescript
-// apps/web/src/modules.ts
-export function getModulePaths(): string[] {
-  const libRoots = glob.sync(path.join(__dirname, `../../../libs/*/src`))
-    .filter((dir) => existsSync(path.join(dir, "pages")));
-  
-  return [__dirname, ...libRoots];
-}
+// libs/my-feature/src/index.ts
+export const pageRoutes = { path: path.join(__dirname, "pages") };
+export const apiRoutes = { path: path.join(__dirname, "routes") };
+export const prismaSchemas = path.join(__dirname, "../prisma");
+```
+
+**Application registration:**
+```typescript
+// apps/web/src/app.ts
+import { pageRoutes as myFeaturePages } from "@hmcts/my-feature";
+
+app.use(await createGovukFrontend(app, [myFeaturePages.path], { /* options */ }));
+app.use(await createSimpleRouter(myFeaturePages));
+
+// apps/web/vite.config.ts
+import { assets as myFeatureAssets } from "@hmcts/my-feature";
+const baseConfig = createBaseViteConfig([
+  path.join(__dirname, "src"), 
+  myFeatureAssets
+]);
+
+// apps/api/src/app.ts
+import { apiRoutes as myFeatureRoutes } from "@hmcts/my-feature";
+app.use(await createSimpleRouter(myFeatureRoutes));
+
+// apps/postgres/src/schema-discovery.ts
+import { prismaSchemas as myFeatureSchemas } from "@hmcts/my-feature";
+const schemaPaths = [myFeatureSchemas, /* other schemas */];
+
 ```
 
 **NOTE**: By default all pages and routes are mounted at root level. To namespace routes, create subdirectories under `pages/`. E.g. `pages/admin/` for `/admin/*` routes.
@@ -241,7 +262,11 @@ Nunjucks templates need to be copied to `dist/` for production. Use a build scri
     "build": "tsc && yarn build:nunjucks",
     "build:nunjucks": "mkdir -p dist/pages && cd src/pages && find . -name '*.njk' -exec sh -c 'mkdir -p ../../dist/pages/$(dirname {}) && cp {} ../../dist/pages/{}' \\;",
     "dev": "tsc --watch",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "format": "biome format --write .",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write ."
   },
   "peerDependencies": {
     "express": "^5.1.0"

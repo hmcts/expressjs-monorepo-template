@@ -15,7 +15,7 @@ export default defineConfig({
       ]
     : 'list',
   use: {
-    baseURL: 'http://localhost:3000',
+    baseURL: process.env.TEST_URL || 'http://localhost:3000',
     trace: 'on-first-retry',
     headless: true,
     screenshot: "only-on-failure",
@@ -27,7 +27,7 @@ export default defineConfig({
       use: { ...devices['Desktop Chrome'] },
     },
   ],
-  webServer: {
+  webServer: process.env.TEST_URL ? undefined : {
     command: 'yarn dev:nowatch',
     url: 'http://localhost:3000',
     reuseExistingServer: !process.env.CI,

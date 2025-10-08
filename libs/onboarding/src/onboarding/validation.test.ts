@@ -24,7 +24,7 @@ describe("nameSchema", () => {
     const result = nameSchema.safeParse(invalidData);
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.errors[0].message).toBe("Enter your first name");
+      expect(result.error.issues[0].message).toBe("Enter your first name");
     }
   });
 
@@ -76,7 +76,7 @@ describe("dobSchema", () => {
     const result = dobSchema.safeParse(invalidData);
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.errors[0].message).toBe("Enter a real date");
+      expect(result.error.issues[0].message).toBe("Enter a real date");
     }
   });
 
@@ -93,7 +93,7 @@ describe("dobSchema", () => {
     const result = dobSchema.safeParse(underage);
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.errors[0].message).toBe("You must be at least 16 years old");
+      expect(result.error.issues[0].message).toBe("You must be at least 16 years old");
     }
   });
 
@@ -152,7 +152,7 @@ describe("addressSchema", () => {
     const result = addressSchema.safeParse(invalidData);
     expect(result.success).toBe(false);
     if (!result.success) {
-      expect(result.error.errors[0].message).toBe("Enter a real postcode");
+      expect(result.error.issues[0].message).toBe("Enter a real postcode");
     }
   });
 });

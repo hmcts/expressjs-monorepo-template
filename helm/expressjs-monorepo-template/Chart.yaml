@@ -1,0 +1,19 @@
+apiVersion: v2
+name: expressjs-monorepo-template
+description: Umbrella chart for deploying all services
+type: application
+version: 0.0.1
+home: https://github.com/hmcts/expressjs-monorepo-template
+dependencies:
+  - name: expressjs-monorepo-template-web
+    version: 0.0.1
+    repository: "file://../../apps/web/helm"
+    condition: web.enabled
+  - name: expressjs-monorepo-template-api
+    version: 0.0.1
+    repository: "file://../../apps/api/helm"
+    condition: api.enabled
+  - name: expressjs-monorepo-template-crons
+    version: 0.0.1
+    repository: "file://../../apps/crons/helm"
+    condition: crons.enabled

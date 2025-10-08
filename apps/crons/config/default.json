@@ -1,0 +1,6 @@
+{
+  "serviceName": "expressjs-monorepo-template-crons",
+  "applicationInsights": {
+    "enabled": false
+  }
+}

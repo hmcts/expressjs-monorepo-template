@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { collateSchemas } from "./collate-schema.js";
 
+vi.mock("./schema-discovery.js", () => ({
+  getPrismaSchemas: vi.fn().mockReturnValue(["/home/user/project/libs/auth/prisma", "/home/user/project/libs/posts/prisma"])
+}));
+
 describe("collate-schema", () => {
   const originalConsoleLog = console.log;
   const originalConsoleError = console.error;
@@ -59,13 +63,20 @@ enum Status {
       readFile: vi.fn().mockResolvedValueOnce(baseSchema).mockResolvedValueOnce(libSchema1).mockResolvedValueOnce(libSchema2),
       writeFile: vi.fn().mockResolvedValue(undefined),
       mkdir: vi.fn().mockResolvedValue(undefined),
-      globSync: vi.fn().mockReturnValue(["/home/user/project/libs/auth/prisma/schema.prisma", "/home/user/project/libs/posts/prisma/schema.prisma"])
+      globSync: vi
+        .fn()
+        .mockReturnValueOnce(["/home/user/project/libs/auth/prisma/schema.prisma"])
+        .mockReturnValueOnce(["/home/user/project/libs/posts/prisma/schema.prisma"])
     };
 
     await collateSchemas(mockDeps);
 
-    expect(mockDeps.globSync).toHaveBeenCalledWith("*/prisma/*.prisma", {
-      cwd: expect.stringContaining("/libs"),
+    expect(mockDeps.globSync).toHaveBeenCalledWith("**/*.prisma", {
+      cwd: "/home/user/project/libs/auth/prisma",
+      absolute: true
+    });
+    expect(mockDeps.globSync).toHaveBeenCalledWith("**/*.prisma", {
+      cwd: "/home/user/project/libs/posts/prisma",
       absolute: true
     });
 
@@ -114,7 +125,7 @@ enum Role {
       readFile: vi.fn().mockResolvedValueOnce(baseSchema).mockResolvedValueOnce(libSchema1).mockResolvedValueOnce(libSchema2),
       writeFile: vi.fn().mockResolvedValue(undefined),
       mkdir: vi.fn().mockResolvedValue(undefined),
-      globSync: vi.fn().mockReturnValue(["/libs/auth/prisma/schema.prisma", "/libs/users/prisma/schema.prisma"])
+      globSync: vi.fn().mockReturnValueOnce(["/libs/auth/prisma/schema.prisma"]).mockReturnValueOnce(["/libs/users/prisma/schema.prisma"])
     };
 
     await collateSchemas(mockDeps);
@@ -141,7 +152,7 @@ enum Role {
       readFile: vi.fn().mockResolvedValueOnce(baseSchema).mockResolvedValueOnce(emptySchema),
       writeFile: vi.fn().mockResolvedValue(undefined),
       mkdir: vi.fn().mockResolvedValue(undefined),
-      globSync: vi.fn().mockReturnValue(["/libs/empty/prisma/schema.prisma"])
+      globSync: vi.fn().mockReturnValueOnce(["/libs/empty/prisma/schema.prisma"]).mockReturnValueOnce([])
     };
 
     await collateSchemas(mockDeps);
@@ -173,7 +184,7 @@ enum Role {
       readFile: vi.fn().mockResolvedValueOnce(baseSchema).mockResolvedValueOnce(complexSchema),
       writeFile: vi.fn().mockResolvedValue(undefined),
       mkdir: vi.fn().mockResolvedValue(undefined),
-      globSync: vi.fn().mockReturnValue(["/libs/complex/prisma/schema.prisma"])
+      globSync: vi.fn().mockReturnValueOnce(["/libs/complex/prisma/schema.prisma"]).mockReturnValueOnce([])
     };
 
     await collateSchemas(mockDeps);

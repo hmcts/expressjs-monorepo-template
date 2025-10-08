@@ -14,7 +14,9 @@
         "-i",
         "--rm",
         "--env-file", ".mcp.env",
-        "-e", "ENABLED_TOOLS=jira_get_issue,jira_search",
+        "-e", "ENABLED_TOOLS=jira_get_issue,jira_download_attachments,jira_search",
+        "-v", "${PWD}:/workspace",
+        "-w", "/workspace",
         "ghcr.io/sooperset/mcp-atlassian:latest"
       ]
     }

@@ -6,6 +6,42 @@ Production-ready Node.js starter with cloud-native capabilities for building HMC
 
 This template provides everything you need to create accessible, secure, and scalable applications that meet GDS and HMCTS standards.
 
+## 📋 Using This Template
+
+This monorepo will contain all your apps, libraries, and infrastructure for your HMCTS service.
+
+### Naming Convention
+
+- **Team name**: Your HMCTS service (e.g., CaTH, Divorce, Civil)
+- **Product name**: The specific product/service (e.g., Possessions, Money-Claims)
+- If the product encompasses the whole service, use "Service"
+
+**Examples:**
+- Team: CaTH, Product: Service → `cath-service`
+- Team: Civil, Product: Money-Claims → `civil-money-claims`
+
+### Setup Steps
+
+1. **Run the initialization script**:
+```bash
+./.github/scripts/init.sh
+```
+
+The script will:
+- Prompt for your team name (e.g., `CaTH`)
+- Prompt for your product name (e.g., `Service`)
+- Replace all template values throughout the codebase
+- Rebuild the yarn lockfile
+- Run tests to verify everything works
+- Remove itself after completion
+
+3. **Review and commit**:
+```bash
+git add .
+git commit -m "Initialize from template"
+git push
+```
+
 ## ✨ Key Features
 
 ### Cloud Native Platform
@@ -50,18 +86,18 @@ expressjs-monorepo-template/
 │   ├── api/                    # REST API server (Express 5.x)
 │   ├── web/                    # Web frontend (Express 5.x + Nunjucks)
 │   └── postgres/               # Database configuration (Prisma)
-├── libs/                       # Modular packages (auto-discovered)
+├── libs/                       # Modular packages (explicitly registered)
 │   ├── cloud-native-platform/  # Cloud Native Platform features
 │   ├── express-gov-uk-starter/ # GOV.UK Frontend integration
 │   ├── simple-router/          # Simple Router features
 │   ├── footer-pages/           # Module with example footer pages
 │   └── [your-module]/          # Your feature modules
 │       └── src/
-│           ├── pages/          # Page routes (auto-registered)
-│           ├── routes/         # API routes (auto-registered)
+│           ├── pages/          # Page routes (imported in web app)
+│           ├── routes/         # API routes (imported in API app)
 │           ├── prisma/         # Prisma schema
-│           ├── locales/        # Translations (auto-loaded)
-│           └── assets/         # Module assets (auto-compiled)
+│           ├── locales/        # Translations (loaded by govuk-starter)
+│           └── assets/         # Module assets (compiled by vite)
 ├── e2e-tests/                  # End-to-end tests (Playwright)
 ├── docs/                       # Documentation and ADRs
 └── package.json                # Root configuration
@@ -140,7 +176,10 @@ cd libs/my-feature
     "build:nunjucks": "mkdir -p dist/pages && cd src/pages && find . -name '*.njk' -exec sh -c 'mkdir -p ../../dist/pages/$(dirname {}) && cp {} ../../dist/pages/{}' \\;",
     "dev": "tsc --watch",
     "test": "vitest run",
-    "test:watch": "vitest watch"
+    "test:watch": "vitest watch",
+    "format": "biome format --write .",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write ."
   },
   "peerDependencies": {
     "express": "^5.1.0"
@@ -176,24 +215,42 @@ cd libs/my-feature
 }
 ```
 
-5. **Module auto-discovery**:
-If your module contains a `pages/` directory, it will be automatically discovered and loaded by the web application.
+5. **Create src/index.ts with module exports**:
+```typescript
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Business logic exports
+export * from "./my-feature/service.js";
+
+// Module configuration for app registration
+export const pageRoutes = { path: path.join(__dirname, "pages") };
+export const apiRoutes = { path: path.join(__dirname, "routes") };
+export const prismaSchemas = path.join(__dirname, "../prisma");
+export const assets = path.join(__dirname, "assets/");
+```
+
+6. **Register module in applications**:
+   - **For web app** (if module has pages): Add import and route to `apps/web/src/app.ts`
+   - **For API app** (if module has routes): Add import and route to `apps/api/src/app.ts`
+   - **For database schemas** (if module has prisma): Add import to `apps/postgres/src/index.ts`
+   - **Add dependency** to relevant app package.json files: `"@hmcts/my-feature": "workspace:*"`
 
 ## 🧪 Testing Strategy
 
 | Type | Tool | Location | Purpose |
 |------|------|----------|---------|
 | **Unit Tests** | Vitest | Co-located `*.test.ts` | Business logic validation |
-| **Integration Tests** | Vitest + Supertest | `apps/*/src/**/*.test.ts` | API endpoint testing |
 | **E2E Tests** | Playwright | `e2e-tests/` | User journey validation |
 | **Accessibility Tests** | Axe-core + Playwright | `e2e-tests/` | WCAG 2.1 AA compliance |
 
 ```bash
 # Run specific test suites
-yarn test                    # All tests
-yarn test:unit              # Unit tests only
+yarn test                   # Unit tests
 yarn test:e2e               # E2E tests
-yarn test:a11y              # Accessibility tests
 yarn test:coverage          # Coverage report
 ```
 

@@ -1,0 +1,25 @@
+{
+  "name": "@hmcts/crons",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "format": "biome format --write .",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write ."
+  },
+  "dependencies": {
+    "@hmcts/cloud-native-platform": "workspace:*",
+    "@hmcts/postgres": "workspace:*",
+    "config": "4.1.1"
+  },
+  "devDependencies": {
+    "@types/config": "3.3.5",
+    "@types/node": "24.7.0"
+  }
+}

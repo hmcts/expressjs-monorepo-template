@@ -7,9 +7,9 @@
     "dev": "concurrently -r \"yarn:dev:watch\" \"yarn:build:dev:watch\"",
     "dev:watch": "mkdir -p dist/assets; nodemon -w yarn.lock -w dist/assets -w src -w ../../libs -e 'json,ts,scss,js,css' -x tsx src/server.ts",
     "dev:nowatch": "yarn build:dev && tsx src/server.ts",
-    "build:dev:watch": "NODE_OPTIONS='--import tsx' vite build --watch",
-    "build:dev": "NODE_OPTIONS='--import tsx' vite build",
-    "build": "tsc && vite build --configLoader runner",
+    "build:dev:watch": "yarn build:dev --watch",
+    "build:dev": "NODE_OPTIONS='--import tsx' vite build --config vite.build.ts",
+    "build": "tsc && vite build --config vite.build.ts --configLoader runner",
     "clean": "rm -rf dist",
     "start": "node dist/server.js",
     "test": "vitest run",
@@ -23,6 +23,7 @@
     "@hmcts/cookie-manager": "1.1.0",
     "@hmcts/express-govuk-starter": "workspace:*",
     "@hmcts/footer-pages": "workspace:*",
+    "@hmcts/onboarding": "workspace:*",
     "@hmcts/postgres": "workspace:*",
     "@hmcts/simple-router": "workspace:*",
     "compression": "1.8.1",
@@ -35,7 +36,7 @@
     "govuk-frontend": "5.12.0",
     "helmet": "8.1.0",
     "nunjucks": "3.2.4",
-    "redis": "5.8.2"
+    "redis": "5.8.3"
   },
   "devDependencies": {
     "@types/compression": "1.8.1",
@@ -50,7 +51,7 @@
     "nodemon": "3.1.10",
     "sass": "1.93.2",
     "supertest": "7.1.4",
-    "vite": "7.1.7",
-    "vite-plugin-static-copy": "3.1.2"
+    "vite": "7.1.9",
+    "vite-plugin-static-copy": "3.1.3"
   }
 }
