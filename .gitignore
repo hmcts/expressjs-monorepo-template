@@ -38,3 +38,7 @@ lcov.info
 # agentic env vars
 .mcp.env
 .claude/claude.env
+
+# Claude Code analytics
+.claude/hooks/tool_analytics.db
+.claude/hooks/analytics.log

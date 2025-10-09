@@ -117,9 +117,17 @@ expressjs-monorepo-template/
 # Install dependencies
 yarn install
 
-# Run development server
+# Setup analytics and metrics (additional step)
+cd .claude/hooks
+yarn install
+gh auth login
+
+# Return to project root and run development server
+cd ../..
 yarn dev
 ```
+
+**Analytics Database**: All metrics are automatically stored in `.claude/hooks/tool_analytics.db` (SQLite database). This database file will need to be uploaded periodically for centralized analytics (upload destination and frequency TBD).
 
 ### Services
 

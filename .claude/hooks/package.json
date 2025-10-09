@@ -1,0 +1,21 @@
+{
+  "name": "claude-tool-analytics",
+  "version": "1.0.0",
+  "description": "Claude Code tool usage analytics tracking",
+  "main": "tool_analytics_hook.js",
+  "scripts": {
+    "start": "node tool_analytics_hook.js",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "dependencies": {
+    "sqlite3": "^5.1.7"
+  },
+  "keywords": [
+    "claude",
+    "analytics",
+    "tools",
+    "metrics"
+  ],
+  "author": "Claude Code Analytics",
+  "license": "MIT"
+}
