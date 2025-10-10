@@ -25,10 +25,10 @@
   },
   "dependencies": {
     "@hmcts/onboarding": "workspace:*",
-    "@prisma/client": "6.17.0"
+    "@prisma/client": "6.17.1"
   },
   "devDependencies": {
     "glob": "11.0.3",
-    "prisma": "6.17.0"
+    "prisma": "6.17.1"
   }
 }
