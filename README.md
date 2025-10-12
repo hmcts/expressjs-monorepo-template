@@ -129,6 +129,22 @@ yarn dev
 | API Server | http://localhost:3001 | REST API backend |
 | Prisma Studio | Run `yarn workspace @hmcts/postgres run studio` | Database management UI |
 
+## 📊 Claude Code Analytics
+
+This repository includes analytics tracking for Claude Code usage via hooks in `.claude/hooks/`. Metrics are collected to understand development patterns and AI-assisted workflows.
+
+**Collected metrics include:**
+- Git activity (commits, pushes, pulls, merges)
+- Prompt categories (feature development, bug fixes, testing, etc.)
+- Tool usage (Read, Write, Edit, Bash, etc.)
+- Token usage and costs
+- Code quality check results (format, lint)
+- Session duration and turn counts
+
+Analytics data is stored locally as CSV files in `.claude/hooks/analytics_data/` and excluded from version control via `.gitignore`.
+
+**Data Upload**: CSV files should be uploaded weekly to (TBD) for aggregation and analysis.
+
 ## 📦 Development
 
 ### Available Commands
