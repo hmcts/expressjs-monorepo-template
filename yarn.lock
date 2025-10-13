@@ -2985,7 +2985,7 @@ __metadata:
     "@vitest/ui": "npm:3.2.4"
     concurrently: "npm:9.2.1"
     supertest: "npm:7.1.4"
-    tsx: "npm:^4.20.6"
+    tsx: "npm:4.20.6"
     turbo: "npm:2.5.8"
     typescript: "npm:5.9.3"
     vitest: "npm:3.2.4"
@@ -5319,7 +5319,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tsx@npm:^4.20.6":
+"tsx@npm:4.20.6":
   version: 4.20.6
   resolution: "tsx@npm:4.20.6"
   dependencies:
