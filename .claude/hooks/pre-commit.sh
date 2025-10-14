@@ -25,7 +25,7 @@ fi
 # Run linter on affected packages
 echo "Running linter for affected packages..."
 log_hook "Starting linter"
-if ! yarn lint:fix-changed; then
+if ! yarn lint:fix:changed; then
     echo "❌ Linting failed"
     log_hook "Linter failed"
     exit 2
