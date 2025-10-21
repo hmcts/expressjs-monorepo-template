@@ -20,6 +20,6 @@
   },
   "devDependencies": {
     "@types/config": "3.3.5",
-    "@types/node": "24.9.0"
+    "@types/node": "24.9.1"
   }
 }
