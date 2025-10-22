@@ -84,14 +84,15 @@ jobs:
         run: |
           git push -u origin "${{ steps.check_branch.outputs.branch_name }}"
 
-      - name: Create prompt for Claude
+      - name: Build prompt for Claude
+        id: build_prompt
         run: |
           ISSUE_NUMBER="${{ steps.issue_details.outputs.issue_number }}"
           ISSUE_TITLE="${{ steps.issue_details.outputs.issue_title }}"
           ISSUE_BODY=$(cat /tmp/issue_body.txt)
 
-          cat > /tmp/claude-prompt.txt <<EOF
-          Fix GitHub Issue #${ISSUE_NUMBER}: ${ISSUE_TITLE}
+          # Create the prompt with proper escaping
+          PROMPT="Fix GitHub Issue #${ISSUE_NUMBER}: ${ISSUE_TITLE}
 
           Issue Description:
           ${ISSUE_BODY}
@@ -100,15 +101,19 @@ jobs:
           1. Read and understand the issue requirements carefully
           2. Analyze the codebase to identify what needs to be changed
           3. Implement the necessary changes following all standards in CLAUDE.md
-          5. Run `yarn lint`, `yarn format`, `yarn test`, and `yarn test:e2e` and fix any errors
-          7. When done, summarize what you changed and why
-          EOF
+          4. Run 'yarn lint', 'yarn format', 'yarn test', and 'yarn test:e2e' and fix any errors
+          5. When done, summarize what you changed and why"
+
+          # Save to output using delimiter to handle multiline
+          echo "prompt<<PROMPT_DELIMITER" >> $GITHUB_OUTPUT
+          echo "${PROMPT}" >> $GITHUB_OUTPUT
+          echo "PROMPT_DELIMITER" >> $GITHUB_OUTPUT
 
       - name: Run Claude Code
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.CLAUDE_API_KEY }}
-          prompt_file: /tmp/claude-prompt.txt
+          prompt: ${{ steps.build_prompt.outputs.prompt }}
           claude_args: "--max-turns 10"
 
       - name: Commit and push changes
