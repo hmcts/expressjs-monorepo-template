@@ -76,7 +76,7 @@ replace_in_files() {
     -not -path "*/coverage/*" \
     -exec grep -l "$search" {} \; 2>/dev/null | while read -r file; do
     echo "  - $file"
-    sed -i "s/$search/$replace/g" "$file"
+    sed -i -E "s/$search/$replace/g" "$file"
   done
 }
 
