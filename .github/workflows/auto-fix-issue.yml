@@ -4,7 +4,6 @@ permissions:
   issues: write
   contents: write
   pull-requests: write
-  id-token: write
 
 on:
   issues:
@@ -84,15 +83,23 @@ jobs:
         run: |
           git push -u origin "${{ steps.check_branch.outputs.branch_name }}"
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.21.0'
+
+      - name: Install Claude Code CLI
+        run: |
+          npm install -g @anthropic-ai/claude-code
+
       - name: Build prompt for Claude
-        id: build_prompt
         run: |
           ISSUE_NUMBER="${{ steps.issue_details.outputs.issue_number }}"
           ISSUE_TITLE="${{ steps.issue_details.outputs.issue_title }}"
           ISSUE_BODY=$(cat /tmp/issue_body.txt)
 
-          # Create the prompt with proper escaping
-          PROMPT="Fix GitHub Issue #${ISSUE_NUMBER}: ${ISSUE_TITLE}
+          cat > /tmp/claude-prompt.txt <<EOF
+          Fix GitHub Issue #${ISSUE_NUMBER}: ${ISSUE_TITLE}
 
           Issue Description:
           ${ISSUE_BODY}
@@ -102,19 +109,14 @@ jobs:
           2. Analyze the codebase to identify what needs to be changed
           3. Implement the necessary changes following all standards in CLAUDE.md
           4. Run 'yarn lint', 'yarn format', 'yarn test', and 'yarn test:e2e' and fix any errors
-          5. When done, summarize what you changed and why"
+          5. When done, summarize what you changed and why
+          EOF
 
-          # Save to output using delimiter to handle multiline
-          echo "prompt<<PROMPT_DELIMITER" >> $GITHUB_OUTPUT
-          echo "${PROMPT}" >> $GITHUB_OUTPUT
-          echo "PROMPT_DELIMITER" >> $GITHUB_OUTPUT
-
-      - name: Run Claude Code
-        uses: anthropics/claude-code-action@v1
-        with:
-          anthropic_api_key: ${{ secrets.CLAUDE_API_KEY }}
-          prompt: ${{ steps.build_prompt.outputs.prompt }}
-          claude_args: "--max-turns 10"
+      - name: Run Claude Code CLI
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+        run: |
+          cat /tmp/claude-prompt.txt | claude --dangerously-skip-user-approval || true
 
       - name: Commit and push changes
         id: commit_changes
