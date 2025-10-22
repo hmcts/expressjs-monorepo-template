@@ -7,12 +7,24 @@ permissions:
 
 on:
   issues:
-    types: [opened]
+    types: [opened, labeled]
+  issue_comment:
+    types: [created]
 
 jobs:
   auto-fix:
     name: Create Branch and Auto-fix with Claude
     runs-on: ubuntu-latest
+
+    # Only run if:
+    # 1. Issue was just opened, OR
+    # 2. Issue was labeled with 'retry', OR
+    # 3. Comment contains 'retry' (case-insensitive)
+    if: |
+      github.event_name == 'issues' ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue != null &&
+       contains(github.event.comment.body, 'retry'))
 
     steps:
       - name: Checkout repository
@@ -25,57 +37,78 @@ jobs:
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Create branch from issue
-        id: create_branch
+      - name: Get issue details
+        id: issue_details
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
-          ISSUE_NUMBER="${{ github.event.issue.number }}"
-          ISSUE_TITLE="${{ github.event.issue.title }}"
+          if [ "${{ github.event_name }}" = "issue_comment" ]; then
+            ISSUE_NUMBER="${{ github.event.issue.number }}"
+          else
+            ISSUE_NUMBER="${{ github.event.issue.number }}"
+          fi
+
+          echo "issue_number=${ISSUE_NUMBER}" >> $GITHUB_OUTPUT
+
+          ISSUE_DATA=$(gh issue view "${ISSUE_NUMBER}" --json title,body)
+          ISSUE_TITLE=$(echo "${ISSUE_DATA}" | jq -r '.title')
+          ISSUE_BODY=$(echo "${ISSUE_DATA}" | jq -r '.body // ""')
+
+          echo "issue_title=${ISSUE_TITLE}" >> $GITHUB_OUTPUT
+
+          # Save issue body to file for multi-line handling
+          echo "${ISSUE_BODY}" > /tmp/issue_body.txt
+
+      - name: Check if branch exists
+        id: check_branch
+        run: |
+          ISSUE_NUMBER="${{ steps.issue_details.outputs.issue_number }}"
+          ISSUE_TITLE="${{ steps.issue_details.outputs.issue_title }}"
 
           BRANCH_NAME="issue-${ISSUE_NUMBER}-$(echo "${ISSUE_TITLE}" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//' | cut -c1-50)"
 
           echo "branch_name=${BRANCH_NAME}" >> $GITHUB_OUTPUT
 
-          git checkout -b "${BRANCH_NAME}"
-          git push -u origin "${BRANCH_NAME}"
+          if git ls-remote --heads origin "${BRANCH_NAME}" | grep -q "${BRANCH_NAME}"; then
+            echo "exists=true" >> $GITHUB_OUTPUT
+            git fetch origin "${BRANCH_NAME}"
+            git checkout "${BRANCH_NAME}"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            git checkout -b "${BRANCH_NAME}"
+          fi
 
-      - name: Enable Corepack
-        run: corepack enable
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22.21.0'
-
-      - name: Cache Yarn dependencies
-        uses: actions/cache@v4
-        with:
-          path: |
-            .yarn/cache
-            .yarn/install-state.gz
-            node_modules
-          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-yarn-
-
-      - name: Install dependencies
-        run: yarn install --immutable
-
-      - name: Install Claude Code CLI
-        run: npm install -g @anthropic-ai/claude-code-cli
-
-      - name: Run Claude Code to fix issue
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+      - name: Push branch if new
+        if: steps.check_branch.outputs.exists == 'false'
         run: |
-          cat > /tmp/claude-prompt.txt <<'PROMPT_EOF'
-          Fix GitHub issue based on the following details.
+          git push -u origin "${{ steps.check_branch.outputs.branch_name }}"
 
-          Please analyze the issue, implement necessary changes following CLAUDE.md standards, run tests, and commit your changes with a clear message.
+      - name: Create prompt for Claude
+        run: |
+          ISSUE_NUMBER="${{ steps.issue_details.outputs.issue_number }}"
+          ISSUE_TITLE="${{ steps.issue_details.outputs.issue_title }}"
+          ISSUE_BODY=$(cat /tmp/issue_body.txt)
 
-          Summarize the changes when done.
-          PROMPT_EOF
+          cat > /tmp/claude-prompt.txt <<EOF
+          Fix GitHub Issue #${ISSUE_NUMBER}: ${ISSUE_TITLE}
 
-          cat /tmp/claude-prompt.txt | claude-code --non-interactive || true
+          Issue Description:
+          ${ISSUE_BODY}
+
+          Instructions:
+          1. Read and understand the issue requirements carefully
+          2. Analyze the codebase to identify what needs to be changed
+          3. Implement the necessary changes following all standards in CLAUDE.md
+          5. Run `yarn lint`, `yarn format`, `yarn test`, and `yarn test:e2e` and fix any errors
+          7. When done, summarize what you changed and why
+          EOF
+
+      - name: Run Claude Code
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.CLAUDE_API_KEY }}
+          prompt_file: /tmp/claude-prompt.txt
+          claude_args: "--max-turns 10"
 
       - name: Commit and push changes
         id: commit_changes
@@ -86,65 +119,142 @@ jobs:
             echo "has_changes=false" >> $GITHUB_OUTPUT
             echo "No changes to commit"
           else
-            git commit -m "fix: auto-fix for issue #${{ github.event.issue.number }}"
-            git push origin "${{ steps.create_branch.outputs.branch_name }}"
+            ISSUE_NUMBER="${{ steps.issue_details.outputs.issue_number }}"
+            git commit -m "fix: auto-fix for issue #${ISSUE_NUMBER}
+
+          Automatically generated by Claude Code based on issue requirements.
+
+          Issue: #${ISSUE_NUMBER}"
+            git push origin "${{ steps.check_branch.outputs.branch_name }}"
             echo "has_changes=true" >> $GITHUB_OUTPUT
           fi
 
-      - name: Create Pull Request
+      - name: Check if PR exists
+        id: check_pr
         if: steps.commit_changes.outputs.has_changes == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          ISSUE_NUMBER="${{ github.event.issue.number }}"
-          BRANCH_NAME="${{ steps.create_branch.outputs.branch_name }}"
+          BRANCH_NAME="${{ steps.check_branch.outputs.branch_name }}"
 
-          cat > /tmp/pr-body.txt <<'PR_BODY_EOF'
-          This PR was automatically generated to address the issue.
+          if gh pr list --head "${BRANCH_NAME}" --json number --jq '.[0].number' | grep -q '^[0-9]'; then
+            PR_NUMBER=$(gh pr list --head "${BRANCH_NAME}" --json number --jq '.[0].number')
+            echo "exists=true" >> $GITHUB_OUTPUT
+            echo "pr_number=${PR_NUMBER}" >> $GITHUB_OUTPUT
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+          fi
 
-          ## Changes
-          Claude Code has analyzed and attempted to fix the issue. Please review the changes carefully.
-          PR_BODY_EOF
+      - name: Create Pull Request
+        if: steps.commit_changes.outputs.has_changes == 'true' && steps.check_pr.outputs.exists == 'false'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ISSUE_NUMBER="${{ steps.issue_details.outputs.issue_number }}"
+          ISSUE_TITLE="${{ steps.issue_details.outputs.issue_title }}"
+          BRANCH_NAME="${{ steps.check_branch.outputs.branch_name }}"
 
-          echo "" >> /tmp/pr-body.txt
-          echo "Fixes #${ISSUE_NUMBER}" >> /tmp/pr-body.txt
+          cat > /tmp/pr-body.md <<EOF
+          ## Auto-fix for Issue #${ISSUE_NUMBER}
+
+          This PR was automatically generated by Claude Code to address the reported issue.
+
+          ### Issue
+          **${ISSUE_TITLE}**
+
+          ### Changes
+          Claude Code has analyzed the issue and implemented changes following the project's coding standards (see CLAUDE.md).
+
+          ### Review Checklist
+          - [ ] Changes address the issue requirements
+          - [ ] yarn lint
+          - [ ] yarn format
+          - [ ] yarn test
+          - [ ] yarn test:e2e
+
+          Fixes #${ISSUE_NUMBER}
+          EOF
 
           gh pr create \
-            --title "Auto-fix: ${{ github.event.issue.title }}" \
-            --body-file /tmp/pr-body.txt \
+            --title "fix: ${ISSUE_TITLE}" \
+            --body-file /tmp/pr-body.md \
             --base master \
             --head "${BRANCH_NAME}"
+
+      - name: Update existing PR
+        if: steps.commit_changes.outputs.has_changes == 'true' && steps.check_pr.outputs.exists == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PR_NUMBER="${{ steps.check_pr.outputs.pr_number }}"
+
+          cat > /tmp/pr-comment.md <<EOF
+          🔄 **Claude Code has pushed new changes**
+
+          The issue has been re-analyzed and additional changes have been made.
+
+          Commit: ${{ github.sha }}
+          EOF
+
+          gh pr comment "${PR_NUMBER}" --body-file /tmp/pr-comment.md
 
       - name: Comment on issue
         if: always()
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          ISSUE_NUMBER="${{ github.event.issue.number }}"
-          BRANCH_NAME="${{ steps.create_branch.outputs.branch_name }}"
+          ISSUE_NUMBER="${{ steps.issue_details.outputs.issue_number }}"
+          BRANCH_NAME="${{ steps.check_branch.outputs.branch_name }}"
           HAS_CHANGES="${{ steps.commit_changes.outputs.has_changes }}"
 
           if [ "${HAS_CHANGES}" = "true" ]; then
-            cat > /tmp/comment.txt <<'COMMENT_EOF'
-          I've created a branch and attempted to fix this issue automatically using Claude Code.
+            if [ "${{ steps.check_pr.outputs.exists }}" = "true" ]; then
+              PR_NUMBER="${{ steps.check_pr.outputs.pr_number }}"
+              cat > /tmp/comment.md <<EOF
+          🤖 **Claude Code has updated the fix**
 
-          A pull request has been created. Please review the changes.
-          COMMENT_EOF
-            echo "" >> /tmp/comment.txt
-            echo "Branch: \`${BRANCH_NAME}\`" >> /tmp/comment.txt
+          I've pushed new changes to the existing pull request #${PR_NUMBER}.
+
+          **Branch:** \`${BRANCH_NAME}\`
+
+          Review the updated changes and let me know if you need any adjustments. Comment "retry" to run the fix again.
+          EOF
+            else
+              cat > /tmp/comment.md <<EOF
+          🤖 **Claude Code has attempted to fix this issue**
+
+          I've analyzed the issue and created a pull request with proposed changes.
+
+          **Branch:** \`${BRANCH_NAME}\`
+
+          Please review the PR carefully. If the fix isn't quite right, comment "retry" on this issue to run the automation again.
+          EOF
+            fi
           else
-            cat > /tmp/comment.txt <<'COMMENT_EOF'
-          I've created a branch for this issue, but Claude Code didn't make any changes.
+            cat > /tmp/comment.md <<EOF
+          🤖 **Claude Code analyzed the issue but made no changes**
 
-          This might mean:
-          - The issue needs more clarification
-          - Manual intervention is required
-          - The issue is already resolved
+          I've reviewed the issue but didn't make any code changes. This could mean:
 
-          Please review and make changes manually if needed.
-          COMMENT_EOF
-            echo "" >> /tmp/comment.txt
-            echo "Branch: \`${BRANCH_NAME}\`" >> /tmp/comment.txt
+          - The issue needs more clarification or details
+          - The fix requires manual intervention or architectural decisions
+          - The issue might already be resolved
+          - The requested changes are ambiguous
+
+          **Branch created:** \`${BRANCH_NAME}\`
+
+          Please provide more details or comment "retry" after updating the issue description.
+          EOF
           fi
 
-          gh issue comment "${ISSUE_NUMBER}" --body-file /tmp/comment.txt
+          gh issue comment "${ISSUE_NUMBER}" --body-file /tmp/comment.md
+
+      - name: Remove retry label if present
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ISSUE_NUMBER="${{ steps.issue_details.outputs.issue_number }}"
+
+          # Remove retry label to prevent loops
+          gh issue edit "${ISSUE_NUMBER}" --remove-label "retry" 2>/dev/null || true
