@@ -1,0 +1,150 @@
+name: Auto-fix Issue
+
+permissions:
+  issues: write
+  contents: write
+  pull-requests: write
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  auto-fix:
+    name: Create Branch and Auto-fix with Claude
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Setup Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create branch from issue
+        id: create_branch
+        run: |
+          ISSUE_NUMBER="${{ github.event.issue.number }}"
+          ISSUE_TITLE="${{ github.event.issue.title }}"
+
+          BRANCH_NAME="issue-${ISSUE_NUMBER}-$(echo "${ISSUE_TITLE}" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9]/-/g' | sed 's/--*/-/g' | sed 's/^-//' | sed 's/-$//' | cut -c1-50)"
+
+          echo "branch_name=${BRANCH_NAME}" >> $GITHUB_OUTPUT
+
+          git checkout -b "${BRANCH_NAME}"
+          git push -u origin "${BRANCH_NAME}"
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22.21.0'
+
+      - name: Cache Yarn dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            .yarn/cache
+            .yarn/install-state.gz
+            node_modules
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Install Claude Code CLI
+        run: npm install -g @anthropic-ai/claude-code-cli
+
+      - name: Run Claude Code to fix issue
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+        run: |
+          cat > /tmp/claude-prompt.txt <<'PROMPT_EOF'
+          Fix GitHub issue based on the following details.
+
+          Please analyze the issue, implement necessary changes following CLAUDE.md standards, run tests, and commit your changes with a clear message.
+
+          Summarize the changes when done.
+          PROMPT_EOF
+
+          cat /tmp/claude-prompt.txt | claude-code --non-interactive || true
+
+      - name: Commit and push changes
+        id: commit_changes
+        run: |
+          git add .
+
+          if git diff --staged --quiet; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No changes to commit"
+          else
+            git commit -m "fix: auto-fix for issue #${{ github.event.issue.number }}"
+            git push origin "${{ steps.create_branch.outputs.branch_name }}"
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Create Pull Request
+        if: steps.commit_changes.outputs.has_changes == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ISSUE_NUMBER="${{ github.event.issue.number }}"
+          BRANCH_NAME="${{ steps.create_branch.outputs.branch_name }}"
+
+          cat > /tmp/pr-body.txt <<'PR_BODY_EOF'
+          This PR was automatically generated to address the issue.
+
+          ## Changes
+          Claude Code has analyzed and attempted to fix the issue. Please review the changes carefully.
+          PR_BODY_EOF
+
+          echo "" >> /tmp/pr-body.txt
+          echo "Fixes #${ISSUE_NUMBER}" >> /tmp/pr-body.txt
+
+          gh pr create \
+            --title "Auto-fix: ${{ github.event.issue.title }}" \
+            --body-file /tmp/pr-body.txt \
+            --base master \
+            --head "${BRANCH_NAME}"
+
+      - name: Comment on issue
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ISSUE_NUMBER="${{ github.event.issue.number }}"
+          BRANCH_NAME="${{ steps.create_branch.outputs.branch_name }}"
+          HAS_CHANGES="${{ steps.commit_changes.outputs.has_changes }}"
+
+          if [ "${HAS_CHANGES}" = "true" ]; then
+            cat > /tmp/comment.txt <<'COMMENT_EOF'
+          I've created a branch and attempted to fix this issue automatically using Claude Code.
+
+          A pull request has been created. Please review the changes.
+          COMMENT_EOF
+            echo "" >> /tmp/comment.txt
+            echo "Branch: \`${BRANCH_NAME}\`" >> /tmp/comment.txt
+          else
+            cat > /tmp/comment.txt <<'COMMENT_EOF'
+          I've created a branch for this issue, but Claude Code didn't make any changes.
+
+          This might mean:
+          - The issue needs more clarification
+          - Manual intervention is required
+          - The issue is already resolved
+
+          Please review and make changes manually if needed.
+          COMMENT_EOF
+            echo "" >> /tmp/comment.txt
+            echo "Branch: \`${BRANCH_NAME}\`" >> /tmp/comment.txt
+          fi
+
+          gh issue comment "${ISSUE_NUMBER}" --body-file /tmp/comment.txt
