@@ -66,6 +66,12 @@ echo "🔄 Replacing template values..."
 replace_in_files() {
   local search="$1"
   local replace="$2"
+  local grep_pattern="$3"
+
+  # Use grep_pattern if provided, otherwise use search string
+  if [ -z "$grep_pattern" ]; then
+    grep_pattern="$search"
+  fi
 
   # Find all files excluding node_modules, .git, dist directories
   find . -type f \
@@ -74,7 +80,7 @@ replace_in_files() {
     -not -path "*/dist/*" \
     -not -path "*/.turbo/*" \
     -not -path "*/coverage/*" \
-    -exec grep -l "$search" {} \; 2>/dev/null | while read -r file; do
+    -exec grep -l "$grep_pattern" {} \; 2>/dev/null | while read -r file; do
     echo "  - $file"
     sed -i "s/$search/$replace/g" "$file"
   done
@@ -91,10 +97,18 @@ echo "Replacing expressjs-monorepo..."
 replace_in_files "expressjs-monorepo" "$PRODUCT_NAME_LOWER"
 
 echo "Replacing RPE..."
-replace_in_files "\\bRPE\\b" "$TEAM_NAME_INPUT"
+# Match RPE followed by non-alphanumeric character or at end of line
+replace_in_files "RPE\([^a-zA-Z0-9_]\)" "$TEAM_NAME_INPUT\\1" "RPE"
+replace_in_files "RPE$" "$TEAM_NAME_INPUT" "RPE"
+# Match RPE at start of line
+replace_in_files "^RPE" "$TEAM_NAME_INPUT" "RPE"
 
 echo "Replacing rpe..."
-replace_in_files "\\brpe\\b" "$TEAM_NAME_LOWER"
+# Match rpe followed by non-alphanumeric character or at end of line
+replace_in_files "rpe\([^a-zA-Z0-9_]\)" "$TEAM_NAME_LOWER\\1" "rpe"
+replace_in_files "rpe$" "$TEAM_NAME_LOWER" "rpe"
+# Match rpe at start of line
+replace_in_files "^rpe" "$TEAM_NAME_LOWER" "rpe"
 
 echo ""
 echo "📦 Rebuilding lockfile..."
