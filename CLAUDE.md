@@ -84,7 +84,7 @@ mkdir -p libs/my-feature/src/assets/css # Module styles (optional)
 mkdir -p libs/my-feature/src/assets/js  # Module scripts (optional)
 ```
 
-2. **Create src/index.ts with module exports**:
+2. **Create src/config.ts for module configuration**:
 ```typescript
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -92,15 +92,21 @@ import { fileURLToPath } from "node:url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// Business logic exports
-export * from "./my-feature/service.js";
-
 // Module configuration for app registration
 export const pageRoutes = { path: path.join(__dirname, "pages") };
 export const apiRoutes = { path: path.join(__dirname, "routes") };
 export const prismaSchemas = path.join(__dirname, "../prisma");
 export const assets = path.join(__dirname, "assets/");
 ```
+
+**Create src/index.ts for business logic exports**:
+```typescript
+// Business logic exports
+export * from "./my-feature/service.js";
+export * from "./my-feature/validation.js";
+```
+
+**IMPORTANT**: Config exports (pageRoutes, apiRoutes, prismaSchemas, assets) must be in a separate `config.ts` file to avoid circular dependencies during Prisma client generation. Apps import config using the `/config` path (e.g., `@hmcts/my-feature/config`).
 
 3. **Package.json requirements**:
 ```json
@@ -112,6 +118,10 @@ export const assets = path.join(__dirname, "assets/");
     ".": {
       "production": "./dist/index.js",
       "default": "./src/index.ts"
+    },
+    "./config": {
+      "production": "./dist/config.js",
+      "default": "./src/config.ts"
     }
   },
   "scripts": {
@@ -162,24 +172,24 @@ export const assets = path.join(__dirname, "assets/");
 
 ```typescript
 // apps/web/src/app.ts
-import { pageRoutes as myFeaturePages } from "@hmcts/my-feature";
+import { pageRoutes as myFeaturePages } from "@hmcts/my-feature/config";
 
 app.use(await createGovukFrontend(app, [myFeaturePages.path], { /* options */ }));
 app.use(await createSimpleRouter(myFeaturePages));
 
 // apps/web/vite.config.ts
-import { assets as myFeatureAssets } from "@hmcts/my-feature";
+import { assets as myFeatureAssets } from "@hmcts/my-feature/config";
 const baseConfig = createBaseViteConfig([
-  path.join(__dirname, "src"), 
+  path.join(__dirname, "src"),
   myFeatureAssets
 ]);
 
 // apps/api/src/app.ts
-import { apiRoutes as myFeatureRoutes } from "@hmcts/my-feature";
+import { apiRoutes as myFeatureRoutes } from "@hmcts/my-feature/config";
 app.use(await createSimpleRouter(myFeatureRoutes));
 
 // apps/postgres/src/schema-discovery.ts
-import { prismaSchemas as myFeatureSchemas } from "@hmcts/my-feature";
+import { prismaSchemas as myFeatureSchemas } from "@hmcts/my-feature/config";
 const schemaPaths = [myFeatureSchemas, /* other schemas */];
 ```
 
@@ -192,6 +202,8 @@ libs/my-feature/
 ├── prisma/                     # Prisma schema (optional)
 │   └── schema.prisma           # Prisma schema file
 └── src/
+    ├── index.ts                # Business logic exports only
+    ├── config.ts               # Module configuration (pageRoutes, apiRoutes, etc.)
     ├── routes/                 # API routes (auto-discovered)
     │   └── my-api.ts          # API route file (if needed)
     ├── pages/                  # Page routes (auto-discovered)
