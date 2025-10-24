@@ -28,11 +28,10 @@ describe("index - cron job runner", () => {
 
   it("should configure properties volume with correct chart path", async () => {
     process.env.SCRIPT_NAME = "example";
-    const mockExampleScript = vi.fn();
 
-    vi.doMock("./example.js", () => ({
-      default: mockExampleScript
-    }));
+    // Import the example module and spy on its default export
+    const exampleModule = await import("./example.js");
+    vi.spyOn(exampleModule, "default");
 
     const { main } = await import("./index.js");
     await main();
@@ -55,11 +54,10 @@ describe("index - cron job runner", () => {
 
   it("should execute custom script when SCRIPT_NAME is provided", async () => {
     process.env.SCRIPT_NAME = "custom-job";
-    const mockCustomScript = vi.fn();
 
-    vi.doMock("./custom-job.js", () => ({
-      default: mockCustomScript
-    }));
+    // Import the custom-job module and spy on its default export
+    const customJobModule = await import("./custom-job.js");
+    const mockCustomScript = vi.spyOn(customJobModule, "default");
 
     const { main } = await import("./index.js");
     await main();
@@ -70,11 +68,6 @@ describe("index - cron job runner", () => {
   it("should throw error when script does not export a default function", async () => {
     process.env.SCRIPT_NAME = "invalid-script";
 
-    vi.doMock("./invalid-script.js", () => ({
-      default: null,
-      somethingElse: vi.fn()
-    }));
-
     const { main } = await import("./index.js");
 
     await expect(main()).rejects.toThrow('The script "invalid-script" does not export a default function.');
@@ -83,11 +76,10 @@ describe("index - cron job runner", () => {
   it("should throw error when script execution fails", async () => {
     process.env.SCRIPT_NAME = "example";
     const mockError = new Error("Script execution failed");
-    const mockFailingScript = vi.fn().mockRejectedValue(mockError);
 
-    vi.doMock("./example.js", () => ({
-      default: mockFailingScript
-    }));
+    // Import the example module and spy on its default export, making it fail
+    const exampleModule = await import("./example.js");
+    vi.spyOn(exampleModule, "default").mockRejectedValue(mockError);
 
     const { main } = await import("./index.js");
 
