@@ -1,0 +1,1070 @@
+<testsuites id="" name="" tests="20" failures="20" skipped="0" errors="0" time="44.162957999999996">
+<testsuite name="cookie-management.spec.ts" timestamp="2025-10-24T15:29:48.473Z" hostname="chromium" tests="13" failures="13" skipped="0" time="0.257" errors="0">
+<testcase name="Cookie Management › Cookie Banner › should display cookie banner on first visit" classname="cookie-management.spec.ts" time="0.019">
+<failure message="cookie-management.spec.ts:10:5 should display cookie banner on first visit" type="FAILURE">
+<![CDATA[  [chromium] › cookie-management.spec.ts:10:5 › Cookie Management › Cookie Banner › should display cookie banner on first visit 
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/cookie-management-Cookie-M-1ebde-ookie-banner-on-first-visit-chromium-retry1/trace.zip
+    Usage:
+
+        yarn playwright show-trace ../test-results/cookie-management-Cookie-M-1ebde-ookie-banner-on-first-visit-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/cookie-management-Cookie-M-1ebde-ookie-banner-on-first-visit-chromium-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Cookie Management › Cookie Banner › should not display cookie banner on cookies page" classname="cookie-management.spec.ts" time="0.02">
+<failure message="cookie-management.spec.ts:31:5 should not display cookie banner on cookies page" type="FAILURE">
+<![CDATA[  [chromium] › cookie-management.spec.ts:31:5 › Cookie Management › Cookie Banner › should not display cookie banner on cookies page 
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/cookie-management-Cookie-M-32591-okie-banner-on-cookies-page-chromium-retry1/trace.zip
+    Usage:
+
+        yarn playwright show-trace ../test-results/cookie-management-Cookie-M-32591-okie-banner-on-cookies-page-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/cookie-management-Cookie-M-32591-okie-banner-on-cookies-page-chromium-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Cookie Management › Cookie Banner › should hide banner after accepting cookies" classname="cookie-management.spec.ts" time="0.017">
+<failure message="cookie-management.spec.ts:39:5 should hide banner after accepting cookies" type="FAILURE">
+<![CDATA[  [chromium] › cookie-management.spec.ts:39:5 › Cookie Management › Cookie Banner › should hide banner after accepting cookies 
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/cookie-management-Cookie-M-7979c-ner-after-accepting-cookies-chromium-retry1/trace.zip
+    Usage:
+
+        yarn playwright show-trace ../test-results/cookie-management-Cookie-M-7979c-ner-after-accepting-cookies-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/cookie-management-Cookie-M-7979c-ner-after-accepting-cookies-chromium-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Cookie Management › Cookie Banner › should hide banner after rejecting cookies" classname="cookie-management.spec.ts" time="0.016">
+<failure message="cookie-management.spec.ts:68:5 should hide banner after rejecting cookies" type="FAILURE">
+<![CDATA[  [chromium] › cookie-management.spec.ts:68:5 › Cookie Management › Cookie Banner › should hide banner after rejecting cookies 
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/cookie-management-Cookie-M-dc639-ner-after-rejecting-cookies-chromium-retry1/trace.zip
+    Usage:
+
+        yarn playwright show-trace ../test-results/cookie-management-Cookie-M-dc639-ner-after-rejecting-cookies-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/cookie-management-Cookie-M-dc639-ner-after-rejecting-cookies-chromium-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Cookie Management › Cookie Banner › should navigate to cookie preferences page" classname="cookie-management.spec.ts" time="0.018">
+<failure message="cookie-management.spec.ts:97:5 should navigate to cookie preferences page" type="FAILURE">
+<![CDATA[  [chromium] › cookie-management.spec.ts:97:5 › Cookie Management › Cookie Banner › should navigate to cookie preferences page 
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/cookie-management-Cookie-M-6d7de--to-cookie-preferences-page-chromium-retry1/trace.zip
+    Usage:
+
+        yarn playwright show-trace ../test-results/cookie-management-Cookie-M-6d7de--to-cookie-preferences-page-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/cookie-management-Cookie-M-6d7de--to-cookie-preferences-page-chromium-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Cookie Management › Cookie Preferences Page › should display cookie preferences form" classname="cookie-management.spec.ts" time="0.021">
+<failure message="cookie-management.spec.ts:113:5 should display cookie preferences form" type="FAILURE">
+<![CDATA[  [chromium] › cookie-management.spec.ts:113:5 › Cookie Management › Cookie Preferences Page › should display cookie preferences form 
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/cookie-management-Cookie-M-8c447-lay-cookie-preferences-form-chromium-retry1/trace.zip
+    Usage:
+
+        yarn playwright show-trace ../test-results/cookie-management-Cookie-M-8c447-lay-cookie-preferences-form-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/cookie-management-Cookie-M-8c447-lay-cookie-preferences-form-chromium-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Cookie Management › Cookie Preferences Page › should save cookie preferences" classname="cookie-management.spec.ts" time="0.025">
+<failure message="cookie-management.spec.ts:147:5 should save cookie preferences" type="FAILURE">
+<![CDATA[  [chromium] › cookie-management.spec.ts:147:5 › Cookie Management › Cookie Preferences Page › should save cookie preferences 
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/cookie-management-Cookie-M-e3eea-uld-save-cookie-preferences-chromium-retry1/trace.zip
+    Usage:
+
+        yarn playwright show-trace ../test-results/cookie-management-Cookie-M-e3eea-uld-save-cookie-preferences-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/cookie-management-Cookie-M-e3eea-uld-save-cookie-preferences-chromium-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Cookie Management › Cookie Preferences Page › should reflect current cookie preferences" classname="cookie-management.spec.ts" time="0.015">
+<failure message="cookie-management.spec.ts:172:5 should reflect current cookie preferences" type="FAILURE">
+<![CDATA[  [chromium] › cookie-management.spec.ts:172:5 › Cookie Management › Cookie Preferences Page › should reflect current cookie preferences 
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/cookie-management-Cookie-M-b66a6--current-cookie-preferences-chromium-retry1/trace.zip
+    Usage:
+
+        yarn playwright show-trace ../test-results/cookie-management-Cookie-M-b66a6--current-cookie-preferences-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/cookie-management-Cookie-M-b66a6--current-cookie-preferences-chromium-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Cookie Management › Cookie Preferences Page › should work with Welsh language" classname="cookie-management.spec.ts" time="0.018">
+<failure message="cookie-management.spec.ts:190:5 should work with Welsh language" type="FAILURE">
+<![CDATA[  [chromium] › cookie-management.spec.ts:190:5 › Cookie Management › Cookie Preferences Page › should work with Welsh language 
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/cookie-management-Cookie-M-403e0-ld-work-with-Welsh-language-chromium-retry1/trace.zip
+    Usage:
+
+        yarn playwright show-trace ../test-results/cookie-management-Cookie-M-403e0-ld-work-with-Welsh-language-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/cookie-management-Cookie-M-403e0-ld-work-with-Welsh-language-chromium-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Cookie Management › Cookie Banner JavaScript Behavior › should handle accept button click with JavaScript" classname="cookie-management.spec.ts" time="0.024">
+<failure message="cookie-management.spec.ts:219:5 should handle accept button click with JavaScript" type="FAILURE">
+<![CDATA[  [chromium] › cookie-management.spec.ts:219:5 › Cookie Management › Cookie Banner JavaScript Behavior › should handle accept button click with JavaScript 
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/cookie-management-Cookie-M-83aa5-utton-click-with-JavaScript-chromium-retry1/trace.zip
+    Usage:
+
+        yarn playwright show-trace ../test-results/cookie-management-Cookie-M-83aa5-utton-click-with-JavaScript-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/cookie-management-Cookie-M-83aa5-utton-click-with-JavaScript-chromium-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Cookie Management › Cookie Banner JavaScript Behavior › should handle reject button click with JavaScript" classname="cookie-management.spec.ts" time="0.027">
+<failure message="cookie-management.spec.ts:240:5 should handle reject button click with JavaScript" type="FAILURE">
+<![CDATA[  [chromium] › cookie-management.spec.ts:240:5 › Cookie Management › Cookie Banner JavaScript Behavior › should handle reject button click with JavaScript 
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/cookie-management-Cookie-M-f0711-utton-click-with-JavaScript-chromium-retry1/trace.zip
+    Usage:
+
+        yarn playwright show-trace ../test-results/cookie-management-Cookie-M-f0711-utton-click-with-JavaScript-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/cookie-management-Cookie-M-f0711-utton-click-with-JavaScript-chromium-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Cookie Management › Accessibility › cookie banner should be accessible" classname="cookie-management.spec.ts" time="0.017">
+<failure message="cookie-management.spec.ts:263:5 cookie banner should be accessible" type="FAILURE">
+<![CDATA[  [chromium] › cookie-management.spec.ts:263:5 › Cookie Management › Accessibility › cookie banner should be accessible 
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/cookie-management-Cookie-M-8ee1f-banner-should-be-accessible-chromium-retry1/trace.zip
+    Usage:
+
+        yarn playwright show-trace ../test-results/cookie-management-Cookie-M-8ee1f-banner-should-be-accessible-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/cookie-management-Cookie-M-8ee1f-banner-should-be-accessible-chromium-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Cookie Management › Accessibility › cookie preferences page should be accessible" classname="cookie-management.spec.ts" time="0.02">
+<failure message="cookie-management.spec.ts:272:5 cookie preferences page should be accessible" type="FAILURE">
+<![CDATA[  [chromium] › cookie-management.spec.ts:272:5 › Cookie Management › Accessibility › cookie preferences page should be accessible 
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/cookie-management-Cookie-M-bc3a0-s-page-should-be-accessible-chromium-retry1/trace.zip
+    Usage:
+
+        yarn playwright show-trace ../test-results/cookie-management-Cookie-M-bc3a0-s-page-should-be-accessible-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/cookie-management-Cookie-M-bc3a0-s-page-should-be-accessible-chromium-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="homepage.spec.ts" timestamp="2025-10-24T15:29:48.473Z" hostname="chromium" tests="2" failures="2" skipped="0" time="0.035" errors="0">
+<testcase name="Homepage › should load the homepage" classname="homepage.spec.ts" time="0.019">
+<failure message="homepage.spec.ts:5:3 should load the homepage" type="FAILURE">
+<![CDATA[  [chromium] › homepage.spec.ts:5:3 › Homepage › should load the homepage ──────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/homepage-Homepage-should-load-the-homepage-chromium-retry1/trace.zip
+    Usage:
+
+        yarn playwright show-trace ../test-results/homepage-Homepage-should-load-the-homepage-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/homepage-Homepage-should-load-the-homepage-chromium-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Homepage › should run accessibility checks" classname="homepage.spec.ts" time="0.016">
+<failure message="homepage.spec.ts:22:3 should run accessibility checks" type="FAILURE">
+<![CDATA[  [chromium] › homepage.spec.ts:22:3 › Homepage › should run accessibility checks ──────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/homepage-Homepage-should-run-accessibility-checks-chromium-retry1/trace.zip
+    Usage:
+
+        yarn playwright show-trace ../test-results/homepage-Homepage-should-run-accessibility-checks-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/homepage-Homepage-should-run-accessibility-checks-chromium-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="onboarding-happy-path.spec.ts" timestamp="2025-10-24T15:29:48.473Z" hostname="chromium" tests="4" failures="4" skipped="0" time="0.067" errors="0">
+<testcase name="Onboarding Form - Happy Path Journey › should complete the full onboarding journey successfully" classname="onboarding-happy-path.spec.ts" time="0.017">
+<failure message="onboarding-happy-path.spec.ts:5:3 should complete the full onboarding journey successfully" type="FAILURE">
+<![CDATA[  [chromium] › onboarding-happy-path.spec.ts:5:3 › Onboarding Form - Happy Path Journey › should complete the full onboarding journey successfully 
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/onboarding-happy-path-Onbo-792f4-arding-journey-successfully-chromium-retry1/trace.zip
+    Usage:
+
+        yarn playwright show-trace ../test-results/onboarding-happy-path-Onbo-792f4-arding-journey-successfully-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/onboarding-happy-path-Onbo-792f4-arding-journey-successfully-chromium-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Onboarding Form - Happy Path Journey › should handle &quot;Other&quot; role selection with text input" classname="onboarding-happy-path.spec.ts" time="0.017">
+<failure message="onboarding-happy-path.spec.ts:99:3 should handle &quot;Other&quot; role selection with text input" type="FAILURE">
+<![CDATA[  [chromium] › onboarding-happy-path.spec.ts:99:3 › Onboarding Form - Happy Path Journey › should handle "Other" role selection with text input 
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/onboarding-happy-path-Onbo-a21ee-e-selection-with-text-input-chromium-retry1/trace.zip
+    Usage:
+
+        yarn playwright show-trace ../test-results/onboarding-happy-path-Onbo-a21ee-e-selection-with-text-input-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/onboarding-happy-path-Onbo-a21ee-e-selection-with-text-input-chromium-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Onboarding Form - Happy Path Journey › should include accessibility checks throughout the journey" classname="onboarding-happy-path.spec.ts" time="0.018">
+<failure message="onboarding-happy-path.spec.ts:136:3 should include accessibility checks throughout the journey" type="FAILURE">
+<![CDATA[  [chromium] › onboarding-happy-path.spec.ts:136:3 › Onboarding Form - Happy Path Journey › should include accessibility checks throughout the journey 
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/onboarding-happy-path-Onbo-86afb-ecks-throughout-the-journey-chromium-retry1/trace.zip
+    Usage:
+
+        yarn playwright show-trace ../test-results/onboarding-happy-path-Onbo-86afb-ecks-throughout-the-journey-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/onboarding-happy-path-Onbo-86afb-ecks-throughout-the-journey-chromium-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+<testcase name="Onboarding Form - Happy Path Journey › should support keyboard navigation throughout the form" classname="onboarding-happy-path.spec.ts" time="0.015">
+<failure message="onboarding-happy-path.spec.ts:168:3 should support keyboard navigation throughout the form" type="FAILURE">
+<![CDATA[  [chromium] › onboarding-happy-path.spec.ts:168:3 › Onboarding Form - Happy Path Journey › should support keyboard navigation throughout the form 
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/onboarding-happy-path-Onbo-52c77-igation-throughout-the-form-chromium-retry1/trace.zip
+    Usage:
+
+        yarn playwright show-trace ../test-results/onboarding-happy-path-Onbo-52c77-igation-throughout-the-form-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/onboarding-happy-path-Onbo-52c77-igation-throughout-the-form-chromium-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+<testsuite name="welsh-language.spec.ts" timestamp="2025-10-24T15:29:48.473Z" hostname="chromium" tests="1" failures="1" skipped="0" time="0.025" errors="0">
+<testcase name="Welsh Language Support › should switch to Welsh and back to English" classname="welsh-language.spec.ts" time="0.025">
+<failure message="welsh-language.spec.ts:4:3 should switch to Welsh and back to English" type="FAILURE">
+<![CDATA[  [chromium] › welsh-language.spec.ts:4:3 › Welsh Language Support › should switch to Welsh and back to English 
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    Retry #1 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+
+    attachment #1: trace (application/zip) ─────────────────────────────────────────────────────────
+    ../test-results/welsh-language-Welsh-Langu-6710f-o-Welsh-and-back-to-English-chromium-retry1/trace.zip
+    Usage:
+
+        yarn playwright show-trace ../test-results/welsh-language-Welsh-Langu-6710f-o-Welsh-and-back-to-English-chromium-retry1/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Retry #2 ───────────────────────────────────────────────────────────────────────────────────────
+
+    Error: browserType.launch: Executable doesn't exist at /home/runner/.cache/ms-playwright/chromium_headless_shell-1194/chrome-linux/headless_shell
+    ╔═════════════════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright Test or Playwright was just installed or updated. ║
+    ║ Please run the following command to download new browsers:              ║
+    ║                                                                         ║
+    ║     yarn playwright install                                             ║
+    ║                                                                         ║
+    ║ <3 Playwright Team                                                      ║
+    ╚═════════════════════════════════════════════════════════════════════════╝
+]]>
+</failure>
+<system-out>
+<![CDATA[
+[[ATTACHMENT|test-results/welsh-language-Welsh-Langu-6710f-o-Welsh-and-back-to-English-chromium-retry1/trace.zip]]
+]]>
+</system-out>
+</testcase>
+</testsuite>
+</testsuites>

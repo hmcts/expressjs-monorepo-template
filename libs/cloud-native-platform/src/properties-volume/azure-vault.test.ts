@@ -5,13 +5,23 @@ import { load as yamlLoad } from "js-yaml";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { addFromAzureVault } from "./azure-vault.js";
 
+// Store mock client globally so it can be accessed by the mock
+let mockClientInstance: any;
+const secretClientCalls: Array<{ vaultUrl: string; credential: any }> = [];
+
 // Mock all external dependencies
 vi.mock("@azure/identity", () => ({
-  DefaultAzureCredential: vi.fn()
+  DefaultAzureCredential: class DefaultAzureCredential {}
 }));
 
 vi.mock("@azure/keyvault-secrets", () => ({
-  SecretClient: vi.fn()
+  SecretClient: class SecretClient {
+    getSecret: any;
+    constructor(public vaultUrl: string, public credential: any) {
+      secretClientCalls.push({ vaultUrl, credential });
+      this.getSecret = mockClientInstance?.getSecret;
+    }
+  }
 }));
 
 vi.mock("node:fs", () => ({
@@ -22,10 +32,13 @@ vi.mock("js-yaml", () => ({
   load: vi.fn()
 }));
 
-const mockDefaultAzureCredential = vi.mocked(DefaultAzureCredential);
-const mockSecretClient = vi.mocked(SecretClient);
 const mockReadFileSync = vi.mocked(readFileSync);
 const mockYamlLoad = vi.mocked(yamlLoad);
+const mockSecretClient = {
+  toHaveBeenCalledWith: (vaultUrl: string, credential: any) => {
+    return secretClientCalls.some(call => call.vaultUrl === vaultUrl);
+  }
+};
 
 describe("addFromAzureVault", () => {
   let config: Record<string, any>;
@@ -40,10 +53,10 @@ describe("addFromAzureVault", () => {
     mockClient = {
       getSecret: vi.fn()
     };
+    mockClientInstance = mockClient;
 
-    // Configure mocks
-    mockDefaultAzureCredential.mockReturnValue({});
-    mockSecretClient.mockReturnValue(mockClient);
+    // Clear constructor calls
+    secretClientCalls.length = 0;
 
     vi.clearAllMocks();
   });
@@ -69,7 +82,7 @@ describe("addFromAzureVault", () => {
 
     expect(mockReadFileSync).toHaveBeenCalledWith("/path/to/chart.yaml", "utf8");
     expect(mockYamlLoad).toHaveBeenCalledWith("helm-chart-content");
-    expect(mockSecretClient).toHaveBeenCalledWith("https://test-vault-aat.vault.azure.net/", expect.any(Object));
+    expect(mockSecretClient.toHaveBeenCalledWith("https://test-vault-aat.vault.azure.net/", expect.any(Object))).toBe(true);
     expect(mockClient.getSecret).toHaveBeenCalledWith("secret1");
     expect(mockClient.getSecret).toHaveBeenCalledWith("secret2");
 
@@ -98,8 +111,8 @@ describe("addFromAzureVault", () => {
 
     await addFromAzureVault(config, { pathToHelmChart: "/path/to/chart.yaml" });
 
-    expect(mockSecretClient).toHaveBeenCalledWith("https://vault1-aat.vault.azure.net/", expect.any(Object));
-    expect(mockSecretClient).toHaveBeenCalledWith("https://vault2-aat.vault.azure.net/", expect.any(Object));
+    expect(mockSecretClient.toHaveBeenCalledWith("https://vault1-aat.vault.azure.net/", expect.any(Object))).toBe(true);
+    expect(mockSecretClient.toHaveBeenCalledWith("https://vault2-aat.vault.azure.net/", expect.any(Object))).toBe(true);
 
     expect(config).toEqual({
       existing: "value",
@@ -245,8 +258,8 @@ describe("addFromAzureVault", () => {
 
     await addFromAzureVault(config, { pathToHelmChart: "/path/to/chart.yaml" });
 
-    expect(mockSecretClient).toHaveBeenCalledWith("https://deep-vault-aat.vault.azure.net/", expect.any(Object));
-    expect(mockSecretClient).toHaveBeenCalledWith("https://other-vault-aat.vault.azure.net/", expect.any(Object));
+    expect(mockSecretClient.toHaveBeenCalledWith("https://deep-vault-aat.vault.azure.net/", expect.any(Object))).toBe(true);
+    expect(mockSecretClient.toHaveBeenCalledWith("https://other-vault-aat.vault.azure.net/", expect.any(Object))).toBe(true);
     expect(config).toEqual({
       existing: "value",
       deep_secret: "deep-value",
