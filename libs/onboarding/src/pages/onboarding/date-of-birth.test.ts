@@ -39,7 +39,7 @@ describe("date-of-birth page", () => {
 
   describe("GET", () => {
     it("should render the date of birth page", async () => {
-      vi.mocked(getSessionDataForPage).mockReturnValue(undefined);
+      getSessionDataForPage.mockReturnValue(undefined);
       await GET(mockReq as Request, mockRes as Response);
 
       expect(mockRes.render).toHaveBeenCalledWith("onboarding/date-of-birth", {

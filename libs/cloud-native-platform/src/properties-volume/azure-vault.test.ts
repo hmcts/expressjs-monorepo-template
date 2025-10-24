@@ -1,17 +1,18 @@
 import { readFileSync } from "node:fs";
-import { DefaultAzureCredential } from "@azure/identity";
 import { SecretClient } from "@azure/keyvault-secrets";
 import { load as yamlLoad } from "js-yaml";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, type MockedFunction, vi } from "vitest";
 import { addFromAzureVault } from "./azure-vault.js";
 
 // Mock all external dependencies
 vi.mock("@azure/identity", () => ({
-  DefaultAzureCredential: vi.fn()
+  DefaultAzureCredential: vi.fn(() => ({}))
 }));
 
 vi.mock("@azure/keyvault-secrets", () => ({
-  SecretClient: vi.fn()
+  SecretClient: vi.fn(() => ({
+    getSecret: vi.fn()
+  }))
 }));
 
 vi.mock("node:fs", () => ({
@@ -22,10 +23,9 @@ vi.mock("js-yaml", () => ({
   load: vi.fn()
 }));
 
-const mockDefaultAzureCredential = vi.mocked(DefaultAzureCredential);
-const mockSecretClient = vi.mocked(SecretClient);
-const mockReadFileSync = vi.mocked(readFileSync);
-const mockYamlLoad = vi.mocked(yamlLoad);
+const mockSecretClient = SecretClient as MockedFunction<any>;
+const mockReadFileSync = readFileSync as MockedFunction<any>;
+const mockYamlLoad = yamlLoad as MockedFunction<any>;
 
 describe("addFromAzureVault", () => {
   let config: Record<string, any>;
@@ -41,9 +41,8 @@ describe("addFromAzureVault", () => {
       getSecret: vi.fn()
     };
 
-    // Configure mocks
-    mockDefaultAzureCredential.mockReturnValue({});
-    mockSecretClient.mockReturnValue(mockClient);
+    // Configure the SecretClient mock to return mockClient
+    mockSecretClient.mockImplementation(() => mockClient);
 
     vi.clearAllMocks();
   });

@@ -57,7 +57,7 @@ describe("monitoringMiddleware", () => {
   });
 
   it("should initialize monitoring service when enabled", () => {
-    vi.mocked(MonitoringService).mockImplementation(
+    MonitoringService.mockImplementation(
       () =>
         ({
           trackRequest: vi.fn(),
@@ -79,7 +79,7 @@ describe("monitoringMiddleware", () => {
     const mockTrackRequest = vi.fn();
     const mockTrackException = vi.fn();
 
-    vi.mocked(MonitoringService).mockImplementation(
+    MonitoringService.mockImplementation(
       () =>
         ({
           trackRequest: mockTrackRequest,
@@ -122,7 +122,7 @@ describe("monitoringMiddleware", () => {
   it("should track exception on error event", () => {
     const mockTrackException = vi.fn();
 
-    vi.mocked(MonitoringService).mockImplementation(
+    MonitoringService.mockImplementation(
       () =>
         ({
           trackRequest: vi.fn(),
@@ -155,7 +155,7 @@ describe("monitoringMiddleware", () => {
   it("should handle request without route", () => {
     const mockTrackRequest = vi.fn();
 
-    vi.mocked(MonitoringService).mockImplementation(
+    MonitoringService.mockImplementation(
       () =>
         ({
           trackRequest: mockTrackRequest,
@@ -197,7 +197,7 @@ describe("monitoringMiddleware", () => {
   it("should track failed request", () => {
     const mockTrackRequest = vi.fn();
 
-    vi.mocked(MonitoringService).mockImplementation(
+    MonitoringService.mockImplementation(
       () =>
         ({
           trackRequest: mockTrackRequest,

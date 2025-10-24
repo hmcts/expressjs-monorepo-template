@@ -38,7 +38,7 @@ describe("queries", () => {
         submittedAt: new Date()
       };
 
-      vi.mocked(prisma.onboardingSubmission.create).mockResolvedValue(mockResult as any);
+      prisma.onboardingSubmission.create.mockResolvedValue(mockResult as any);
 
       const result = await createOnboardingSubmission(mockData);
 
@@ -59,7 +59,7 @@ describe("queries", () => {
         roleType: "prosecutor" as const
       };
 
-      vi.mocked(prisma.onboardingSubmission.create).mockRejectedValue(new Error("Database error"));
+      prisma.onboardingSubmission.create.mockRejectedValue(new Error("Database error"));
 
       await expect(createOnboardingSubmission(mockData)).rejects.toThrow("Database error");
     });
@@ -83,7 +83,7 @@ describe("queries", () => {
         submittedAt: new Date()
       };
 
-      vi.mocked(prisma.onboardingSubmission.create).mockResolvedValue(mockResult as any);
+      prisma.onboardingSubmission.create.mockResolvedValue(mockResult as any);
 
       await createOnboardingSubmission(mockData);
 
@@ -112,7 +112,7 @@ describe("queries", () => {
         submittedAt: new Date()
       };
 
-      vi.mocked(prisma.onboardingSubmission.findUnique).mockResolvedValue(mockResult);
+      prisma.onboardingSubmission.findUnique.mockResolvedValue(mockResult);
 
       const result = await getSubmissionById("test-id");
 
@@ -123,7 +123,7 @@ describe("queries", () => {
     });
 
     it("should return null for non-existent id", async () => {
-      vi.mocked(prisma.onboardingSubmission.findUnique).mockResolvedValue(null);
+      prisma.onboardingSubmission.findUnique.mockResolvedValue(null);
 
       const result = await getSubmissionById("non-existent");
 
@@ -153,7 +153,7 @@ describe("queries", () => {
         }
       ];
 
-      vi.mocked(prisma.onboardingSubmission.findMany).mockResolvedValue(mockResults);
+      prisma.onboardingSubmission.findMany.mockResolvedValue(mockResults);
 
       const result = await getRecentSubmissions();
 
@@ -174,7 +174,7 @@ describe("queries", () => {
     it("should get recent submissions with custom limit", async () => {
       const mockResults = [];
 
-      vi.mocked(prisma.onboardingSubmission.findMany).mockResolvedValue(mockResults);
+      prisma.onboardingSubmission.findMany.mockResolvedValue(mockResults);
 
       const result = await getRecentSubmissions(5);
 

@@ -34,9 +34,9 @@ describe("assets", () => {
         }
       });
 
-      vi.mocked(path.join).mockReturnValue("/dist/assets/.vite/manifest.json");
-      vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readFileSync).mockReturnValue(manifestContent);
+      path.join.mockReturnValue("/dist/assets/.vite/manifest.json");
+      fs.existsSync.mockReturnValue(true);
+      fs.readFileSync.mockReturnValue(manifestContent);
 
       const { createAssetHelpers } = await import("./assets.js");
       const distPath = "/dist";
@@ -48,8 +48,8 @@ describe("assets", () => {
     });
 
     it("should handle empty manifest", async () => {
-      vi.mocked(path.join).mockReturnValue("/dist/assets/.vite/manifest.json");
-      vi.mocked(fs.existsSync).mockReturnValue(false);
+      path.join.mockReturnValue("/dist/assets/.vite/manifest.json");
+      fs.existsSync.mockReturnValue(false);
 
       const { createAssetHelpers } = await import("./assets.js");
       const distPath = "/dist";
@@ -69,9 +69,9 @@ describe("assets", () => {
         }
       });
 
-      vi.mocked(path.join).mockReturnValue("/dist/assets/.vite/manifest.json");
-      vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readFileSync).mockReturnValue(manifestContent);
+      path.join.mockReturnValue("/dist/assets/.vite/manifest.json");
+      fs.existsSync.mockReturnValue(true);
+      fs.readFileSync.mockReturnValue(manifestContent);
 
       const { createAssetHelpers } = await import("./assets.js");
       const distPath = "/dist";
@@ -84,9 +84,9 @@ describe("assets", () => {
     });
 
     it("should handle manifest read errors", async () => {
-      vi.mocked(path.join).mockReturnValue("/dist/assets/.vite/manifest.json");
-      vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readFileSync).mockImplementation(() => {
+      path.join.mockReturnValue("/dist/assets/.vite/manifest.json");
+      fs.existsSync.mockReturnValue(true);
+      fs.readFileSync.mockImplementation(() => {
         throw new Error("Read error");
       });
 
@@ -112,9 +112,9 @@ describe("assets", () => {
         }
       });
 
-      vi.mocked(path.join).mockReturnValue("/dist/assets/.vite/manifest.json");
-      vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readFileSync).mockReturnValue(manifestContent);
+      path.join.mockReturnValue("/dist/assets/.vite/manifest.json");
+      fs.existsSync.mockReturnValue(true);
+      fs.readFileSync.mockReturnValue(manifestContent);
 
       const { createAssetHelpers } = await import("./assets.js");
       const distPath = "/dist";
@@ -133,9 +133,9 @@ describe("assets", () => {
         }
       });
 
-      vi.mocked(path.join).mockReturnValue("/dist/assets/.vite/manifest.json");
-      vi.mocked(fs.existsSync).mockReturnValue(true);
-      vi.mocked(fs.readFileSync).mockReturnValue(manifestContent);
+      path.join.mockReturnValue("/dist/assets/.vite/manifest.json");
+      fs.existsSync.mockReturnValue(true);
+      fs.readFileSync.mockReturnValue(manifestContent);
 
       const { createAssetHelpers } = await import("./assets.js");
       const distPath = "/dist";

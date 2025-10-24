@@ -39,7 +39,7 @@ describe("role page", () => {
 
   describe("GET", () => {
     it("should render the role page", async () => {
-      vi.mocked(getSessionDataForPage).mockReturnValue(undefined);
+      getSessionDataForPage.mockReturnValue(undefined);
       await GET(mockReq as Request, mockRes as Response);
 
       expect(mockRes.render).toHaveBeenCalledWith(

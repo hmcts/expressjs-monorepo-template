@@ -26,7 +26,7 @@ describe("healthcheck", () => {
     });
 
     it("should return UP for successful response", async () => {
-      vi.mocked(global.fetch).mockResolvedValue({
+      global.fetch.mockResolvedValue({
         ok: true
       } as Response);
 
@@ -35,7 +35,7 @@ describe("healthcheck", () => {
     });
 
     it("should return DOWN for failed response", async () => {
-      vi.mocked(global.fetch).mockResolvedValue({
+      global.fetch.mockResolvedValue({
         ok: false
       } as Response);
 
@@ -44,7 +44,7 @@ describe("healthcheck", () => {
     });
 
     it("should return DOWN on error", async () => {
-      vi.mocked(global.fetch).mockRejectedValue(new Error("Network error"));
+      global.fetch.mockRejectedValue(new Error("Network error"));
 
       const check = web("https://example.com/health");
       expect(await check()).toBe("DOWN");
@@ -52,7 +52,7 @@ describe("healthcheck", () => {
 
     it("should use timeout", async () => {
       const check = web("https://example.com/health", 100);
-      vi.mocked(global.fetch).mockResolvedValue({ ok: true } as Response);
+      global.fetch.mockResolvedValue({ ok: true } as Response);
 
       await check();
 

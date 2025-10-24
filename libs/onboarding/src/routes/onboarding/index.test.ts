@@ -46,7 +46,7 @@ describe("POST /onboarding", () => {
       submittedAt: new Date()
     };
 
-    vi.mocked(createOnboardingSubmission).mockResolvedValue(mockSubmission);
+    createOnboardingSubmission.mockResolvedValue(mockSubmission);
 
     mockReq.body = {
       name: {
@@ -109,7 +109,7 @@ describe("POST /onboarding", () => {
       submittedAt: new Date()
     };
 
-    vi.mocked(createOnboardingSubmission).mockResolvedValue(mockSubmission);
+    createOnboardingSubmission.mockResolvedValue(mockSubmission);
 
     mockReq.body = {
       name: {
@@ -292,7 +292,7 @@ describe("POST /onboarding", () => {
   });
 
   it("should handle database errors gracefully", async () => {
-    vi.mocked(createOnboardingSubmission).mockRejectedValue(new Error("Database connection failed"));
+    createOnboardingSubmission.mockRejectedValue(new Error("Database connection failed"));
 
     mockReq.body = {
       name: {
@@ -337,7 +337,7 @@ describe("POST /onboarding", () => {
       submittedAt: new Date()
     };
 
-    vi.mocked(createOnboardingSubmission).mockResolvedValue(mockSubmission);
+    createOnboardingSubmission.mockResolvedValue(mockSubmission);
 
     mockReq.body = {
       name: {

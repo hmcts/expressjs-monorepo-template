@@ -46,7 +46,7 @@ describe("GET /onboarding/[id]", () => {
       submittedAt: new Date("2024-01-15T10:30:00Z")
     };
 
-    vi.mocked(getSubmissionById).mockResolvedValue(mockSubmission);
+    getSubmissionById.mockResolvedValue(mockSubmission);
 
     mockReq.params = { id: "cltest123456789" };
 
@@ -89,7 +89,7 @@ describe("GET /onboarding/[id]", () => {
       submittedAt: new Date("2024-02-20T14:45:00Z")
     };
 
-    vi.mocked(getSubmissionById).mockResolvedValue(mockSubmission);
+    getSubmissionById.mockResolvedValue(mockSubmission);
 
     mockReq.params = { id: "CLTE-ST12-3456-7890" };
 
@@ -127,7 +127,7 @@ describe("GET /onboarding/[id]", () => {
       submittedAt: new Date()
     };
 
-    vi.mocked(getSubmissionById).mockResolvedValue(mockSubmission);
+    getSubmissionById.mockResolvedValue(mockSubmission);
 
     mockReq.params = { id: "abc123" };
 
@@ -144,7 +144,7 @@ describe("GET /onboarding/[id]", () => {
   });
 
   it("should return 404 when submission not found", async () => {
-    vi.mocked(getSubmissionById).mockResolvedValue(null);
+    getSubmissionById.mockResolvedValue(null);
 
     mockReq.params = { id: "nonexistent123" };
 
@@ -172,7 +172,7 @@ describe("GET /onboarding/[id]", () => {
   });
 
   it("should handle database errors gracefully", async () => {
-    vi.mocked(getSubmissionById).mockRejectedValue(new Error("Database connection failed"));
+    getSubmissionById.mockRejectedValue(new Error("Database connection failed"));
 
     mockReq.params = { id: "test123" };
 
@@ -199,7 +199,7 @@ describe("GET /onboarding/[id]", () => {
       submittedAt: new Date()
     };
 
-    vi.mocked(getSubmissionById).mockResolvedValue(mockSubmission);
+    getSubmissionById.mockResolvedValue(mockSubmission);
 
     mockReq.params = { id: "INVALID" };
 
@@ -227,7 +227,7 @@ describe("GET /onboarding/[id]", () => {
         submittedAt: new Date()
       };
 
-      vi.mocked(getSubmissionById).mockResolvedValue(mockSubmission);
+      getSubmissionById.mockResolvedValue(mockSubmission);
       vi.clearAllMocks();
 
       mockReq.params = { id };
@@ -261,7 +261,7 @@ describe("GET /onboarding/[id]", () => {
       submittedAt
     };
 
-    vi.mocked(getSubmissionById).mockResolvedValue(mockSubmission);
+    getSubmissionById.mockResolvedValue(mockSubmission);
 
     mockReq.params = { id: "test123" };
 

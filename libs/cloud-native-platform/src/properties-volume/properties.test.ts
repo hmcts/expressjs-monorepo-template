@@ -1,5 +1,5 @@
 import fs, { existsSync, readdirSync, readFileSync } from "node:fs";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, type MockedFunction, vi } from "vitest";
 import { addFromAzureVault } from "./azure-vault.js";
 import { configurePropertiesVolume as setupPropertiesVolume } from "./properties.js";
 
@@ -24,11 +24,11 @@ vi.mock("./azure-vault.js", () => ({
   addFromAzureVault: vi.fn()
 }));
 
-const mockFs = vi.mocked(fs);
-const mockExistsSync = vi.mocked(existsSync);
-const mockReaddirSync = vi.mocked(readdirSync);
-const mockReadFileSync = vi.mocked(readFileSync);
-const mockAddFromAzureVault = vi.mocked(addFromAzureVault);
+const mockFs = fs as any;
+const mockExistsSync = existsSync as MockedFunction<any>;
+const mockReaddirSync = readdirSync as MockedFunction<any>;
+const mockReadFileSync = readFileSync as MockedFunction<any>;
+const mockAddFromAzureVault = addFromAzureVault as MockedFunction<any>;
 
 describe("configurePropertiesVolume", () => {
   let config: Record<string, any>;

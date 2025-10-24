@@ -24,7 +24,7 @@ describe("helmet-middleware", () => {
 
     it("should generate and set a CSP nonce", () => {
       const mockNonce = "mockBase64Nonce==";
-      vi.mocked(crypto.randomBytes).mockReturnValue({
+      crypto.randomBytes.mockReturnValue({
         toString: vi.fn().mockReturnValue(mockNonce)
       } as any);
 
@@ -38,7 +38,7 @@ describe("helmet-middleware", () => {
 
     it("should generate unique nonces on each call", () => {
       let nonceCounter = 0;
-      vi.mocked(crypto.randomBytes).mockImplementation(
+      crypto.randomBytes.mockImplementation(
         () =>
           ({
             toString: vi.fn().mockReturnValue(`nonce${++nonceCounter}`)
@@ -61,7 +61,7 @@ describe("helmet-middleware", () => {
       const middleware = configureNonce();
       const reqSpy = {} as Request;
 
-      vi.mocked(crypto.randomBytes).mockReturnValue({
+      crypto.randomBytes.mockReturnValue({
         toString: vi.fn().mockReturnValue("nonce")
       } as any);
 
@@ -77,7 +77,7 @@ describe("helmet-middleware", () => {
 
     beforeEach(() => {
       vi.clearAllMocks();
-      vi.mocked(helmet).mockReturnValue("helmet-middleware" as any);
+      helmet.mockReturnValue("helmet-middleware" as any);
     });
 
     afterEach(() => {
@@ -107,7 +107,7 @@ describe("helmet-middleware", () => {
         process.env.NODE_ENV = "development";
         configureHelmet();
 
-        const helmetCall = vi.mocked(helmet).mock.calls[0][0];
+        const helmetCall = helmet.mock.calls[0][0];
         const directives = helmetCall?.contentSecurityPolicy?.directives;
 
         expect(directives?.scriptSrc).toContain("ws://localhost:5173");
@@ -119,7 +119,7 @@ describe("helmet-middleware", () => {
         process.env.NODE_ENV = "production";
         configureHelmet();
 
-        const helmetCall = vi.mocked(helmet).mock.calls[0][0];
+        const helmetCall = helmet.mock.calls[0][0];
         const directives = helmetCall?.contentSecurityPolicy?.directives;
 
         expect(directives?.scriptSrc).not.toContain("ws://localhost:5173");
@@ -132,7 +132,7 @@ describe("helmet-middleware", () => {
       it("should include GTM sources when enabled", () => {
         configureHelmet({ enableGoogleTagManager: true });
 
-        const helmetCall = vi.mocked(helmet).mock.calls[0][0];
+        const helmetCall = helmet.mock.calls[0][0];
         const directives = helmetCall?.contentSecurityPolicy?.directives;
 
         expect(directives?.scriptSrc).toContain("https://*.googletagmanager.com");
@@ -146,7 +146,7 @@ describe("helmet-middleware", () => {
       it("should exclude GTM sources when disabled", () => {
         configureHelmet({ enableGoogleTagManager: false });
 
-        const helmetCall = vi.mocked(helmet).mock.calls[0][0];
+        const helmetCall = helmet.mock.calls[0][0];
         const directives = helmetCall?.contentSecurityPolicy?.directives;
 
         expect(directives?.scriptSrc).not.toContain("https://*.googletagmanager.com");
@@ -162,7 +162,7 @@ describe("helmet-middleware", () => {
       it("should include nonce function in scriptSrc", () => {
         configureHelmet();
 
-        const helmetCall = vi.mocked(helmet).mock.calls[0][0];
+        const helmetCall = helmet.mock.calls[0][0];
         const scriptSrc = helmetCall?.contentSecurityPolicy?.directives?.scriptSrc;
 
         const nonceFunction = scriptSrc?.find((src: any) => typeof src === "function");
@@ -179,7 +179,7 @@ describe("helmet-middleware", () => {
       it("should handle missing nonce in res.locals", () => {
         configureHelmet();
 
-        const helmetCall = vi.mocked(helmet).mock.calls[0][0];
+        const helmetCall = helmet.mock.calls[0][0];
         const scriptSrc = helmetCall?.contentSecurityPolicy?.directives?.scriptSrc;
         const nonceFunction = scriptSrc?.find((src: any) => typeof src === "function");
 
@@ -196,7 +196,7 @@ describe("helmet-middleware", () => {
         process.env.NODE_ENV = "production";
         configureHelmet({ isDevelopment: true });
 
-        const helmetCall = vi.mocked(helmet).mock.calls[0][0];
+        const helmetCall = helmet.mock.calls[0][0];
         const directives = helmetCall?.contentSecurityPolicy?.directives;
 
         expect(directives?.scriptSrc).toContain("ws://localhost:5173");
@@ -207,7 +207,7 @@ describe("helmet-middleware", () => {
         process.env.NODE_ENV = "development";
         configureHelmet({ isDevelopment: false });
 
-        const helmetCall = vi.mocked(helmet).mock.calls[0][0];
+        const helmetCall = helmet.mock.calls[0][0];
         const directives = helmetCall?.contentSecurityPolicy?.directives;
 
         expect(directives?.scriptSrc).not.toContain("ws://localhost:5173");
@@ -218,7 +218,7 @@ describe("helmet-middleware", () => {
         delete process.env.NODE_ENV;
         configureHelmet();
 
-        const helmetCall = vi.mocked(helmet).mock.calls[0][0];
+        const helmetCall = helmet.mock.calls[0][0];
         const directives = helmetCall?.contentSecurityPolicy?.directives;
 
         // Should default to development (not production)
@@ -230,7 +230,7 @@ describe("helmet-middleware", () => {
       it("should always include base directives", () => {
         configureHelmet({ enableGoogleTagManager: false, isDevelopment: false });
 
-        const helmetCall = vi.mocked(helmet).mock.calls[0][0];
+        const helmetCall = helmet.mock.calls[0][0];
         const directives = helmetCall?.contentSecurityPolicy?.directives;
 
         expect(directives?.defaultSrc).toEqual(["'self'"]);
@@ -243,12 +243,12 @@ describe("helmet-middleware", () => {
       it("should conditionally include frameSrc", () => {
         // Without GTM
         configureHelmet({ enableGoogleTagManager: false });
-        let helmetCall = vi.mocked(helmet).mock.calls[0][0];
+        let helmetCall = helmet.mock.calls[0][0];
         expect(helmetCall?.contentSecurityPolicy?.directives?.frameSrc).toBeUndefined();
 
         // With GTM
         vi.clearAllMocks();
-        vi.mocked(helmet).mockReturnValue("helmet-middleware" as any);
+        helmet.mockReturnValue("helmet-middleware" as any);
         configureHelmet({ enableGoogleTagManager: true });
         helmetCall = vi.mocked(helmet).mock.calls[0][0];
         expect(helmetCall?.contentSecurityPolicy?.directives?.frameSrc).toBeDefined();
@@ -258,7 +258,7 @@ describe("helmet-middleware", () => {
     describe("return value", () => {
       it("should return the helmet middleware", () => {
         const mockMiddleware = vi.fn();
-        vi.mocked(helmet).mockReturnValue(mockMiddleware as any);
+        helmet.mockReturnValue(mockMiddleware as any);
 
         const result = configureHelmet();
 

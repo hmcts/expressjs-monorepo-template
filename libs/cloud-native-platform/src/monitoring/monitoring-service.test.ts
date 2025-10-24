@@ -61,7 +61,7 @@ describe("MonitoringService", () => {
 
       expect(appInsights.setup).toHaveBeenCalledWith(connectionString);
 
-      const setupMock = vi.mocked(appInsights.setup)(connectionString);
+      const setupMock = appInsights.setup(connectionString);
       expect(setupMock.setAutoDependencyCorrelation).toHaveBeenCalledWith(true);
       expect(setupMock.setAutoCollectRequests).toHaveBeenCalledWith(true);
       expect(setupMock.setAutoCollectPerformance).toHaveBeenCalledWith(true, true);
@@ -250,7 +250,7 @@ describe("MonitoringService", () => {
     });
 
     it("should call the callback when flush completes", async () => {
-      vi.mocked(appInsights.defaultClient.flush).mockImplementation((options: any) => {
+      appInsights.defaultClient.flush.mockImplementation((options: any) => {
         setTimeout(() => options.callback(), 10);
       });
 

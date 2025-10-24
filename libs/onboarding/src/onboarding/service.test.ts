@@ -323,7 +323,7 @@ describe("service functions", () => {
       } as any;
 
       const mockSubmission = { id: "submission-456" };
-      vi.mocked(createOnboardingSubmission).mockResolvedValue(mockSubmission);
+      createOnboardingSubmission.mockResolvedValue(mockSubmission);
 
       const result = await submitOnboarding(mockSession);
 
