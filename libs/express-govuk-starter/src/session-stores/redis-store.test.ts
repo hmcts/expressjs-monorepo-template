@@ -1,14 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { expressSessionRedis } from "./redis-store.js";
 
-vi.mock("connect-redis", () => ({
-  RedisStore: vi.fn().mockImplementation((options) => {
+vi.mock("connect-redis", () => {
+  function RedisStoreMock(options: any) {
+    // @ts-ignore - vitest mock
     return { redisStoreOptions: options };
-  })
-}));
+  }
+  return { RedisStore: RedisStoreMock };
+});
 
 vi.mock("express-session", () => ({
-  default: vi.fn().mockImplementation((options) => {
+  default: vi.fn((options) => {
     return { sessionOptions: options };
   })
 }));

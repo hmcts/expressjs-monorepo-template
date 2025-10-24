@@ -57,16 +57,15 @@ describe("monitoringMiddleware", () => {
   });
 
   it("should initialize monitoring service when enabled", () => {
-    vi.mocked(MonitoringService).mockImplementation(
-      () =>
-        ({
-          trackRequest: vi.fn(),
-          trackException: vi.fn(),
-          trackEvent: vi.fn(),
-          trackMetric: vi.fn(),
-          flush: vi.fn()
-        }) as any
-    );
+    vi.mocked(MonitoringService).mockImplementation(function (this: any) {
+      return {
+        trackRequest: vi.fn(),
+        trackException: vi.fn(),
+        trackEvent: vi.fn(),
+        trackMetric: vi.fn(),
+        flush: vi.fn()
+      } as any;
+    } as any);
 
     const middleware = monitoringMiddleware(config);
 
@@ -79,16 +78,15 @@ describe("monitoringMiddleware", () => {
     const mockTrackRequest = vi.fn();
     const mockTrackException = vi.fn();
 
-    vi.mocked(MonitoringService).mockImplementation(
-      () =>
-        ({
-          trackRequest: mockTrackRequest,
-          trackException: mockTrackException,
-          trackEvent: vi.fn(),
-          trackMetric: vi.fn(),
-          flush: vi.fn()
-        }) as any
-    );
+    vi.mocked(MonitoringService).mockImplementation(function (this: any) {
+      return {
+        trackRequest: mockTrackRequest,
+        trackException: mockTrackException,
+        trackEvent: vi.fn(),
+        trackMetric: vi.fn(),
+        flush: vi.fn()
+      } as any;
+    } as any);
 
     const middleware = monitoringMiddleware(config);
     let finishCallback: () => void;
@@ -122,16 +120,15 @@ describe("monitoringMiddleware", () => {
   it("should track exception on error event", () => {
     const mockTrackException = vi.fn();
 
-    vi.mocked(MonitoringService).mockImplementation(
-      () =>
-        ({
-          trackRequest: vi.fn(),
-          trackException: mockTrackException,
-          trackEvent: vi.fn(),
-          trackMetric: vi.fn(),
-          flush: vi.fn()
-        }) as any
-    );
+    vi.mocked(MonitoringService).mockImplementation(function (this: any) {
+      return {
+        trackRequest: vi.fn(),
+        trackException: mockTrackException,
+        trackEvent: vi.fn(),
+        trackMetric: vi.fn(),
+        flush: vi.fn()
+      } as any;
+    } as any);
 
     const middleware = monitoringMiddleware(config);
     let errorCallback: (err: Error) => void;
@@ -155,16 +152,15 @@ describe("monitoringMiddleware", () => {
   it("should handle request without route", () => {
     const mockTrackRequest = vi.fn();
 
-    vi.mocked(MonitoringService).mockImplementation(
-      () =>
-        ({
-          trackRequest: mockTrackRequest,
-          trackException: vi.fn(),
-          trackEvent: vi.fn(),
-          trackMetric: vi.fn(),
-          flush: vi.fn()
-        }) as any
-    );
+    vi.mocked(MonitoringService).mockImplementation(function (this: any) {
+      return {
+        trackRequest: mockTrackRequest,
+        trackException: vi.fn(),
+        trackEvent: vi.fn(),
+        trackMetric: vi.fn(),
+        flush: vi.fn()
+      } as any;
+    } as any);
 
     delete req.route;
 
@@ -197,16 +193,15 @@ describe("monitoringMiddleware", () => {
   it("should track failed request", () => {
     const mockTrackRequest = vi.fn();
 
-    vi.mocked(MonitoringService).mockImplementation(
-      () =>
-        ({
-          trackRequest: mockTrackRequest,
-          trackException: vi.fn(),
-          trackEvent: vi.fn(),
-          trackMetric: vi.fn(),
-          flush: vi.fn()
-        }) as any
-    );
+    vi.mocked(MonitoringService).mockImplementation(function (this: any) {
+      return {
+        trackRequest: mockTrackRequest,
+        trackException: vi.fn(),
+        trackEvent: vi.fn(),
+        trackMetric: vi.fn(),
+        flush: vi.fn()
+      } as any;
+    } as any);
 
     res.statusCode = 500;
 
