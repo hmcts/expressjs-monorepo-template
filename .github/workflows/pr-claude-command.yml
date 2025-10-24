@@ -95,14 +95,11 @@ jobs:
             echo "No changes to commit"
           else
             PR_NUMBER="${{ steps.pr_details.outputs.pr_number }}"
-            git commit -m "$(cat <<'EOF'
-feat: claude command changes for PR #${PR_NUMBER}
+            git commit -m "feat: claude command changes for PR #${PR_NUMBER}
 
-Executed Claude command from PR comment.
+          Executed Claude command from PR comment.
 
-PR: #${PR_NUMBER}
-EOF
-)"
+          PR: #${PR_NUMBER}"
             git push origin "${{ steps.pr_details.outputs.head_branch }}"
             echo "has_changes=true" >> $GITHUB_OUTPUT
           fi
