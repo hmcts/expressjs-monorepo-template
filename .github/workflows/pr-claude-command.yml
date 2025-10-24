@@ -115,31 +115,31 @@ jobs:
 
           if [ "${HAS_CHANGES}" = "true" ]; then
             cat > /tmp/pr-comment.md <<EOF
-🤖 **Claude Code has completed your request**
+          🤖 **Claude Code has completed your request**
 
-**Prompt:** \`${PROMPT}\`
+          **Prompt:** \`${PROMPT}\`
 
-I've analyzed your request and pushed changes to this PR branch.
+          I've analyzed your request and pushed changes to this PR branch.
 
-**Commit:** $(git rev-parse --short HEAD)
+          **Commit:** $(git rev-parse --short HEAD)
 
-Review the changes and let me know if you need any adjustments.
-EOF
+          Review the changes and let me know if you need any adjustments.
+          EOF
           else
             cat > /tmp/pr-comment.md <<EOF
-🤖 **Claude Code analyzed your request but made no changes**
+          🤖 **Claude Code analyzed your request but made no changes**
 
-**Prompt:** \`${PROMPT}\`
+          **Prompt:** \`${PROMPT}\`
 
-I've reviewed your request but didn't make any code changes. This could mean:
+          I've reviewed your request but didn't make any code changes. This could mean:
 
-- The request was informational and required no code changes
-- The changes are already implemented
-- The request needs more clarification
-- The requested changes couldn't be completed automatically
+          - The request was informational and required no code changes
+          - The changes are already implemented
+          - The request needs more clarification
+          - The requested changes couldn't be completed automatically
 
-Please review the workflow logs for more details or provide additional context.
-EOF
+          Please review the workflow logs for more details or provide additional context.
+          EOF
           fi
 
           gh pr comment "${PR_NUMBER}" --body-file /tmp/pr-comment.md --repo "${{ github.repository }}"
@@ -153,19 +153,19 @@ EOF
           PROMPT=$(cat /tmp/claude-prompt.txt || echo "Unable to extract prompt")
 
           cat > /tmp/error-comment.md <<EOF
-❌ **Claude Code encountered an error**
+          ❌ **Claude Code encountered an error**
 
-**Prompt:** \`${PROMPT}\`
+          **Prompt:** \`${PROMPT}\`
 
-The workflow failed while processing your request. Please check the [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.
+          The workflow failed while processing your request. Please check the [workflow logs](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}) for details.
 
-Common issues:
-- Invalid prompt format
-- API key not configured (requires CLAUDE_API_KEY secret)
-- Permission issues
-- Claude Code CLI errors
+          Common issues:
+          - Invalid prompt format
+          - API key not configured (requires CLAUDE_API_KEY secret)
+          - Permission issues
+          - Claude Code CLI errors
 
-Try again or contact the repository maintainer if the issue persists.
-EOF
+          Try again or contact the repository maintainer if the issue persists.
+          EOF
 
           gh pr comment "${PR_NUMBER}" --body-file /tmp/error-comment.md --repo "${{ github.repository }}" || true
