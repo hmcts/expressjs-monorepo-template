@@ -3,7 +3,7 @@ import { expressSessionRedis } from "./redis-store.js";
 
 vi.mock("connect-redis", () => {
   function RedisStoreMock(options: any) {
-    // @ts-ignore - vitest mock
+    // @ts-expect-error - vitest mock
     return { redisStoreOptions: options };
   }
   return { RedisStore: RedisStoreMock };
