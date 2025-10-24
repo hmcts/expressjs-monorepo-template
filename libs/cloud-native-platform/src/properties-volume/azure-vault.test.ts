@@ -7,7 +7,9 @@ import { addFromAzureVault } from "./azure-vault.js";
 
 // Mock all external dependencies
 vi.mock("@azure/identity", () => ({
-  DefaultAzureCredential: vi.fn()
+  DefaultAzureCredential: vi.fn().mockImplementation(function () {
+    return {};
+  })
 }));
 
 vi.mock("@azure/keyvault-secrets", () => ({
@@ -41,9 +43,13 @@ describe("addFromAzureVault", () => {
       getSecret: vi.fn()
     };
 
-    // Configure mocks
-    mockDefaultAzureCredential.mockReturnValue({});
-    mockSecretClient.mockReturnValue(mockClient);
+    // Configure mocks - use function syntax for constructors
+    mockDefaultAzureCredential.mockImplementation(function () {
+      return {};
+    });
+    mockSecretClient.mockImplementation(function () {
+      return mockClient;
+    });
 
     vi.clearAllMocks();
   });

@@ -58,14 +58,15 @@ describe("monitoringMiddleware", () => {
 
   it("should initialize monitoring service when enabled", () => {
     vi.mocked(MonitoringService).mockImplementation(
-      () =>
-        ({
+      function () {
+        return {
           trackRequest: vi.fn(),
           trackException: vi.fn(),
           trackEvent: vi.fn(),
           trackMetric: vi.fn(),
           flush: vi.fn()
-        }) as any
+        } as any;
+      }
     );
 
     const middleware = monitoringMiddleware(config);
@@ -80,14 +81,15 @@ describe("monitoringMiddleware", () => {
     const mockTrackException = vi.fn();
 
     vi.mocked(MonitoringService).mockImplementation(
-      () =>
-        ({
+      function () {
+        return {
           trackRequest: mockTrackRequest,
           trackException: mockTrackException,
           trackEvent: vi.fn(),
           trackMetric: vi.fn(),
           flush: vi.fn()
-        }) as any
+        } as any;
+      }
     );
 
     const middleware = monitoringMiddleware(config);
@@ -123,14 +125,15 @@ describe("monitoringMiddleware", () => {
     const mockTrackException = vi.fn();
 
     vi.mocked(MonitoringService).mockImplementation(
-      () =>
-        ({
+      function () {
+        return {
           trackRequest: vi.fn(),
           trackException: mockTrackException,
           trackEvent: vi.fn(),
           trackMetric: vi.fn(),
           flush: vi.fn()
-        }) as any
+        } as any;
+      }
     );
 
     const middleware = monitoringMiddleware(config);
@@ -156,14 +159,15 @@ describe("monitoringMiddleware", () => {
     const mockTrackRequest = vi.fn();
 
     vi.mocked(MonitoringService).mockImplementation(
-      () =>
-        ({
+      function () {
+        return {
           trackRequest: mockTrackRequest,
           trackException: vi.fn(),
           trackEvent: vi.fn(),
           trackMetric: vi.fn(),
           flush: vi.fn()
-        }) as any
+        } as any;
+      }
     );
 
     delete req.route;
@@ -198,14 +202,15 @@ describe("monitoringMiddleware", () => {
     const mockTrackRequest = vi.fn();
 
     vi.mocked(MonitoringService).mockImplementation(
-      () =>
-        ({
+      function () {
+        return {
           trackRequest: mockTrackRequest,
           trackException: vi.fn(),
           trackEvent: vi.fn(),
           trackMetric: vi.fn(),
           flush: vi.fn()
-        }) as any
+        } as any;
+      }
     );
 
     res.statusCode = 500;
