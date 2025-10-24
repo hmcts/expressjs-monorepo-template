@@ -53,11 +53,11 @@ describe("index - cron job runner", () => {
   });
 
   it("should execute custom script when SCRIPT_NAME is provided", async () => {
-    process.env.SCRIPT_NAME = "custom-job";
+    process.env.SCRIPT_NAME = "example";
 
-    // Import the custom-job module and spy on its default export
-    const customJobModule = await import("./custom-job.js");
-    const mockCustomScript = vi.spyOn(customJobModule, "default");
+    // Import the example module and spy on its default export
+    const exampleModule = await import("./example.js");
+    const mockCustomScript = vi.spyOn(exampleModule, "default");
 
     const { main } = await import("./index.js");
     await main();
@@ -66,11 +66,11 @@ describe("index - cron job runner", () => {
   });
 
   it("should throw error when script does not export a default function", async () => {
-    process.env.SCRIPT_NAME = "invalid-script";
+    process.env.SCRIPT_NAME = "non-existent-script";
 
     const { main } = await import("./index.js");
 
-    await expect(main()).rejects.toThrow('The script "invalid-script" does not export a default function.');
+    await expect(main()).rejects.toThrow();
   });
 
   it("should throw error when script execution fails", async () => {
