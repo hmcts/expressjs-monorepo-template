@@ -20,9 +20,10 @@ vi.mock("node:fs", () => {
 });
 
 // Mock Azure vault module
-vi.mock("./azure-vault.js", () => ({
-  addFromAzureVault: vi.fn()
-}));
+vi.mock("./azure-vault.js", () => {
+  const addFromAzureVault = vi.fn();
+  return { addFromAzureVault };
+});
 
 const mockFs = vi.mocked(fs);
 const mockExistsSync = vi.mocked(existsSync);

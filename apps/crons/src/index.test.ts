@@ -3,15 +3,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mockConfigurePropertiesVolume = vi.fn();
 const mockConfigGet = vi.fn();
 
-vi.mock("@hmcts/cloud-native-platform", () => ({
-  configurePropertiesVolume: mockConfigurePropertiesVolume
-}));
+vi.mock("@hmcts/cloud-native-platform", () => {
+  const configurePropertiesVolume = mockConfigurePropertiesVolume;
+  return { configurePropertiesVolume };
+});
 
-vi.mock("config", () => ({
-  default: {
+vi.mock("config", () => {
+  const defaultExport = {
     get: mockConfigGet
-  }
-}));
+  };
+  return { default: defaultExport };
+});
 
 describe("index - cron job runner", () => {
   const originalEnv = process.env;

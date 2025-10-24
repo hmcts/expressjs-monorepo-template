@@ -3,23 +3,26 @@ import type { Request, Response } from "express";
 import { GET, POST } from "./summary.js";
 
 // Mock dependencies
-vi.mock("../../onboarding/session.js", () => ({
-  getAllSessionData: vi.fn(),
-  isSessionComplete: vi.fn(),
-  clearOnboardingSession: vi.fn()
-}));
+vi.mock("../../onboarding/session.js", () => {
+  const getAllSessionData = vi.fn();
+  const isSessionComplete = vi.fn();
+  const clearOnboardingSession = vi.fn();
+  return { getAllSessionData, isSessionComplete, clearOnboardingSession };
+});
 
-vi.mock("../../onboarding/service.js", () => ({
-  submitOnboarding: vi.fn()
-}));
+vi.mock("../../onboarding/service.js", () => {
+  const submitOnboarding = vi.fn();
+  return { submitOnboarding };
+});
 
-vi.mock("../../onboarding/navigation.js", () => ({
-  formatDateForDisplay: vi.fn(),
-  formatAddressForDisplay: vi.fn(),
-  formatRoleForDisplay: vi.fn(),
-  getPreviousPage: vi.fn(),
-  getChangePageRoute: vi.fn()
-}));
+vi.mock("../../onboarding/navigation.js", () => {
+  const formatDateForDisplay = vi.fn();
+  const formatAddressForDisplay = vi.fn();
+  const formatRoleForDisplay = vi.fn();
+  const getPreviousPage = vi.fn();
+  const getChangePageRoute = vi.fn();
+  return { formatDateForDisplay, formatAddressForDisplay, formatRoleForDisplay, getPreviousPage, getChangePageRoute };
+});
 
 import { getAllSessionData, isSessionComplete, clearOnboardingSession } from "../../onboarding/session.js";
 import { submitOnboarding } from "../../onboarding/service.js";

@@ -3,9 +3,10 @@ import type { Request, Response } from "express";
 import { GET } from "./[id].js";
 
 // Mock the queries module
-vi.mock("../../onboarding/queries.js", () => ({
-  getSubmissionById: vi.fn()
-}));
+vi.mock("../../onboarding/queries.js", () => {
+  const getSubmissionById = vi.fn();
+  return { getSubmissionById };
+});
 
 import { getSubmissionById } from "../../onboarding/queries.js";
 

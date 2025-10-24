@@ -3,19 +3,22 @@ import type { Request, Response } from "express";
 import { GET, POST } from "./address.js";
 import { ZodError } from "zod";
 
-vi.mock("../../onboarding/service.js", () => ({
-  processAddressSubmission: vi.fn(),
-  getSessionDataForPage: vi.fn()
-}));
+vi.mock("../../onboarding/service.js", () => {
+  const processAddressSubmission = vi.fn();
+  const getSessionDataForPage = vi.fn();
+  return { processAddressSubmission, getSessionDataForPage };
+});
 
-vi.mock("../../onboarding/validation.js", () => ({
-  formatZodErrors: vi.fn(),
-  createErrorSummary: vi.fn()
-}));
+vi.mock("../../onboarding/validation.js", () => {
+  const formatZodErrors = vi.fn();
+  const createErrorSummary = vi.fn();
+  return { formatZodErrors, createErrorSummary };
+});
 
-vi.mock("../../onboarding/navigation.js", () => ({
-  getPreviousPage: vi.fn(() => "/onboarding/role")
-}));
+vi.mock("../../onboarding/navigation.js", () => {
+  const getPreviousPage = vi.fn(() => "/onboarding/role");
+  return { getPreviousPage };
+});
 
 import { processAddressSubmission, getSessionDataForPage } from "../../onboarding/service.js";
 import { formatZodErrors, createErrorSummary } from "../../onboarding/validation.js";

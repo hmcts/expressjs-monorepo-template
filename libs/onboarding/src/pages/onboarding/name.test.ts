@@ -4,21 +4,24 @@ import { GET, POST } from "./name.js";
 import { ZodError } from "zod";
 
 // Mock service helpers
-vi.mock("../../onboarding/service.js", () => ({
-  processNameSubmission: vi.fn(),
-  getSessionDataForPage: vi.fn()
-}));
+vi.mock("../../onboarding/service.js", () => {
+  const processNameSubmission = vi.fn();
+  const getSessionDataForPage = vi.fn();
+  return { processNameSubmission, getSessionDataForPage };
+});
 
 // Mock validation helpers
-vi.mock("../../onboarding/validation.js", () => ({
-  formatZodErrors: vi.fn(),
-  createErrorSummary: vi.fn()
-}));
+vi.mock("../../onboarding/validation.js", () => {
+  const formatZodErrors = vi.fn();
+  const createErrorSummary = vi.fn();
+  return { formatZodErrors, createErrorSummary };
+});
 
 // Mock navigation helpers
-vi.mock("../../onboarding/navigation.js", () => ({
-  getPreviousPage: vi.fn(() => "/onboarding/start")
-}));
+vi.mock("../../onboarding/navigation.js", () => {
+  const getPreviousPage = vi.fn(() => "/onboarding/start");
+  return { getPreviousPage };
+});
 
 import { processNameSubmission, getSessionDataForPage } from "../../onboarding/service.js";
 import { formatZodErrors, createErrorSummary } from "../../onboarding/validation.js";

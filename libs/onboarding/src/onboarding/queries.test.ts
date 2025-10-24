@@ -2,15 +2,16 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { createOnboardingSubmission, getSubmissionById, getRecentSubmissions } from "./queries.js";
 import { prisma } from "@hmcts/postgres";
 
-vi.mock("@hmcts/postgres", () => ({
-  prisma: {
+vi.mock("@hmcts/postgres", () => {
+  const prisma = {
     onboardingSubmission: {
       create: vi.fn(),
       findUnique: vi.fn(),
       findMany: vi.fn()
     }
-  }
-}));
+  };
+  return { prisma };
+});
 
 describe("queries", () => {
   beforeEach(() => {

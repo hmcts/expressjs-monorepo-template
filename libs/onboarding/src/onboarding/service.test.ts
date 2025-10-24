@@ -12,9 +12,10 @@ import {
 import { createOnboardingSubmission } from "./queries.js";
 
 // Mock the queries module
-vi.mock("./queries.js", () => ({
-  createOnboardingSubmission: vi.fn()
-}));
+vi.mock("./queries.js", () => {
+  const createOnboardingSubmission = vi.fn();
+  return { createOnboardingSubmission };
+});
 
 describe("service functions", () => {
   let mockSession: Session;

@@ -3,9 +3,10 @@ import type { Request, Response } from "express";
 import { POST } from "./index.js";
 
 // Mock the queries module
-vi.mock("../../onboarding/queries.js", () => ({
-  createOnboardingSubmission: vi.fn()
-}));
+vi.mock("../../onboarding/queries.js", () => {
+  const createOnboardingSubmission = vi.fn();
+  return { createOnboardingSubmission };
+});
 
 import { createOnboardingSubmission } from "../../onboarding/queries.js";
 

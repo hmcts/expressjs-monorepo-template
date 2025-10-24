@@ -1,9 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { collateSchemas } from "./collate-schema.js";
 
-vi.mock("./schema-discovery.js", () => ({
-  getPrismaSchemas: vi.fn().mockReturnValue(["/home/user/project/libs/auth/prisma", "/home/user/project/libs/posts/prisma"])
-}));
+vi.mock("./schema-discovery.js", () => {
+  const getPrismaSchemas = vi.fn().mockReturnValue(["/home/user/project/libs/auth/prisma", "/home/user/project/libs/posts/prisma"]);
+  return { getPrismaSchemas };
+});
 
 describe("collate-schema", () => {
   const originalConsoleLog = console.log;
