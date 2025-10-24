@@ -1,17 +1,24 @@
-import { readFileSync } from "node:fs";
-import { DefaultAzureCredential } from "@azure/identity";
-import { SecretClient } from "@azure/keyvault-secrets";
-import { load as yamlLoad } from "js-yaml";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { addFromAzureVault } from "./azure-vault.js";
 
-// Mock all external dependencies
+// Create a shared mock client reference
+const mockClient = {
+  getSecret: vi.fn()
+};
+
+// Mock all external dependencies with proper factory functions
 vi.mock("@azure/identity", () => ({
-  DefaultAzureCredential: vi.fn()
+  // biome-ignore lint/complexity/useArrowFunction: Vitest 4 requires function keyword for constructors
+  DefaultAzureCredential: vi.fn().mockImplementation(function () {
+    return {};
+  })
 }));
 
 vi.mock("@azure/keyvault-secrets", () => ({
-  SecretClient: vi.fn()
+  // biome-ignore lint/complexity/useArrowFunction: Vitest 4 requires function keyword for constructors
+  SecretClient: vi.fn().mockImplementation(function () {
+    return mockClient;
+  })
 }));
 
 vi.mock("node:fs", () => ({
@@ -22,7 +29,11 @@ vi.mock("js-yaml", () => ({
   load: vi.fn()
 }));
 
-const mockDefaultAzureCredential = vi.mocked(DefaultAzureCredential);
+// Import mocked modules after vi.mock declarations
+const { SecretClient } = await import("@azure/keyvault-secrets");
+const { readFileSync } = await import("node:fs");
+const { load: yamlLoad } = await import("js-yaml");
+
 const mockSecretClient = vi.mocked(SecretClient);
 const mockReadFileSync = vi.mocked(readFileSync);
 const mockYamlLoad = vi.mocked(yamlLoad);
@@ -30,20 +41,10 @@ const mockYamlLoad = vi.mocked(yamlLoad);
 describe("addFromAzureVault", () => {
   let config: Record<string, any>;
   let consoleWarnSpy: any;
-  let mockClient: any;
 
   beforeEach(() => {
     config = { existing: "value" };
     consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-
-    // Set up mock client
-    mockClient = {
-      getSecret: vi.fn()
-    };
-
-    // Configure mocks
-    mockDefaultAzureCredential.mockReturnValue({});
-    mockSecretClient.mockReturnValue(mockClient);
 
     vi.clearAllMocks();
   });
