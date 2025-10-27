@@ -8,9 +8,7 @@ vi.mock("applicationinsights", () => {
     trackException: vi.fn(),
     trackEvent: vi.fn(),
     trackMetric: vi.fn(),
-    flush: vi.fn((options: any) => {
-      options.callback();
-    }),
+    flush: vi.fn(),
     context: {
       tags: {},
       keys: {
@@ -20,23 +18,18 @@ vi.mock("applicationinsights", () => {
   };
 
   const mockSetup = {
-    setAutoDependencyCorrelation: vi.fn(() => mockSetup),
     setAutoCollectRequests: vi.fn(() => mockSetup),
     setAutoCollectPerformance: vi.fn(() => mockSetup),
     setAutoCollectExceptions: vi.fn(() => mockSetup),
     setAutoCollectDependencies: vi.fn(() => mockSetup),
     setAutoCollectConsole: vi.fn(() => mockSetup),
-    setUseDiskRetryCaching: vi.fn(() => mockSetup),
-    setDistributedTracingMode: vi.fn(() => mockSetup),
-    start: vi.fn(() => mockSetup)
+    setUseDiskRetryCaching: vi.fn(() => mockSetup)
   };
 
   return {
     setup: vi.fn(() => mockSetup),
     defaultClient: mockClient,
-    DistributedTracingModes: {
-      AI_AND_W3C: "AI_AND_W3C"
-    }
+    start: vi.fn()
   };
 });
 
@@ -62,15 +55,19 @@ describe("MonitoringService", () => {
       expect(appInsights.setup).toHaveBeenCalledWith(connectionString);
 
       const setupMock = vi.mocked(appInsights.setup)(connectionString);
-      expect(setupMock.setAutoDependencyCorrelation).toHaveBeenCalledWith(true);
       expect(setupMock.setAutoCollectRequests).toHaveBeenCalledWith(true);
       expect(setupMock.setAutoCollectPerformance).toHaveBeenCalledWith(true, true);
       expect(setupMock.setAutoCollectExceptions).toHaveBeenCalledWith(true);
       expect(setupMock.setAutoCollectDependencies).toHaveBeenCalledWith(true);
       expect(setupMock.setAutoCollectConsole).toHaveBeenCalledWith(true, true);
       expect(setupMock.setUseDiskRetryCaching).toHaveBeenCalledWith(true);
-      expect(setupMock.setDistributedTracingMode).toHaveBeenCalledWith("AI_AND_W3C");
-      expect(setupMock.start).toHaveBeenCalled();
+      expect(appInsights.start).toHaveBeenCalled();
+    });
+
+    it("should set cloud role name before starting", () => {
+      service = new MonitoringService(connectionString, "test-service", mockLogger);
+
+      expect(appInsights.defaultClient.context.tags.cloudRole).toBe("test-service");
     });
 
     it("should use console as default logger", () => {
@@ -246,16 +243,6 @@ describe("MonitoringService", () => {
 
       expect(promise).toBeInstanceOf(Promise);
       await expect(promise).resolves.toBeUndefined();
-      expect(appInsights.defaultClient.flush).toHaveBeenCalled();
-    });
-
-    it("should call the callback when flush completes", async () => {
-      vi.mocked(appInsights.defaultClient.flush).mockImplementation((options: any) => {
-        setTimeout(() => options.callback(), 10);
-      });
-
-      await service.flush();
-
       expect(appInsights.defaultClient.flush).toHaveBeenCalled();
     });
   });
