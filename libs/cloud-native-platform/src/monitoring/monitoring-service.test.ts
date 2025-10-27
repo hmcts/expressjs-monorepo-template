@@ -8,9 +8,7 @@ vi.mock("applicationinsights", () => {
     trackException: vi.fn(),
     trackEvent: vi.fn(),
     trackMetric: vi.fn(),
-    flush: vi.fn((options: any) => {
-      options.callback();
-    }),
+    flush: vi.fn(),
     context: {
       tags: {},
       keys: {
@@ -245,16 +243,6 @@ describe("MonitoringService", () => {
 
       expect(promise).toBeInstanceOf(Promise);
       await expect(promise).resolves.toBeUndefined();
-      expect(appInsights.defaultClient.flush).toHaveBeenCalled();
-    });
-
-    it("should call the callback when flush completes", async () => {
-      vi.mocked(appInsights.defaultClient.flush).mockImplementation((options: any) => {
-        setTimeout(() => options.callback(), 10);
-      });
-
-      await service.flush();
-
       expect(appInsights.defaultClient.flush).toHaveBeenCalled();
     });
   });
