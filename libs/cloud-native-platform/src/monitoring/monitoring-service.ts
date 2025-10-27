@@ -10,17 +10,16 @@ export class MonitoringService {
   ) {
     appInsights
       .setup(connectionString)
-      .setAutoDependencyCorrelation(true)
       .setAutoCollectRequests(true)
       .setAutoCollectPerformance(true, true)
       .setAutoCollectExceptions(true)
       .setAutoCollectDependencies(true)
       .setAutoCollectConsole(true, true)
-      .setUseDiskRetryCaching(true)
-      .setDistributedTracingMode(appInsights.DistributedTracingModes.AI_AND_W3C)
-      .start();
+      .setUseDiskRetryCaching(true);
 
     appInsights.defaultClient.context.tags[appInsights.defaultClient.context.keys.cloudRole] = serviceName;
+
+    appInsights.start();
 
     this.client = appInsights.defaultClient;
   }
