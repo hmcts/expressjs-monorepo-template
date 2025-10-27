@@ -1,0 +1,50 @@
+<testsuites id="" name="" tests="20" failures="0" skipped="0" errors="0" time="30.228828999999998">
+<testsuite name="cookie-management.spec.ts" timestamp="2025-10-27T06:00:58.846Z" hostname="chromium" tests="13" failures="0" skipped="0" time="16.718" errors="0">
+<testcase name="Cookie Management › Cookie Banner › should display cookie banner on first visit" classname="cookie-management.spec.ts" time="0.894">
+</testcase>
+<testcase name="Cookie Management › Cookie Banner › should not display cookie banner on cookies page" classname="cookie-management.spec.ts" time="0.799">
+</testcase>
+<testcase name="Cookie Management › Cookie Banner › should hide banner after accepting cookies" classname="cookie-management.spec.ts" time="2.61">
+</testcase>
+<testcase name="Cookie Management › Cookie Banner › should hide banner after rejecting cookies" classname="cookie-management.spec.ts" time="2.627">
+</testcase>
+<testcase name="Cookie Management › Cookie Banner › should navigate to cookie preferences page" classname="cookie-management.spec.ts" time="0.569">
+</testcase>
+<testcase name="Cookie Management › Cookie Preferences Page › should display cookie preferences form" classname="cookie-management.spec.ts" time="0.508">
+</testcase>
+<testcase name="Cookie Management › Cookie Preferences Page › should save cookie preferences" classname="cookie-management.spec.ts" time="1.599">
+</testcase>
+<testcase name="Cookie Management › Cookie Preferences Page › should reflect current cookie preferences" classname="cookie-management.spec.ts" time="0.545">
+</testcase>
+<testcase name="Cookie Management › Cookie Preferences Page › should work with Welsh language" classname="cookie-management.spec.ts" time="1.594">
+</testcase>
+<testcase name="Cookie Management › Cookie Banner JavaScript Behavior › should handle accept button click with JavaScript" classname="cookie-management.spec.ts" time="2.191">
+</testcase>
+<testcase name="Cookie Management › Cookie Banner JavaScript Behavior › should handle reject button click with JavaScript" classname="cookie-management.spec.ts" time="2.148">
+</testcase>
+<testcase name="Cookie Management › Accessibility › cookie banner should be accessible" classname="cookie-management.spec.ts" time="0.205">
+</testcase>
+<testcase name="Cookie Management › Accessibility › cookie preferences page should be accessible" classname="cookie-management.spec.ts" time="0.429">
+</testcase>
+</testsuite>
+<testsuite name="homepage.spec.ts" timestamp="2025-10-27T06:00:58.846Z" hostname="chromium" tests="2" failures="0" skipped="0" time="2.122" errors="0">
+<testcase name="Homepage › should load the homepage" classname="homepage.spec.ts" time="0.342">
+</testcase>
+<testcase name="Homepage › should run accessibility checks" classname="homepage.spec.ts" time="1.78">
+</testcase>
+</testsuite>
+<testsuite name="onboarding-happy-path.spec.ts" timestamp="2025-10-27T06:00:58.846Z" hostname="chromium" tests="4" failures="0" skipped="0" time="11.29" errors="0">
+<testcase name="Onboarding Form - Happy Path Journey › should complete the full onboarding journey successfully" classname="onboarding-happy-path.spec.ts" time="3.051">
+</testcase>
+<testcase name="Onboarding Form - Happy Path Journey › should handle &quot;Other&quot; role selection with text input" classname="onboarding-happy-path.spec.ts" time="2.645">
+</testcase>
+<testcase name="Onboarding Form - Happy Path Journey › should include accessibility checks throughout the journey" classname="onboarding-happy-path.spec.ts" time="4.091">
+</testcase>
+<testcase name="Onboarding Form - Happy Path Journey › should support keyboard navigation throughout the form" classname="onboarding-happy-path.spec.ts" time="1.503">
+</testcase>
+</testsuite>
+<testsuite name="welsh-language.spec.ts" timestamp="2025-10-27T06:00:58.846Z" hostname="chromium" tests="1" failures="0" skipped="0" time="0.881" errors="0">
+<testcase name="Welsh Language Support › should switch to Welsh and back to English" classname="welsh-language.spec.ts" time="0.881">
+</testcase>
+</testsuite>
+</testsuites>
