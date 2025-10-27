@@ -100,7 +100,7 @@ jobs:
 
       # Upload artifacts on failure for debugging   
       - name: Upload Playwright test results
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always() && steps.e2e-tests.outcome == 'failure'
         with:
           name: playwright-test-results
@@ -111,7 +111,7 @@ jobs:
 
       # Upload application logs on failure for debugging
       - name: Upload application logs
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         if: always() && steps.e2e-tests.outcome == 'failure'
         with:
           name: application-logs

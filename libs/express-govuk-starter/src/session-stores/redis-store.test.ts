@@ -2,13 +2,15 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { expressSessionRedis } from "./redis-store.js";
 
 vi.mock("connect-redis", () => ({
-  RedisStore: vi.fn().mockImplementation((options) => {
+  // biome-ignore lint/complexity/useArrowFunction: Vitest 4 requires function keyword for constructors
+  RedisStore: vi.fn().mockImplementation(function (options) {
     return { redisStoreOptions: options };
   })
 }));
 
 vi.mock("express-session", () => ({
-  default: vi.fn().mockImplementation((options) => {
+  // biome-ignore lint/complexity/useArrowFunction: Vitest 4 requires function keyword for constructors
+  default: vi.fn().mockImplementation(function (options) {
     return { sessionOptions: options };
   })
 }));

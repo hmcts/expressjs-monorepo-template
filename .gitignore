@@ -39,3 +39,4 @@ lcov.info
 .mcp.env
 .claude/claude.env
 .claude/analytics
+.claude/settings.local.json

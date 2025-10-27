@@ -36,13 +36,13 @@
     "govuk-frontend": "5.13.0",
     "helmet": "8.1.0",
     "nunjucks": "3.2.4",
-    "redis": "5.8.3"
+    "redis": "5.9.0"
   },
   "devDependencies": {
     "@types/compression": "1.8.1",
     "@types/config": "3.3.5",
-    "@types/cookie-parser": "1.4.9",
-    "@types/express": "5.0.3",
+    "@types/cookie-parser": "1.4.10",
+    "@types/express": "5.0.4",
     "@types/express-session": "1.18.2",
     "@types/govuk-frontend": "5.11.0",
     "@types/nunjucks": "3.2.6",
@@ -51,7 +51,7 @@
     "nodemon": "3.1.10",
     "sass": "1.93.2",
     "supertest": "7.1.4",
-    "vite": "7.1.11",
+    "vite": "7.1.12",
     "vite-plugin-static-copy": "3.1.4"
   }
 }
