@@ -71,8 +71,8 @@ jobs:
         id: metadata
         run: .github/scripts/generate-build-metadata.sh "${{ env.CHANGE_ID }}" "${{ github.sha }}" "${{ matrix.app }}"
 
-      - name: Azure Login
-        uses: azure/login@v1
+      - name: 'Build and push image'
+        uses: azure/docker-login@v1
         with:
           login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
           username: ${{ secrets.REGISTRY_USERNAME }}
@@ -140,8 +140,8 @@ jobs:
             '${{ needs.build-and-publish.outputs.short-sha }}' \
             '${{ needs.build-and-publish.outputs.timestamp }}'
 
-      - name: Azure Login
-        uses: azure/login@v1
+      - name: 'Build and push image'
+        uses: azure/docker-login@v1
         with:
           login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
           username: ${{ secrets.REGISTRY_USERNAME }}
