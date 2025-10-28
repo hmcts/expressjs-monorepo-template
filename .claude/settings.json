@@ -7,8 +7,8 @@
       }
     }
   },
-  "enabledPlugins": [
-    "expressjs-monorepo"
-  ],
+  "enabledPlugins": {
+    "expressjs-monorepo": true
+  },
   "enableAllProjectMcpServers": true
 }
