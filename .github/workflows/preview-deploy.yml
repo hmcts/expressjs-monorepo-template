@@ -86,7 +86,6 @@ jobs:
           echo "Building image: ${FULL_TAG}"
 
           docker build \
-            --build-arg BUILDPLATFORM=linux/amd64 \
             --tag "${FULL_TAG}" \
             --file apps/${{ matrix.app }}/Dockerfile \
             .

@@ -63,14 +63,6 @@ Dockerfile*
 .mcp.env
 .claude/
 
-# Development configs (not needed in production)
-biome.json
-playwright.config.ts
-vitest.config.ts
-tsconfig.json
-.prettierrc
-.eslintrc*
-
 # Temporary files
 tmp/
 temp/
