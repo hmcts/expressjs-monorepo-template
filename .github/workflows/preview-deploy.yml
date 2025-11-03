@@ -136,12 +136,17 @@ jobs:
             '${{ needs.build-and-publish.outputs.short-sha }}' \
             '${{ needs.build-and-publish.outputs.timestamp }}'
 
-      - name: 'Build and push image'
+      - name: 'HMCTS ACR Login'
         uses: azure/docker-login@v1
         with:
           login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_CFT_PREVIEW }}
 
       # TODO change the preview resource group and name
       - name: Get AKS credentials
@@ -155,10 +160,6 @@ jobs:
         uses: azure/setup-helm@v4
         with:
           version: '3.13.0'
-
-      - name: Login to Helm registry
-        run: |
-          az acr login --name hmctspublic
 
       - name: Process values template
         run: |

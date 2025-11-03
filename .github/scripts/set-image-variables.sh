@@ -38,7 +38,7 @@ main() {
     # Check if app was affected (needs rebuild)
     if echo "$affected_apps" | jq -e --arg app "$app" 'index($app)' > /dev/null 2>&1; then
       # App was affected - use PR-specific tag
-      local image_tag="pr-${change_id}-${short_sha}-${timestamp}"
+      local image_tag="pr-${change_id}"
 
       if [ -n "${GITHUB_ENV:-}" ]; then
         echo "${env_var_name}=${image_tag}" >> "$GITHUB_ENV"
