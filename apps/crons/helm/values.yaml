@@ -7,7 +7,6 @@ job:
   image: hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-crons:latest
   aadIdentityName: dtsse
   environment:
-    NODE_ENV: 'production'
     DATABASE_URL: 'postgresql://user:password@postgres:5432/database'
     SCRIPT_NAME: 'example'
   keyVaults:

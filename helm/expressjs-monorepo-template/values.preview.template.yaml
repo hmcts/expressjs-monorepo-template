@@ -12,7 +12,6 @@ web:
       applicationPort: 3000
       aadIdentityName: dtsse
       environment:
-        NODE_ENV: "preview"
         DATABASE_URL: "postgresql://{{ .Release.Name }}-postgresql:5432/pr-${CHANGE_ID}-expressjs-monorepo-template"
         REDIS_HOST: "dtsse-preview.redis.cache.windows.net"
       keyVaults:
@@ -31,7 +30,6 @@ api:
       applicationPort: 3001
       aadIdentityName: dtsse
       environment:
-        NODE_ENV: "preview"
         DATABASE_URL: "postgresql://{{ .Release.Name }}-postgresql:5432/pr-${CHANGE_ID}-expressjs-monorepo-template"
         REDIS_HOST: "dtsse-preview.redis.cache.windows.net"
       keyVaults:
@@ -51,7 +49,6 @@ crons:
       kind: CronJob
       aadIdentityName: dtsse
       environment:
-        NODE_ENV: "preview"
         DATABASE_URL: "postgresql://{{ .Release.Name }}-postgresql:5432/pr-${CHANGE_ID}-expressjs-monorepo-template"
         REDIS_HOST: "dtsse-preview.redis.cache.windows.net"
       keyVaults:
