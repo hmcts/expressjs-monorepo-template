@@ -4,14 +4,14 @@ global:
   tenantId: "531ff96d-0ae9-462a-8d2d-bec7c0b42082"
 job:
   disableActiveClusterCheck: true
-  image: hmctspublic.azurecr.io/rpe/expressjs-monorepo-template-crons:latest
-  aadIdentityName: rpe
+  image: hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-crons:latest
+  aadIdentityName: dtsse
   environment:
     NODE_ENV: 'production'
     DATABASE_URL: 'postgresql://user:password@postgres:5432/database'
     SCRIPT_NAME: 'example'
   keyVaults:
-    rpe:
+    dtsse:
       secrets:
         - app-insights-connection-string
         - dynatrace-url

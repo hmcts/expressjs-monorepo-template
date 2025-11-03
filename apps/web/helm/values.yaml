@@ -1,12 +1,12 @@
 nodejs:
   applicationPort: 3000
-  aadIdentityName: rpe
+  aadIdentityName: dtsse
   ingressHost: expressjs-monorepo-template-web.{{ .Values.global.environment }}.platform.hmcts.net
-  image: 'hmctspublic.azurecr.io/rpe/expressjs-monorepo-template-web:latest'
+  image: 'hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-web:latest'
   environment:
-    REDIS_HOST: 'rpe-{{ .Values.global.environment }}.redis.cache.windows.net'
+    REDIS_HOST: 'dtsse-{{ .Values.global.environment }}.redis.cache.windows.net'
   keyVaults:
-    rpe:
+    dtsse:
       secrets:
         - redis-access-key
         - app-insights-connection-string
