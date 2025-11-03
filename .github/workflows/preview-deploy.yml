@@ -155,7 +155,21 @@ jobs:
           az aks get-credentials \
             --resource-group cft-preview-01-rg \
             --name cft-preview-01-aks \
-            --overwrite-existing 
+            --overwrite-existing
+
+      - name: Install and configure kubelogin
+        run: |
+          # Get latest kubelogin version
+          KUBELOGIN_VERSION=$(curl -s https://api.github.com/repos/Azure/kubelogin/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+
+          # Install kubelogin
+          curl -LO "https://github.com/Azure/kubelogin/releases/download/${KUBELOGIN_VERSION}/kubelogin-linux-amd64.zip"
+          unzip kubelogin-linux-amd64.zip
+          sudo mv bin/linux_amd64/kubelogin /usr/local/bin/
+          rm -rf kubelogin-linux-amd64.zip bin/
+
+          # Convert kubeconfig to use kubelogin
+          kubelogin convert-kubeconfig -l azurecli
 
       - name: Install Helm
         uses: azure/setup-helm@v4
