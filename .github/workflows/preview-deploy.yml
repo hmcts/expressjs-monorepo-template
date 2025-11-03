@@ -153,6 +153,7 @@ jobs:
         run: |
           az account set --subscription 8b6ea922-0862-443e-af15-6056e1c9b9a4
           az aks get-credentials \
+            --admin \
             --resource-group cft-preview-01-rg \
             --name cft-preview-01-aks \
             --overwrite-existing

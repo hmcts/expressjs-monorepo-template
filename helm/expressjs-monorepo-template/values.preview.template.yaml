@@ -7,16 +7,16 @@ web:
   enabled: true
   expressjs-monorepo-template-web:
     nodejs:
-      image: "hmctspublic.azurecr.io/rpe/expressjs-monorepo-template-web:${WEB_IMAGE}"
+      image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-web:${WEB_IMAGE}"
       ingressHost: "expressjs-monorepo-template-web-pr-${CHANGE_ID}.preview.platform.hmcts.net"
       applicationPort: 3000
-      aadIdentityName: rpe
+      aadIdentityName: dtsse
       environment:
         NODE_ENV: "preview"
         DATABASE_URL: "postgresql://{{ .Release.Name }}-postgresql:5432/pr-${CHANGE_ID}-expressjs-monorepo-template"
-        REDIS_HOST: "rpe-preview.redis.cache.windows.net"
+        REDIS_HOST: "dtsse-preview.redis.cache.windows.net"
       keyVaults:
-        rpe:
+        dtsse:
           secrets:
             - redis-access-key
             - app-insights-connection-string
@@ -26,16 +26,16 @@ api:
   enabled: true
   expressjs-monorepo-template-api:
     nodejs:
-      image: "hmctspublic.azurecr.io/rpe/expressjs-monorepo-template-api:${API_IMAGE}"
+      image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-api:${API_IMAGE}"
       ingressHost: "expressjs-monorepo-template-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
       applicationPort: 3001
-      aadIdentityName: rpe
+      aadIdentityName: dtsse
       environment:
         NODE_ENV: "preview"
         DATABASE_URL: "postgresql://{{ .Release.Name }}-postgresql:5432/pr-${CHANGE_ID}-expressjs-monorepo-template"
-        REDIS_HOST: "rpe-preview.redis.cache.windows.net"
+        REDIS_HOST: "dtsse-preview.redis.cache.windows.net"
       keyVaults:
-        rpe:
+        dtsse:
           secrets:
             - redis-access-key
             - app-insights-connection-string
@@ -45,17 +45,17 @@ crons:
   enabled: true
   expressjs-monorepo-template-crons:
     job:
-      image: "hmctspublic.azurecr.io/rpe/expressjs-monorepo-template-crons:${CRONS_IMAGE}"
+      image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-crons:${CRONS_IMAGE}"
       schedule: "*/5 * * * *"  # Every 5 minutes
       suspend: false
       kind: CronJob
-      aadIdentityName: rpe
+      aadIdentityName: dtsse
       environment:
         NODE_ENV: "preview"
         DATABASE_URL: "postgresql://{{ .Release.Name }}-postgresql:5432/pr-${CHANGE_ID}-expressjs-monorepo-template"
-        REDIS_HOST: "rpe-preview.redis.cache.windows.net"
+        REDIS_HOST: "dtsse-preview.redis.cache.windows.net"
       keyVaults:
-        rpe:
+        dtsse:
           secrets:
             - redis-access-key
             - app-insights-connection-string
@@ -63,7 +63,7 @@ crons:
 # PostgreSQL database configuration
 postgresql:
   enabled: true
-  flexibleserver: rpe-preview
+  flexibleserver: dtsse-preview
   setup:
     databases:
       - name: "pr-${CHANGE_ID}-expressjs-monorepo-template"
