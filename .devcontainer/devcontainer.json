@@ -3,6 +3,13 @@
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "runArgs": ["--privileged"],
   "remoteUser": "vscode",
+
+  "initializeCommand": "touch ~/.bash_history ~/.zsh_history",
+  "mounts": [
+    "source=${localEnv:HOME}/.bash_history,target=/home/vscode/.bash_history,type=bind",
+    "source=${localEnv:HOME}/.zsh_history,target=/home/vscode/.zsh_history,type=bind"
+  ],
+
   "features": {
     // Core isolation
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
@@ -28,6 +35,9 @@
 
   "customizations": {
     "vscode": {
+      "settings": {
+        "files.autoSave": "onWindowChange"
+      },
       "extensions": [
         "ms-azuretools.vscode-docker",
         "ms-playwright.playwright"

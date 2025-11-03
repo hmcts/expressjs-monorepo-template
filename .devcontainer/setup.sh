@@ -13,4 +13,14 @@ corepack enable
 # Optional: ensure Playwright browsers are installed globally
 npx playwright install --with-deps
 
+# Install kubelogin for AKS authentication
+echo "Installing kubelogin..."
+KUBELOGIN_VERSION=$(curl -s https://api.github.com/repos/Azure/kubelogin/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+curl -sSL "https://github.com/Azure/kubelogin/releases/download/${KUBELOGIN_VERSION}/kubelogin-linux-amd64.zip" -o /tmp/kubelogin.zip
+unzip -q /tmp/kubelogin.zip -d /tmp
+sudo mv /tmp/bin/linux_amd64/kubelogin /usr/local/bin/
+sudo chmod +x /usr/local/bin/kubelogin
+rm -rf /tmp/kubelogin.zip /tmp/bin
+echo "✅ kubelogin ${KUBELOGIN_VERSION} installed"
+
 echo "✅ Dev container setup complete."
