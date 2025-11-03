@@ -40,3 +40,8 @@ lcov.info
 .claude/claude.env
 .claude/analytics
 .claude/settings.local.json
+
+# Helm
+**/Chart.lock
+**/charts/*.tgz
+values.preview.yaml
