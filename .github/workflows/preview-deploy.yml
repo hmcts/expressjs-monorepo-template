@@ -151,7 +151,7 @@ jobs:
       # TODO change the preview resource group and name
       - name: Get AKS credentials
         run: |
-          az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_PREVIEW }}
+          az account set --subscription 8b6ea922-0862-443e-af15-6056e1c9b9a4
           az aks get-credentials \
             --resource-group cft-preview-01-rg \
             --name cft-preview-01-aks \
