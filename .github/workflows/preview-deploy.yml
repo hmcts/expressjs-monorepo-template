@@ -136,13 +136,6 @@ jobs:
             '${{ needs.build-and-publish.outputs.short-sha }}' \
             '${{ needs.build-and-publish.outputs.timestamp }}'
 
-      - name: 'HMCTS ACR Login'
-        uses: azure/docker-login@v1
-        with:
-          login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
-          username: ${{ secrets.REGISTRY_USERNAME }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
-
       - name: Azure Login
         uses: azure/login@v2
         with:
@@ -177,6 +170,12 @@ jobs:
         with:
           version: '3.13.0'
 
+      - name: Login to Helm registry
+        run: |
+          echo ${{ secrets.REGISTRY_PASSWORD }} | helm registry login hmctspublic.azurecr.io \
+            --username ${{ secrets.REGISTRY_USERNAME }} \
+            --password-stdin
+
       - name: Process values template
         run: |
           cd helm/${APPLICATION_NAME}
@@ -185,6 +184,17 @@ jobs:
 
       - name: Update Helm dependencies
         run: |
+          # Update dependencies for each subchart first
+          for subchart in apps/*/helm; do
+            if [ -f "$subchart/Chart.yaml" ]; then
+              echo "Updating dependencies for $subchart"
+              cd "$subchart"
+              helm dependency update
+              cd - > /dev/null
+            fi
+          done
+
+          # Then update umbrella chart dependencies
           cd helm/${APPLICATION_NAME}
           helm dependency update
 
