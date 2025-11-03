@@ -57,7 +57,7 @@ main() {
   short_sha=$(echo "$git_sha" | cut -c1-7)
 
   # Construct derived values
-  local registry_prefix="${team_name}/${team_name}-${application_name}"
+  local registry_prefix="${team_name}/${application_name}"
   local image_tag="pr-${change_id}-${short_sha}-${timestamp}"
 
   # Output to GitHub Actions
