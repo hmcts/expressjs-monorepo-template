@@ -1,6 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { configurePropertiesVolume, healthcheck, monitoringMiddleware } from "@hmcts/cloud-native-platform";
+import { getPropertiesVolumeSecrets, healthcheck, monitoringMiddleware } from "@hmcts/cloud-native-platform";
 import {
   configureCookieManager,
   configureGovuk,
@@ -14,7 +14,6 @@ import { pageRoutes as footerPages } from "@hmcts/footer-pages/config";
 import { pageRoutes as onboardingPages } from "@hmcts/onboarding/config";
 import { createSimpleRouter } from "@hmcts/simple-router";
 import compression from "compression";
-import config from "config";
 import cookieParser from "cookie-parser";
 import type { Express } from "express";
 import express from "express";
@@ -25,8 +24,9 @@ const __dirname = path.dirname(__filename);
 const chartPath = path.join(__dirname, "../helm/values.yaml");
 
 export async function createApp(): Promise<Express> {
-  await configurePropertiesVolume(config, { chartPath });
-
+  await getPropertiesVolumeSecrets({ chartPath, omit: ["DATABASE_URL"] });
+  
+  const { default: config } = await import("config");
   const app = express();
 
   app.use(compression());
@@ -36,7 +36,7 @@ export async function createApp(): Promise<Express> {
   app.use(monitoringMiddleware(config.get("applicationInsights")));
   app.use(configureNonce());
   app.use(configureHelmet());
-  app.use(expressSessionRedis({ redisConnection: await getRedisClient() }));
+  app.use(expressSessionRedis({ redisConnection: await getRedisClient(config) }));
 
   const modulePaths = [__dirname, `${onboardingPages.path}/../`, `${footerPages.path}/../`];
 
@@ -65,7 +65,7 @@ export async function createApp(): Promise<Express> {
   return app;
 }
 
-const getRedisClient = async () => {
+const getRedisClient = async (config: any) => {
   const redisClient = createClient({ url: config.get("redis.url") });
   redisClient.on("error", (err) => console.error("Redis Client Error", err));
 

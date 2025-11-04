@@ -1,323 +1,220 @@
-import fs, { existsSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { addFromAzureVault } from "./azure-vault.js";
-import { configurePropertiesVolume as setupPropertiesVolume } from "./properties.js";
+import { getPropertiesVolumeSecrets } from "./properties.js";
 
-// Mock file system modules
-vi.mock("node:fs", () => {
-  const existsSyncMock = vi.fn();
-  const readdirSyncMock = vi.fn();
-  const readFileSyncMock = vi.fn();
-
-  return {
-    default: {
-      existsSync: existsSyncMock
-    },
-    existsSync: existsSyncMock,
-    readdirSync: readdirSyncMock,
-    readFileSync: readFileSyncMock
-  };
-});
-
-// Mock Azure vault module
-vi.mock("./azure-vault.js", () => ({
-  addFromAzureVault: vi.fn()
+vi.mock("node:fs", () => ({
+  existsSync: vi.fn(),
+  readdirSync: vi.fn(),
+  readFileSync: vi.fn()
 }));
 
-const mockFs = vi.mocked(fs);
 const mockExistsSync = vi.mocked(existsSync);
 const mockReaddirSync = vi.mocked(readdirSync);
 const mockReadFileSync = vi.mocked(readFileSync);
-const mockAddFromAzureVault = vi.mocked(addFromAzureVault);
 
-describe("configurePropertiesVolume", () => {
-  let config: Record<string, any>;
+describe("getPropertiesVolumeSecrets", () => {
   let consoleWarnSpy: any;
+  let originalProcessEnv: NodeJS.ProcessEnv;
 
   beforeEach(() => {
     vi.clearAllMocks();
-    config = { existing: "value" };
+    originalProcessEnv = { ...process.env };
     consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
   });
 
   afterEach(() => {
     consoleWarnSpy.mockRestore();
+    process.env = originalProcessEnv;
   });
 
-  it("should add properties from default mount point", async () => {
+  it("should read secrets from vault subdirectories with prefixed keys", async () => {
     mockExistsSync.mockReturnValue(true);
-    mockReaddirSync.mockReturnValue(["secret1", "secret2"]);
-    mockReadFileSync.mockReturnValueOnce("value1").mockReturnValueOnce("value2  ");
+    mockReaddirSync.mockReturnValueOnce([{ name: "dtsse", isDirectory: () => true, isFile: () => false }] as any);
+    mockReaddirSync.mockReturnValueOnce([
+      { name: "DATABASE_URL", isFile: () => true },
+      { name: "APPLICATION_INSIGHTS_CONNECTION_STRING", isFile: () => true }
+    ] as any);
+    mockReadFileSync.mockReturnValueOnce("postgresql://localhost:5432/db").mockReturnValueOnce("InstrumentationKey=abc123");
 
-    await setupPropertiesVolume(config);
+    const secrets = await getPropertiesVolumeSecrets({ injectEnvVars: false });
 
-    expect(mockExistsSync).toHaveBeenCalledWith("/mnt/secrets");
-    expect(mockReaddirSync).toHaveBeenCalledWith("/mnt/secrets");
-    expect(config).toEqual({
-      existing: "value",
-      secret1: "value1",
-      secret2: "value2"
+    expect(secrets).toEqual({
+      "dtsse.DATABASE_URL": "postgresql://localhost:5432/db",
+      "dtsse.APPLICATION_INSIGHTS_CONNECTION_STRING": "InstrumentationKey=abc123"
     });
   });
 
-  it("should add properties from custom mount point", async () => {
+  it("should inject secrets into process.env when injectEnvVars is true", async () => {
     mockExistsSync.mockReturnValue(true);
-    mockReaddirSync.mockReturnValue(["custom-secret"]);
-    mockReadFileSync.mockReturnValue("custom-value");
+    mockReaddirSync.mockReturnValueOnce([{ name: "dtsse", isDirectory: () => true, isFile: () => false }] as any);
+    mockReaddirSync.mockReturnValueOnce([
+      { name: "DATABASE_URL", isFile: () => true },
+      { name: "API_KEY", isFile: () => true }
+    ] as any);
+    mockReadFileSync.mockReturnValueOnce("postgresql://localhost:5432/db").mockReturnValueOnce("secret-key");
 
-    await setupPropertiesVolume(config, { mountPoint: "/custom/path" });
+    const secrets = await getPropertiesVolumeSecrets({ injectEnvVars: true });
 
-    expect(mockExistsSync).toHaveBeenCalledWith("/custom/path");
-    expect(mockReaddirSync).toHaveBeenCalledWith("/custom/path");
-    expect(config).toEqual({
-      existing: "value",
-      "custom-secret": "custom-value"
+    expect(secrets).toEqual({
+      "dtsse.DATABASE_URL": "postgresql://localhost:5432/db",
+      "dtsse.API_KEY": "secret-key"
     });
+    expect(process.env.DATABASE_URL).toBe("postgresql://localhost:5432/db");
+    expect(process.env.API_KEY).toBe("secret-key");
+  });
+
+  it("should not inject into process.env when injectEnvVars is false", async () => {
+    mockExistsSync.mockReturnValue(true);
+    mockReaddirSync.mockReturnValueOnce([{ name: "dtsse", isDirectory: () => true, isFile: () => false }] as any);
+    mockReaddirSync.mockReturnValueOnce([{ name: "SECRET_KEY", isFile: () => true }] as any);
+    mockReadFileSync.mockReturnValueOnce("my-secret");
+
+    delete process.env.SECRET_KEY;
+    const secrets = await getPropertiesVolumeSecrets({ injectEnvVars: false });
+
+    expect(secrets).toEqual({
+      "dtsse.SECRET_KEY": "my-secret"
+    });
+    expect(process.env.SECRET_KEY).toBeUndefined();
+  });
+
+  it("should handle direct files without vault subdirectories", async () => {
+    mockExistsSync.mockReturnValue(true);
+    mockReaddirSync.mockReturnValueOnce([{ name: "direct-secret", isDirectory: () => false, isFile: () => true }] as any);
+    mockReadFileSync.mockReturnValueOnce("direct-value");
+
+    const secrets = await getPropertiesVolumeSecrets({ injectEnvVars: false });
+
+    expect(secrets).toEqual({
+      "direct-secret": "direct-value"
+    });
+  });
+
+  it("should handle mixed vault directories and direct files", async () => {
+    mockExistsSync.mockReturnValue(true);
+    mockReaddirSync.mockReturnValueOnce([
+      { name: "vault1", isDirectory: () => true, isFile: () => false },
+      { name: "direct-file", isDirectory: () => false, isFile: () => true }
+    ] as any);
+    mockReaddirSync.mockReturnValueOnce([{ name: "secret1", isFile: () => true }] as any);
+    mockReadFileSync.mockReturnValueOnce("vault-value").mockReturnValueOnce("direct-value");
+
+    const secrets = await getPropertiesVolumeSecrets({ injectEnvVars: false });
+
+    expect(secrets).toEqual({
+      "vault1.secret1": "vault-value",
+      "direct-file": "direct-value"
+    });
+  });
+
+  it("should return empty object when mount point does not exist", async () => {
+    mockExistsSync.mockReturnValue(false);
+
+    const secrets = await getPropertiesVolumeSecrets({ failOnError: false });
+
+    expect(secrets).toEqual({});
+    expect(consoleWarnSpy).toHaveBeenCalledWith("Warning: Mount point /mnt/secrets does not exist");
   });
 
   it("should throw error when mount point does not exist and failOnError is true", async () => {
     mockExistsSync.mockReturnValue(false);
 
-    await expect(setupPropertiesVolume(config, { failOnError: true })).rejects.toThrow("Mount point /mnt/secrets does not exist");
-    expect(config).toEqual({ existing: "value" });
-  });
-
-  it("should warn and continue when mount point does not exist and failOnError is false", async () => {
-    mockExistsSync.mockReturnValue(false);
-
-    await setupPropertiesVolume(config, { failOnError: false });
-
-    expect(consoleWarnSpy).toHaveBeenCalledWith("Warning: Mount point /mnt/secrets does not exist");
-    expect(config).toEqual({ existing: "value" });
+    await expect(getPropertiesVolumeSecrets({ failOnError: true })).rejects.toThrow("Mount point /mnt/secrets does not exist");
   });
 
   it("should handle file read errors when failOnError is false", async () => {
     mockExistsSync.mockReturnValue(true);
-    mockReaddirSync.mockReturnValue(["secret1", "bad-secret"]);
-    mockReadFileSync.mockReturnValueOnce("value1").mockImplementationOnce(() => {
+    mockReaddirSync.mockReturnValueOnce([{ name: "dtsse", isDirectory: () => true, isFile: () => false }] as any);
+    mockReaddirSync.mockReturnValueOnce([
+      { name: "good-secret", isFile: () => true },
+      { name: "bad-secret", isFile: () => true }
+    ] as any);
+    mockReadFileSync.mockReturnValueOnce("good-value").mockImplementationOnce(() => {
       throw new Error("Permission denied");
     });
 
-    await setupPropertiesVolume(config, { failOnError: false });
+    const secrets = await getPropertiesVolumeSecrets({ failOnError: false });
 
-    expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining("Warning: Failed to read property file"));
-    expect(config).toEqual({
-      existing: "value",
-      secret1: "value1"
+    expect(secrets).toEqual({
+      "dtsse.good-secret": "good-value"
     });
+    expect(consoleWarnSpy).toHaveBeenCalledWith(expect.stringContaining("Warning: Failed to read"));
   });
 
   it("should throw error when file read fails and failOnError is true", async () => {
     mockExistsSync.mockReturnValue(true);
-    mockReaddirSync.mockReturnValue(["bad-secret"]);
+    mockReaddirSync.mockReturnValueOnce([{ name: "dtsse", isDirectory: () => true, isFile: () => false }] as any);
+    mockReaddirSync.mockReturnValueOnce([{ name: "bad-secret", isFile: () => true }] as any);
     mockReadFileSync.mockImplementation(() => {
       throw new Error("Permission denied");
     });
 
-    await expect(setupPropertiesVolume(config, { failOnError: true })).rejects.toThrow("Failed to read property file");
-  });
-
-  it("should merge properties with existing config", async () => {
-    mockExistsSync.mockReturnValue(true);
-    mockReaddirSync.mockReturnValue(["existing"]);
-    mockReadFileSync.mockReturnValue("new-value");
-
-    await setupPropertiesVolume(config);
-
-    expect(config).toEqual({
-      existing: "new-value" // Should overwrite existing value
-    });
+    await expect(getPropertiesVolumeSecrets({ failOnError: true })).rejects.toThrow();
   });
 
   it("should trim whitespace from file contents", async () => {
     mockExistsSync.mockReturnValue(true);
-    mockReaddirSync.mockReturnValue(["secret"]);
-    mockReadFileSync.mockReturnValue("  value with spaces  \n");
+    mockReaddirSync.mockReturnValueOnce([{ name: "dtsse", isDirectory: () => true, isFile: () => false }] as any);
+    mockReaddirSync.mockReturnValueOnce([{ name: "SECRET", isFile: () => true }] as any);
+    mockReadFileSync.mockReturnValueOnce("  secret value  \n");
 
-    await setupPropertiesVolume(config);
+    const secrets = await getPropertiesVolumeSecrets({ injectEnvVars: false });
 
-    expect(config).toEqual({
-      existing: "value",
-      secret: "value with spaces"
+    expect(secrets).toEqual({
+      "dtsse.SECRET": "secret value"
     });
   });
 
-  describe("Azure Vault integration", () => {
-    it("should use Azure vault when chartPath is provided in non-production", async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = "development";
+  it("should skip non-file entries within vault directories", async () => {
+    mockExistsSync.mockReturnValue(true);
+    mockReaddirSync.mockReturnValueOnce([{ name: "dtsse", isDirectory: () => true, isFile: () => false }] as any);
+    mockReaddirSync.mockReturnValueOnce([
+      { name: "secret", isFile: () => true },
+      { name: "subdirectory", isFile: () => false }
+    ] as any);
+    mockReadFileSync.mockReturnValueOnce("secret-value");
 
-      mockExistsSync.mockReturnValue(true);
-      mockFs.existsSync.mockReturnValue(true);
-      mockAddFromAzureVault.mockResolvedValue(undefined);
+    const secrets = await getPropertiesVolumeSecrets({ injectEnvVars: false });
 
-      await setupPropertiesVolume(config, { chartPath: "/path/to/chart.yaml" });
-
-      expect(mockAddFromAzureVault).toHaveBeenCalledWith(config, { pathToHelmChart: "/path/to/chart.yaml" });
-      expect(mockReaddirSync).not.toHaveBeenCalled();
-
-      process.env.NODE_ENV = originalEnv;
-    });
-
-    it("should not use Azure vault in production even with chartPath", async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = "production";
-
-      mockExistsSync.mockReturnValue(true);
-      mockFs.existsSync.mockReturnValue(true);
-      mockReaddirSync.mockReturnValue(["secret"]);
-      mockReadFileSync.mockReturnValue("value");
-
-      await setupPropertiesVolume(config, { chartPath: "/path/to/chart.yaml" });
-
-      expect(mockAddFromAzureVault).not.toHaveBeenCalled();
-      expect(mockReaddirSync).toHaveBeenCalledWith("/mnt/secrets");
-      expect(config).toEqual({
-        existing: "value",
-        secret: "value"
-      });
-
-      process.env.NODE_ENV = originalEnv;
-    });
-
-    it("should not use Azure vault when chartPath does not exist", async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = "development";
-
-      mockExistsSync.mockReturnValueOnce(false).mockReturnValueOnce(true);
-      mockFs.existsSync.mockReturnValueOnce(false).mockReturnValueOnce(true);
-      mockReaddirSync.mockReturnValue(["secret"]);
-      mockReadFileSync.mockReturnValue("value");
-
-      await setupPropertiesVolume(config, { chartPath: "/nonexistent/chart.yaml" });
-
-      expect(mockAddFromAzureVault).not.toHaveBeenCalled();
-      expect(mockReaddirSync).toHaveBeenCalledWith("/mnt/secrets");
-      expect(config).toEqual({
-        existing: "value",
-        secret: "value"
-      });
-
-      process.env.NODE_ENV = originalEnv;
+    expect(secrets).toEqual({
+      "dtsse.secret": "secret-value"
     });
   });
 
-  describe("Error handling", () => {
-    it("should default failOnError to true in production", async () => {
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = "production";
+  it("should use custom mount point", async () => {
+    mockExistsSync.mockReturnValue(true);
+    mockReaddirSync.mockReturnValueOnce([{ name: "vault", isDirectory: () => true, isFile: () => false }] as any);
+    mockReaddirSync.mockReturnValueOnce([{ name: "SECRET", isFile: () => true }] as any);
+    mockReadFileSync.mockReturnValueOnce("value");
 
-      mockExistsSync.mockReturnValue(false);
+    const secrets = await getPropertiesVolumeSecrets({ mountPoint: "/custom/path", injectEnvVars: false });
 
-      await expect(setupPropertiesVolume(config)).rejects.toThrow("Mount point /mnt/secrets does not exist");
-
-      process.env.NODE_ENV = originalEnv;
-    });
-
-    it.skip("should default failOnError to false in non-production", async () => {
-      // TODO: Fix this test - mocking issue with fs.existsSync
-      const originalEnv = process.env.NODE_ENV;
-      process.env.NODE_ENV = "development";
-
-      mockExistsSync.mockReturnValue(false);
-      mockFs.existsSync.mockReturnValue(false);
-
-      await setupPropertiesVolume(config);
-
-      expect(consoleWarnSpy).toHaveBeenCalledWith("Warning: Mount point /mnt/secrets does not exist");
-      expect(config).toEqual({ existing: "value" });
-
-      process.env.NODE_ENV = originalEnv;
-    });
-
-    it("should handle generic error messages properly", async () => {
-      mockExistsSync.mockReturnValue(true);
-      mockReaddirSync.mockImplementation(() => {
-        throw new Error("Some internal error");
-      });
-
-      await expect(setupPropertiesVolume(config, { failOnError: true })).rejects.toThrow("Failed to load properties from /mnt/secrets: Some internal error");
-    });
-
-    it("should handle Azure Key Vault specific error messages", async () => {
-      mockExistsSync.mockReturnValue(true);
-      mockReaddirSync.mockImplementation(() => {
-        throw new Error("Azure Key Vault: Specific vault error");
-      });
-
-      await expect(setupPropertiesVolume(config, { failOnError: true })).rejects.toThrow("Azure Key Vault: Specific vault error");
-    });
-
-    it("should handle errors without message property", async () => {
-      mockExistsSync.mockReturnValue(true);
-      mockReaddirSync.mockImplementation(() => {
-        throw "String error";
-      });
-
-      await expect(setupPropertiesVolume(config, { failOnError: true })).rejects.toThrow("Failed to load properties from /mnt/secrets: String error");
-    });
-
-    it("should warn when error occurs and failOnError is false", async () => {
-      mockExistsSync.mockReturnValue(true);
-      mockReaddirSync.mockImplementation(() => {
-        throw new Error("Some error");
-      });
-
-      await setupPropertiesVolume(config, { failOnError: false });
-
-      expect(consoleWarnSpy).toHaveBeenCalledWith("Warning: Failed to load properties from /mnt/secrets: Some error");
-      expect(config).toEqual({ existing: "value" });
+    expect(mockExistsSync).toHaveBeenCalledWith("/custom/path");
+    expect(secrets).toEqual({
+      "vault.SECRET": "value"
     });
   });
 
-  describe("Deep merge behavior", () => {
-    it("should handle nested configuration objects", async () => {
-      config = {
-        existing: "value",
-        nested: {
-          key1: "old",
-          key2: "keep"
-        }
-      };
+  it("should default failOnError to true in production", async () => {
+    const originalEnv = process.env.NODE_ENV;
+    process.env.NODE_ENV = "production";
 
-      mockExistsSync.mockReturnValue(true);
-      mockReaddirSync.mockReturnValue(["nested.key1", "top"]);
-      mockReadFileSync.mockReturnValueOnce("new").mockReturnValueOnce("level");
+    mockExistsSync.mockReturnValue(false);
 
-      await setupPropertiesVolume(config);
+    await expect(getPropertiesVolumeSecrets()).rejects.toThrow("Mount point /mnt/secrets does not exist");
 
-      expect(config).toEqual({
-        existing: "value",
-        nested: {
-          key1: "old",
-          key2: "keep"
-        },
-        "nested.key1": "new",
-        top: "level"
-      });
-    });
+    process.env.NODE_ENV = originalEnv;
+  });
 
-    it("should handle empty mount point directory", async () => {
-      mockExistsSync.mockReturnValue(true);
-      mockReaddirSync.mockReturnValue([]);
+  it("should default injectEnvVars to true", async () => {
+    mockExistsSync.mockReturnValue(true);
+    mockReaddirSync.mockReturnValueOnce([{ name: "dtsse", isDirectory: () => true, isFile: () => false }] as any);
+    mockReaddirSync.mockReturnValueOnce([{ name: "TEST_VAR", isFile: () => true }] as any);
+    mockReadFileSync.mockReturnValueOnce("test-value");
 
-      await setupPropertiesVolume(config);
+    delete process.env.TEST_VAR;
+    await getPropertiesVolumeSecrets();
 
-      expect(config).toEqual({ existing: "value" });
-    });
-
-    it("should handle files with empty content", async () => {
-      mockExistsSync.mockReturnValue(true);
-      mockReaddirSync.mockReturnValue(["empty", "normal"]);
-      mockReadFileSync.mockReturnValueOnce("").mockReturnValueOnce("value");
-
-      await setupPropertiesVolume(config);
-
-      expect(config).toEqual({
-        existing: "value",
-        empty: "",
-        normal: "value"
-      });
-    });
+    expect(process.env.TEST_VAR).toBe("test-value");
   });
 });

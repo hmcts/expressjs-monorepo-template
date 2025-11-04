@@ -5,7 +5,8 @@ export * from "./healthcheck/healthcheck.js";
 export * from "./monitoring/monitoring-middleware.js";
 export * from "./monitoring/monitoring-service.js";
 export { addFromAzureVault } from "./properties-volume/azure-vault.js";
-export { configurePropertiesVolume } from "./properties-volume/properties.js";
+export type { GetSecretsOptions, Secrets } from "./properties-volume/properties.js";
+export { getPropertiesVolumeSecrets } from "./properties-volume/properties.js";
 
 export const healthcheck = configure;
 
