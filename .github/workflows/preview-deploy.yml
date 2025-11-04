@@ -209,6 +209,8 @@ jobs:
             --namespace "${NAMESPACE}" \
             --create-namespace \
             --values values.preview.yaml \
+            --atomic \
+            --cleanup-on-fail \
             --set global.tenantId="${{ secrets.AZURE_TENANT_ID }}" \
             --set global.environment=aat \
             --set global.enableKeyVaults=true \

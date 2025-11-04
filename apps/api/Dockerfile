@@ -15,7 +15,7 @@ RUN yarn build
 # ---- Runtime image ----
 FROM base AS runtime
 COPY --from=build /opt/app/apps/api/dist ./apps/api/dist
-COPY --from=build /opt/app/libs/*/dist ./libs/
+COPY --from=build /opt/app/libs ./libs
 
 RUN yarn workspaces focus @hmcts/api --production
 ENV NODE_ENV=production

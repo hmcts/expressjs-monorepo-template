@@ -146,6 +146,8 @@ main() {
     helm upgrade --install "${release_name}" .
     --namespace "${namespace}"
     --values values.preview.yaml
+    --atomic
+    --cleanup-on-fail
     --set "global.tenantId=${AZURE_TENANT_ID}"
     --set global.environment=aat
     --set global.enableKeyVaults=true
