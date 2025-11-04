@@ -4,10 +4,11 @@ nodejs:
   ingressHost: expressjs-monorepo-template-api.{{ .Values.global.environment }}.platform.hmcts.net
   image: 'hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-api:latest'
   environment:
-    REDIS_HOST: 'dtsse-redis-{{ .Values.global.environment }}.redis.cache.windows.net'
+    EXAMPLE_ENV: example
   keyVaults:
     dtsse:
       secrets:
-        - redis-access-key
-        - app-insights-connection-string
-        - dynatrace-url
+        - name: AppInsightsConnectionString
+          alias: APPLICATION_INSIGHTS_CONNECTION_STRING
+        - name: db-url
+          alias: DATABASE_URL

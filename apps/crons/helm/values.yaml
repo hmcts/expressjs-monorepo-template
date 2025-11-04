@@ -7,13 +7,14 @@ job:
   image: hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-crons:latest
   aadIdentityName: dtsse
   environment:
-    DATABASE_URL: 'postgresql://user:password@postgres:5432/database'
     SCRIPT_NAME: 'example'
   keyVaults:
     dtsse:
       secrets:
-        - app-insights-connection-string
-        - dynatrace-url
+        - name: AppInsightsConnectionString
+          alias: APPLICATION_INSIGHTS_CONNECTION_STRING
+        - name: db-url
+          alias: DATABASE_URL
   schedule: "0 0/10 * * *" # this is just a placeholder, configure in your flux
   concurrencyPolicy: Forbid
 

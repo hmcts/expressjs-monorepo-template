@@ -1,66 +1,63 @@
 # Global values shared by all subcharts
 global:
   environment: preview
+  security:
+    allowInsecureImages: true
 
-# Web application configuration
+# Enable/disable subcharts
 web:
   enabled: true
-  expressjs-monorepo-template-web:
-    nodejs:
-      image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-web:${WEB_IMAGE}"
-      ingressHost: "expressjs-monorepo-template-web-pr-${CHANGE_ID}.preview.platform.hmcts.net"
-      applicationPort: 3000
-      aadIdentityName: dtsse
-      environment:
-        DATABASE_URL: "postgresql://{{ .Release.Name }}-postgresql:5432/pr-${CHANGE_ID}-expressjs-monorepo-template"
-        REDIS_HOST: "dtsse-preview.redis.cache.windows.net"
-      keyVaults:
-        dtsse:
-          secrets:
-            - redis-access-key
-            - app-insights-connection-string
-
-# API application configuration
 api:
   enabled: true
-  expressjs-monorepo-template-api:
-    nodejs:
-      image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-api:${API_IMAGE}"
-      ingressHost: "expressjs-monorepo-template-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
-      applicationPort: 3001
-      aadIdentityName: dtsse
-      environment:
-        DATABASE_URL: "postgresql://{{ .Release.Name }}-postgresql:5432/pr-${CHANGE_ID}-expressjs-monorepo-template"
-        REDIS_HOST: "dtsse-preview.redis.cache.windows.net"
-      keyVaults:
-        dtsse:
-          secrets:
-            - redis-access-key
-            - app-insights-connection-string
-
-# Crons application configuration
 crons:
   enabled: true
-  expressjs-monorepo-template-crons:
-    job:
-      image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-crons:${CRONS_IMAGE}"
-      schedule: "*/5 * * * *"  # Every 5 minutes
-      suspend: false
-      kind: CronJob
-      aadIdentityName: dtsse
-      environment:
-        DATABASE_URL: "postgresql://{{ .Release.Name }}-postgresql:5432/pr-${CHANGE_ID}-expressjs-monorepo-template"
-        REDIS_HOST: "dtsse-preview.redis.cache.windows.net"
-      keyVaults:
-        dtsse:
-          secrets:
-            - redis-access-key
-            - app-insights-connection-string
+
+# Web application configuration
+expressjs-monorepo-template-web:
+  nodejs:
+    releaseNameOverride: "${TEAM_NAME}-${APPLICATION_NAME}-pr-${CHANGE_ID}-web"
+    image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-web:${WEB_IMAGE}"
+    ingressHost: "expressjs-monorepo-template-web-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+    environment:
+      REDIS_HOST: "{{ .Release.Name }}-redis-master"
+
+# API application configuration
+expressjs-monorepo-template-api:
+  nodejs:
+    releaseNameOverride: "${TEAM_NAME}-${APPLICATION_NAME}-pr-${CHANGE_ID}-api"
+    image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-api:${API_IMAGE}"
+    ingressHost: "expressjs-monorepo-template-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+
+# Crons application configuration
+expressjs-monorepo-template-crons:
+  job:
+    releaseNameOverride: "${TEAM_NAME}-${APPLICATION_NAME}-pr-${CHANGE_ID}-crons"
+    image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-crons:${CRONS_IMAGE}"
+    schedule: "*/5 * * * *"  # Every 5 minutes
+    suspend: false
+    kind: CronJob
+    environment:
+      REDIS_HOST: "{{ .Release.Name }}-redis-master"
 
 # PostgreSQL database configuration
 postgresql:
   enabled: true
-  flexibleserver: dtsse-preview
+  flexibleserver: dtsse-dashboard-flexdb-data-aat
   setup:
     databases:
       - name: "pr-${CHANGE_ID}-expressjs-monorepo-template"
+
+# Redis cache configuration
+redis:
+  enabled: true
+  image:
+    registry: hmctspublic.azurecr.io
+    repository: imported/redis
+    tag: 7-alpine
+  master:
+    persistence:
+      enabled: false
+  replica:
+    replicaCount: 0
+  auth:
+    enabled: false

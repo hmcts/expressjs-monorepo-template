@@ -8,6 +8,7 @@ nodejs:
   keyVaults:
     dtsse:
       secrets:
-        - redis-access-key
-        - app-insights-connection-string
-        - dynatrace-url
+        - name: AppInsightsConnectionString
+          alias: APPLICATION_INSIGHTS_CONNECTION_STRING
+        - name: db-url
+          alias: DATABASE_URL
