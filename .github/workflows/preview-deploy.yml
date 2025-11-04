@@ -176,53 +176,8 @@ jobs:
             --username ${{ secrets.REGISTRY_USERNAME }} \
             --password-stdin
 
-      - name: Process values template
-        run: |
-          cd helm/${APPLICATION_NAME}
-          envsubst < values.preview.template.yaml > values.preview.yaml
-          cat values.preview.yaml
-
-      - name: Update Helm dependencies
-        run: |
-          # Update dependencies for each subchart first
-          for subchart in apps/*/helm; do
-            if [ -f "$subchart/Chart.yaml" ]; then
-              echo "Updating dependencies for $subchart"
-              cd "$subchart"
-              helm dependency update
-              cd - > /dev/null
-            fi
-          done
-
-          # Then update umbrella chart dependencies
-          cd helm/${APPLICATION_NAME}
-          helm dependency update
-
-      - name: Deploy Helm chart
-        run: |
-          cd helm/${APPLICATION_NAME}
-
-          RELEASE_NAME="${TEAM_NAME}-${APPLICATION_NAME}-pr-${{ env.CHANGE_ID }}"
-          NAMESPACE="${TEAM_NAME}"
-
-          helm upgrade --install "${RELEASE_NAME}" . \
-            --namespace "${NAMESPACE}" \
-            --create-namespace \
-            --values values.preview.yaml \
-            --atomic \
-            --cleanup-on-fail \
-            --set global.tenantId="${{ secrets.AZURE_TENANT_ID }}" \
-            --set global.environment=aat \
-            --set global.enableKeyVaults=true \
-            --set global.devMode=true \
-            --set global.disableTraefikTls=false \
-            --set global.tags.teamName="${TEAM_NAME}" \
-            --set global.tags.applicationName="${APPLICATION_NAME}" \
-            --set global.tags.builtFrom="${GIT_REPO}" \
-            --set global.tags.businessArea=CFT \
-            --set global.tags.environment=development \
-            --wait \
-            --timeout 10m
+      - name: Deploy preview environment
+        run: .github/scripts/deploy-preview.sh ${{ env.CHANGE_ID }}
 
       - name: Get preview URLs from ingress
         id: preview-urls

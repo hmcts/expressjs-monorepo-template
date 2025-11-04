@@ -10,7 +10,7 @@
     }
   },
   "scripts": {
-    "build": "yarn collate && tsc",
+    "build": "yarn collate && prisma generate --no-hints && tsc",
     "collate": "tsx src/collate-schema.ts",
     "generate": "yarn collate && prisma generate --no-hints",
     "migrate": "yarn collate && prisma migrate deploy",

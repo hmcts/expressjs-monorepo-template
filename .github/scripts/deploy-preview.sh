@@ -71,15 +71,15 @@ main() {
   export SHORT_SHA=$(git rev-parse --short HEAD)
   export CHANGE_ID="${pr_number}"
 
-  # Set image tags
+  # Set image tags (allow override from environment)
   if [ "$pr_number" = "local" ]; then
-    export WEB_IMAGE="latest"
-    export API_IMAGE="latest"
-    export CRONS_IMAGE="latest"
+    export WEB_IMAGE="${WEB_IMAGE:-latest}"
+    export API_IMAGE="${API_IMAGE:-latest}"
+    export CRONS_IMAGE="${CRONS_IMAGE:-latest}"
   else
-    export WEB_IMAGE="pr-${pr_number}"
-    export API_IMAGE="pr-${pr_number}"
-    export CRONS_IMAGE="pr-${pr_number}"
+    export WEB_IMAGE="${WEB_IMAGE:-pr-${pr_number}}"
+    export API_IMAGE="${API_IMAGE:-pr-${pr_number}}"
+    export CRONS_IMAGE="${CRONS_IMAGE:-pr-${pr_number}}"
   fi
 
   # Deployment variables
@@ -122,7 +122,7 @@ main() {
   # Update Helm dependencies
   echo "Updating subchart dependencies..."
   for subchart in ../../apps/*/helm; do
-    if [ -d "$subchart" ]; then
+    if [ -f "$subchart/Chart.yaml" ]; then
       echo "  Updating dependencies for $subchart"
       if [ "$dry_run" = false ]; then
         (cd "$subchart" && helm dependency update)
