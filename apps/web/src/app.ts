@@ -25,7 +25,7 @@ const chartPath = path.join(__dirname, "../helm/values.yaml");
 
 export async function createApp(): Promise<Express> {
   await getPropertiesVolumeSecrets({ chartPath, omit: ["DATABASE_URL"] });
-  
+
   const { default: config } = await import("config");
   const app = express();
 
