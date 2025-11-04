@@ -723,7 +723,7 @@ __metadata:
   dependencies:
     "@hmcts/cloud-native-platform": "workspace:*"
     "@hmcts/onboarding": "workspace:*"
-    "@hmcts/postgres": "workspace:*"
+    "@hmcts/postgres-prisma": "workspace:*"
     "@hmcts/simple-router": "workspace:*"
     "@types/compression": "npm:1.8.1"
     "@types/cors": "npm:2.8.19"
@@ -766,7 +766,7 @@ __metadata:
   resolution: "@hmcts/crons@workspace:apps/crons"
   dependencies:
     "@hmcts/cloud-native-platform": "workspace:*"
-    "@hmcts/postgres": "workspace:*"
+    "@hmcts/postgres-prisma": "workspace:*"
     "@types/config": "npm:3.3.5"
     "@types/node": "npm:24.10.0"
     config: "npm:4.1.1"
@@ -825,17 +825,17 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@hmcts/onboarding@workspace:libs/onboarding"
   dependencies:
+    "@hmcts/postgres-prisma": "workspace:*"
     zod: "npm:4.1.12"
   peerDependencies:
     express: ^5.1.0
   languageName: unknown
   linkType: soft
 
-"@hmcts/postgres@workspace:*, @hmcts/postgres@workspace:apps/postgres":
+"@hmcts/postgres-prisma@workspace:*, @hmcts/postgres-prisma@workspace:libs/postgres-prisma":
   version: 0.0.0-use.local
-  resolution: "@hmcts/postgres@workspace:apps/postgres"
+  resolution: "@hmcts/postgres-prisma@workspace:libs/postgres-prisma"
   dependencies:
-    "@hmcts/onboarding": "workspace:*"
     "@prisma/client": "npm:6.18.0"
     glob: "npm:11.0.3"
     prisma: "npm:6.18.0"
@@ -861,7 +861,7 @@ __metadata:
     "@hmcts/express-govuk-starter": "workspace:*"
     "@hmcts/footer-pages": "workspace:*"
     "@hmcts/onboarding": "workspace:*"
-    "@hmcts/postgres": "workspace:*"
+    "@hmcts/postgres-prisma": "workspace:*"
     "@hmcts/simple-router": "workspace:*"
     "@types/compression": "npm:1.8.1"
     "@types/config": "npm:3.3.5"

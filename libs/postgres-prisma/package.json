@@ -1,5 +1,5 @@
 {
-  "name": "@hmcts/postgres",
+  "name": "@hmcts/postgres-prisma",
   "version": "1.0.0",
   "private": true,
   "type": "module",
@@ -24,7 +24,6 @@
     "lint:fix": "biome check --write ."
   },
   "dependencies": {
-    "@hmcts/onboarding": "workspace:*",
     "@prisma/client": "6.18.0"
   },
   "devDependencies": {

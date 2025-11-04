@@ -24,7 +24,7 @@
     "@hmcts/express-govuk-starter": "workspace:*",
     "@hmcts/footer-pages": "workspace:*",
     "@hmcts/onboarding": "workspace:*",
-    "@hmcts/postgres": "workspace:*",
+    "@hmcts/postgres-prisma": "workspace:*",
     "@hmcts/simple-router": "workspace:*",
     "compression": "1.8.1",
     "config": "4.1.1",

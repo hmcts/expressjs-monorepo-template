@@ -84,11 +84,11 @@ A lightweight file-system router for Express applications, inspired by Next.js r
 expressjs-monorepo-template/
 ├── apps/                       # Deployable applications
 │   ├── api/                    # REST API server (Express 5.x)
-│   ├── web/                    # Web frontend (Express 5.x + Nunjucks)
-│   └── postgres/               # Database configuration (Prisma)
+│   └── web/                    # Web frontend (Express 5.x + Nunjucks)
 ├── libs/                       # Modular packages (explicitly registered)
 │   ├── cloud-native-platform/  # Cloud Native Platform features
 │   ├── express-gov-uk-starter/ # GOV.UK Frontend integration
+│   ├── postgres-prisma/        # Database configuration (Prisma)
 │   ├── simple-router/          # Simple Router features
 │   ├── footer-pages/           # Module with example footer pages
 │   └── [your-module]/          # Your feature modules
@@ -127,7 +127,7 @@ yarn dev
 |---------|-----|-------------|
 | Web Application | http://localhost:3000 | Main web interface with GOV.UK styling |
 | API Server | http://localhost:3001 | REST API backend |
-| Prisma Studio | Run `yarn workspace @hmcts/postgres run studio` | Database management UI |
+| Prisma Studio | Run `yarn workspace @hmcts/postgres-prisma run studio` | Database management UI |
 
 
 ## 📦 Development
@@ -237,7 +237,7 @@ export const assets = path.join(__dirname, "assets/");
 6. **Register module in applications**:
    - **For web app** (if module has pages): Add import and route to `apps/web/src/app.ts`
    - **For API app** (if module has routes): Add import and route to `apps/api/src/app.ts`
-   - **For database schemas** (if module has prisma): Add import to `apps/postgres/src/index.ts`
+   - **For database schemas** (if module has prisma): Add import to `libs/postgres-prisma/src/schema-discovery.ts`
    - **Add dependency** to relevant app package.json files: `"@hmcts/my-feature": "workspace:*"`
 
 ## 🧪 Testing Strategy

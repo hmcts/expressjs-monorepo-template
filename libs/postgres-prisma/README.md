@@ -1,4 +1,4 @@
-# @hmcts/postgres
+# @hmcts/postgres-prisma
 
 Database layer using Prisma ORM with PostgreSQL.
 
@@ -41,16 +41,16 @@ All commands automatically run collation before execution:
 
 ```bash
 # Generate Prisma Client
-yarn workspace @hmcts/postgres generate
+yarn workspace @hmcts/postgres-prisma generate
 
 # Run migrations
-yarn workspace @hmcts/postgres migrate:dev
+yarn workspace @hmcts/postgres-prisma migrate:dev
 
 # Open Prisma Studio
-yarn workspace @hmcts/postgres studio
+yarn workspace @hmcts/postgres-prisma studio
 
 # Just collate (rarely needed directly)
-yarn workspace @hmcts/postgres collate
+yarn workspace @hmcts/postgres-prisma collate
 ```
 
 ### Important Notes

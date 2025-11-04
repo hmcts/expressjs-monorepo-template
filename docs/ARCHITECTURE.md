@@ -51,13 +51,13 @@ The project uses Yarn Workspaces with Turborepo for efficient monorepo managemen
 expressjs-monorepo-template/
 ├── apps/                       # Deployable applications
 │   ├── api/                    # REST API service
-│   ├── web/                    # Web frontend application
-│   │   └── src/
-│   │       └── modules.ts      # Module auto-discovery system
-│   └── postgres/               # Database schema and migrations
+│   └── web/                    # Web frontend application
+│       └── src/
+│           └── modules.ts      # Module auto-discovery system
 ├── libs/                       # Reusable packages (auto-discovered)
 │   ├── cloud-native-platform/  # Azure integration & monitoring
 │   ├── express-govuk-starter/  # GOV.UK Design System integration
+│   ├── postgres-prisma/        # Database schema and migrations
 │   ├── simple-router/          # File-based routing system
 │   └── [feature-modules]/      # Feature modules with pages/
 │       └── src/
@@ -144,7 +144,7 @@ The web application features an intelligent module discovery system that automat
 └── [resource]/     # Additional resources
 ```
 
-### 3. Database Layer (`apps/postgres`)
+### 3. Database Layer (`libs/postgres-prisma`)
 
 **Purpose**: Data persistence and schema management
 

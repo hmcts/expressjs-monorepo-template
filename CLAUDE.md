@@ -188,7 +188,7 @@ const baseConfig = createBaseViteConfig([
 import { apiRoutes as myFeatureRoutes } from "@hmcts/my-feature/config";
 app.use(await createSimpleRouter(myFeatureRoutes));
 
-// apps/postgres/src/schema-discovery.ts
+// libs/postgres-prisma/src/schema-discovery.ts
 import { prismaSchemas as myFeatureSchemas } from "@hmcts/my-feature/config";
 const schemaPaths = [myFeatureSchemas, /* other schemas */];
 ```
@@ -352,7 +352,7 @@ export function authenticate() {
 import { describe, it, expect, vi } from 'vitest';
 import { UserService } from './user-service';
 
-vi.mock('@hmcts/postgres', () => ({
+vi.mock('@hmcts/postgres-prisma', () => ({
   prisma: {
     user: {
       findUnique: vi.fn()

@@ -1,4 +1,4 @@
-import { prisma } from "@hmcts/postgres";
+import { prisma } from "@hmcts/postgres-prisma";
 import type { OnboardingSubmission } from "./validation.js";
 
 // Submit onboarding data to database

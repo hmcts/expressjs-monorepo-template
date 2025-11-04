@@ -30,11 +30,11 @@
     "dev:web:nowatch": "yarn workspace @hmcts/web run dev:nowatch",
     "dev:up": "docker compose up -d && yarn db:migrate:dev",
     "dev:down": "docker compose down",
-    "db:migrate": "yarn workspace @hmcts/postgres run migrate",
-    "db:migrate:dev": "yarn workspace @hmcts/postgres run migrate:dev",
-    "db:generate": "yarn workspace @hmcts/postgres run generate",
-    "db:studio": "yarn workspace @hmcts/postgres run studio",
-    "db:drop": "yarn workspace @hmcts/postgres run migrate:reset"
+    "db:migrate": "yarn workspace @hmcts/postgres-prisma run migrate",
+    "db:migrate:dev": "yarn workspace @hmcts/postgres-prisma run migrate:dev",
+    "db:generate": "yarn workspace @hmcts/postgres-prisma run generate",
+    "db:studio": "yarn workspace @hmcts/postgres-prisma run studio",
+    "db:drop": "yarn workspace @hmcts/postgres-prisma run migrate:reset"
   },
   "keywords": [],
   "author": "HMCTS",
