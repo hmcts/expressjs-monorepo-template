@@ -1,5 +1,4 @@
 export type { AssetOptions } from "./assets/assets.js";
-export { createBaseViteConfig } from "./assets/vite-config.js";
 export type { CookieManagerOptions, CookieManagerState, CookiePreferences } from "./cookies/cookie-manager-middleware.js";
 export { configureCookieManager } from "./cookies/cookie-manager-middleware.js";
 export type { GovukSetupOptions } from "./govuk-frontend/configure-govuk.js";
