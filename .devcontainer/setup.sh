@@ -23,8 +23,6 @@ sudo chmod +x /usr/local/bin/kubelogin
 rm -rf /tmp/kubelogin.zip /tmp/bin
 echo "✅ kubelogin ${KUBELOGIN_VERSION} installed"
 
-az acr helm repo add -n hmctspublic
-
 # Configure bash history for unlimited size
 echo "Configuring bash history..."
 cat >> /home/vscode/.bashrc << 'EOF'
