@@ -1,5 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 
+// Default to local PostgreSQL if DATABASE_URL is not set
+process.env.DATABASE_URL ??= "postgresql://hmcts@localhost:5432/postgres";
+
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
