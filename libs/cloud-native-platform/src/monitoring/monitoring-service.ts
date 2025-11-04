@@ -18,11 +18,8 @@ export class MonitoringService {
       .setAutoCollectExceptions(true)
       .setAutoCollectDependencies(true)
       .setAutoCollectConsole(true, true)
-      .setUseDiskRetryCaching(true);
-
-    appInsights.defaultClient.context.tags[appInsights.defaultClient.context.keys.cloudRole] = serviceName;
-
-    appInsights.start();
+      .setUseDiskRetryCaching(true)
+      .start();
 
     this.client = appInsights.defaultClient;
   }
