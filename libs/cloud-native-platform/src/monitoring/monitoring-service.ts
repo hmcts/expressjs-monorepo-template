@@ -8,6 +8,9 @@ export class MonitoringService {
     serviceName: string,
     private readonly logger: Logger = console
   ) {
+    // Set cloud role name via environment variable before setup (required for AI v3)
+    process.env.APPLICATIONINSIGHTS_ROLE_NAME = serviceName;
+
     appInsights
       .setup(connectionString)
       .setAutoCollectRequests(true)
