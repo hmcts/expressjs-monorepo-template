@@ -1,6 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { getPropertiesVolumeSecrets, healthcheck } from "@hmcts/cloud-native-platform";
+import { getPropertiesVolumeSecrets, healthcheck, monitoringMiddleware } from "@hmcts/cloud-native-platform";
 import { apiRoutes as onboardingRoutes } from "@hmcts/onboarding/config";
 import { createSimpleRouter } from "@hmcts/simple-router";
 import compression from "compression";
@@ -15,9 +15,11 @@ const chartPath = path.join(__dirname, "../helm/values.yaml");
 export async function createApp(): Promise<Express> {
   await getPropertiesVolumeSecrets({ chartPath, omit: ["DATABASE_URL"] });
 
+  const { default: config } = await import("config");
   const app = express();
 
   app.use(healthcheck());
+  app.use(monitoringMiddleware(config.get("applicationInsights")));
 
   app.use(compression());
   app.use(

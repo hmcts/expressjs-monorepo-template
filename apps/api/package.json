@@ -25,6 +25,7 @@
   },
   "devDependencies": {
     "@types/compression": "1.8.1",
+    "@types/config": "3.3.5",
     "@types/cors": "2.8.19",
     "@types/express": "5.0.5",
     "@types/supertest": "6.0.3",
