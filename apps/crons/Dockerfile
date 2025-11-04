@@ -21,4 +21,5 @@ RUN yarn workspaces focus @hmcts/crons --production
 ENV NODE_ENV=production
 ENV NODE_OPTIONS='--conditions=production'
 
-CMD ["node", "apps/crons/dist/index.js"]
+WORKDIR /opt/app/apps/crons
+CMD ["node", "dist/index.js"]

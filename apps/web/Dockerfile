@@ -20,5 +20,6 @@ RUN yarn workspaces focus @hmcts/web --production
 ENV NODE_ENV=production
 ENV NODE_OPTIONS='--conditions=production'
 
+WORKDIR /opt/app/apps/web
 EXPOSE 3000
-CMD ["node", "apps/web/dist/server.js"]
+CMD ["node", "dist/server.js"]

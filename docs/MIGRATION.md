@@ -210,9 +210,13 @@ Update any references in:
 
 ### Overview
 
-All Dockerfiles now set `NODE_OPTIONS` to ensure production builds use the correct module resolution.
+Dockerfiles have been updated to:
+1. Set `NODE_OPTIONS` to ensure production builds use the correct module resolution
+2. Set `WORKDIR` to the app directory for correct config file resolution
 
 ### Migration Steps
+
+#### 1. Add NODE_OPTIONS environment variable
 
 Add the following line to each app's Dockerfile after `ENV NODE_ENV=production`:
 
@@ -220,20 +224,12 @@ Add the following line to each app's Dockerfile after `ENV NODE_ENV=production`:
 ENV NODE_OPTIONS='--conditions=production'
 ```
 
-**Example full Dockerfile section:**
+#### 2. Set WORKDIR and update CMD path
 
+The `config` npm module looks for config files relative to the current working directory. Set `WORKDIR` to the app directory and update the CMD path accordingly.
+
+**Before:**
 ```dockerfile
-# Production runtime stage
-FROM node:22-alpine
-
-WORKDIR /opt/app
-
-# Copy built artifacts
-COPY --from=build /opt/app/node_modules ./node_modules/
-COPY --from=build /opt/app/apps/web/dist ./apps/web/dist/
-COPY --from=build /opt/app/apps/web/package.json ./apps/web/
-COPY --from=build /opt/app/libs/*/dist ./libs/
-
 RUN yarn workspaces focus @hmcts/web --production
 ENV NODE_ENV=production
 ENV NODE_OPTIONS='--conditions=production'
@@ -242,10 +238,26 @@ EXPOSE 3000
 CMD ["node", "apps/web/dist/server.js"]
 ```
 
+**After:**
+```dockerfile
+RUN yarn workspaces focus @hmcts/web --production
+ENV NODE_ENV=production
+ENV NODE_OPTIONS='--conditions=production'
+
+WORKDIR /opt/app/apps/web
+EXPOSE 3000
+CMD ["node", "dist/server.js"]
+```
+
+**Key changes:**
+- Add `WORKDIR /opt/app/apps/{app-name}` before CMD
+- Update CMD path from `apps/{app}/dist/...` to `dist/...`
+- This allows the config module to find `./config` directory relative to the app
+
 **Files to update:**
-- `apps/web/Dockerfile`
-- `apps/api/Dockerfile`
-- `apps/crons/Dockerfile`
+- `apps/web/Dockerfile` - WORKDIR to `/opt/app/apps/web`
+- `apps/api/Dockerfile` - WORKDIR to `/opt/app/apps/api`
+- `apps/crons/Dockerfile` - WORKDIR to `/opt/app/apps/crons`
 
 ---
 

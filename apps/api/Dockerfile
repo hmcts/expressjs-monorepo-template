@@ -21,5 +21,6 @@ RUN yarn workspaces focus @hmcts/api --production
 ENV NODE_ENV=production
 ENV NODE_OPTIONS='--conditions=production'
 
+WORKDIR /opt/app/apps/api
 EXPOSE 3001
-CMD ["node", "apps/api/dist/server.js"]
+CMD ["node", "dist/server.js"]
