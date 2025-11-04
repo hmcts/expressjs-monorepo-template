@@ -4,10 +4,14 @@
   "runArgs": ["--privileged"],
   "remoteUser": "vscode",
 
-  "initializeCommand": "touch ~/.bash_history ~/.zsh_history",
+  "initializeCommand": "touch ~/.bash_history ~/.zsh_history && mkdir -p ~/.config/claude ~/.local/share/claude ~/.azure ~/.kube",
   "mounts": [
     "source=${localEnv:HOME}/.bash_history,target=/home/vscode/.bash_history,type=bind",
-    "source=${localEnv:HOME}/.zsh_history,target=/home/vscode/.zsh_history,type=bind"
+    "source=${localEnv:HOME}/.zsh_history,target=/home/vscode/.zsh_history,type=bind",
+    "source=${localEnv:HOME}/.config/claude,target=/home/vscode/.config/claude,type=bind",
+    "source=${localEnv:HOME}/.local/share/claude,target=/home/vscode/.local/share/claude,type=bind",
+    "source=${localEnv:HOME}/.azure,target=/home/vscode/.azure,type=bind",
+    "source=${localEnv:HOME}/.kube,target=/home/vscode/.kube,type=bind"
   ],
 
   "features": {
