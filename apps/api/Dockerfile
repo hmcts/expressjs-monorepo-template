@@ -18,6 +18,8 @@ COPY --from=build /opt/app/apps/api/dist ./apps/api/dist
 COPY --from=build /opt/app/libs/*/dist ./libs/
 
 RUN yarn workspaces focus @hmcts/api --production
+ENV NODE_ENV=production
+ENV NODE_OPTIONS='--conditions=production'
 
 EXPOSE 3001
 CMD ["node", "apps/api/dist/server.js"]

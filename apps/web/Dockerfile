@@ -18,6 +18,7 @@ COPY --from=build /opt/app/libs/*/dist ./libs/
 
 RUN yarn workspaces focus @hmcts/web --production
 ENV NODE_ENV=production
+ENV NODE_OPTIONS='--conditions=production'
 
 EXPOSE 3000
 CMD ["node", "apps/web/dist/server.js"]
