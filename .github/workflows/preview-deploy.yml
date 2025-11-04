@@ -210,7 +210,7 @@ jobs:
             --create-namespace \
             --values values.preview.yaml \
             --set global.tenantId="${{ secrets.AZURE_TENANT_ID }}" \
-            --set global.environment=preview \
+            --set global.environment=aat \
             --set global.enableKeyVaults=true \
             --set global.devMode=true \
             --set global.disableTraefikTls=false \

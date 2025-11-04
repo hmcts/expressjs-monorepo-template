@@ -18,9 +18,6 @@ Options:
   --dry-run        Show what would be deployed without actually deploying
   -h, --help       Show this help message
 
-Environment Variables:
-  AZURE_TENANT_ID  Azure tenant ID (required)
-
 Examples:
   # Deploy PR 114
   $0 114
@@ -55,13 +52,6 @@ main() {
     esac
   done
 
-  # Check for required environment variables
-  if [ -z "${AZURE_TENANT_ID:-}" ]; then
-    echo "Error: AZURE_TENANT_ID environment variable is required"
-    echo "Set it with: export AZURE_TENANT_ID=your-tenant-id"
-    exit 1
-  fi
-
   # Navigate to repository root
   cd "$(git rev-parse --show-toplevel)"
 
@@ -73,6 +63,7 @@ main() {
   fi
 
   # Extract metadata
+  export AZURE_TENANT_ID=531ff96d-0ae9-462a-8d2d-bec7c0b42082
   export TEAM_NAME=$(grep -A 1 'annotations:' "$chart_path" | grep 'team:' | awk '{print $2}' | tr -d '"')
   export APPLICATION_NAME=$(grep '^name:' "$chart_path" | awk '{print $2}' | tr -d '"')
   export GIT_REPO=$(git config --get remote.origin.url | sed 's/git@github.com:/https:\/\/github.com\//' | sed 's/\.git$//')
@@ -129,7 +120,19 @@ main() {
   fi
 
   # Update Helm dependencies
-  echo "Updating Helm dependencies..."
+  echo "Updating subchart dependencies..."
+  for subchart in ../../apps/*/helm; do
+    if [ -d "$subchart" ]; then
+      echo "  Updating dependencies for $subchart"
+      if [ "$dry_run" = false ]; then
+        (cd "$subchart" && helm dependency update)
+      else
+        echo "  Would run: cd $subchart && helm dependency update"
+      fi
+    fi
+  done
+
+  echo "Updating parent chart dependencies..."
   if [ "$dry_run" = false ]; then
     helm dependency update
   else
@@ -144,7 +147,7 @@ main() {
     --namespace "${namespace}"
     --values values.preview.yaml
     --set "global.tenantId=${AZURE_TENANT_ID}"
-    --set global.environment=preview
+    --set global.environment=aat
     --set global.enableKeyVaults=true
     --set global.devMode=true
     --set global.disableTraefikTls=false
