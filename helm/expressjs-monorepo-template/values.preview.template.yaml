@@ -19,7 +19,7 @@ expressjs-monorepo-template-web:
     image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-web:${WEB_IMAGE}"
     ingressHost: "expressjs-monorepo-template-web-pr-${CHANGE_ID}.preview.platform.hmcts.net"
     environment:
-      REDIS_HOST: "{{ .Release.Name }}-redis-master"
+      REDIS_URL: "{{ .Release.Name }}-redis-master"
 
 # API application configuration
 expressjs-monorepo-template-api:
@@ -37,7 +37,7 @@ expressjs-monorepo-template-crons:
     suspend: false
     kind: CronJob
     environment:
-      REDIS_HOST: "{{ .Release.Name }}-redis-master"
+      REDIS_URL: "{{ .Release.Name }}-redis-master"
 
 # PostgreSQL database configuration
 postgresql:
