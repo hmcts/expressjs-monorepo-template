@@ -4,11 +4,135 @@ This guide documents breaking changes and migration steps for teams adopting upd
 
 ## Table of Contents
 
-1. [Properties Volume Refactor](#properties-volume-refactor)
-2. [Postgres to Prisma Library Migration](#postgres-to-prisma-library-migration)
-3. [Dockerfile Updates](#dockerfile-updates)
-4. [Helm Chart Updates](#helm-chart-updates)
-5. [GitHub Workflows](#github-workflows)
+1. [Database Migration App/Lib Split](#database-migration-applib-split)
+2. [Properties Volume Refactor](#properties-volume-refactor)
+3. [Postgres to Prisma Library Migration](#postgres-to-prisma-library-migration)
+4. [Dockerfile Updates](#dockerfile-updates)
+5. [Helm Chart Updates](#helm-chart-updates)
+6. [GitHub Workflows](#github-workflows)
+
+---
+
+## Database Migration App/Lib Split
+
+### Overview
+
+The database layer has been split into two components:
+- **`apps/postgres`**: Migration runner application that executes database migrations as a Kubernetes Job
+- **`libs/postgres-prisma`**: Prisma client library that provides schema collation and client exports
+
+This separation allows migrations to run before application deployment and keeps the library portable for potential extraction to a separate repository.
+
+### What Changed
+
+**Before:**
+- `libs/postgres-prisma/prisma/` contained migrations and base schema
+- Migration commands run from `libs/postgres-prisma`
+- Migrations executed manually or within application startup
+
+**After:**
+- `apps/postgres/prisma/` contains migrations and base schema
+- `apps/postgres` deployed as a Kubernetes Job that runs before other apps
+- `libs/postgres-prisma` only handles schema collation and client generation
+- Migrations run automatically during Helm deployment
+
+### Migration Steps
+
+#### 1. New Structure
+
+The postgres app has been added:
+```
+apps/postgres/
+├── package.json
+├── tsconfig.json
+├── Dockerfile
+├── prisma/
+│   ├── base.prisma        # Base schema (generator + datasource only)
+│   ├── schema.prisma      # Collated schema (generated during build)
+│   └── migrations/         # All migration files
+└── helm/
+    ├── Chart.yaml         # Uses HMCTS job chart
+    └── values.yaml        # Configured as one-time Job
+```
+
+#### 2. Library Changes
+
+`libs/postgres-prisma` now:
+- Reads base schema from `apps/postgres/prisma/schema.prisma`
+- Outputs collated schema to `libs/postgres-prisma/dist/schema.prisma`
+- Exports only Prisma client and collation utilities
+- No longer has direct migration commands
+
+#### 3. Creating Migrations
+
+**To create a new migration:**
+
+```bash
+# From repository root
+cd apps/postgres
+
+# Create migration (collation happens automatically)
+yarn workspace @hmcts/postgres-prisma run collate
+npx prisma migrate dev --name your_migration_name
+```
+
+The migration files will be created in `apps/postgres/prisma/migrations/`.
+
+#### 4. Deployment Flow
+
+When deploying via Helm:
+
+1. **Build Phase**: All apps build, including `apps/postgres`
+   - Schema collation runs during build
+   - Collated schema copied into Docker image
+
+2. **Deploy Phase**: Helm deploys in order:
+   - `apps/postgres` Job runs first (runs `prisma migrate deploy`)
+   - Job must succeed before other apps deploy
+   - Web, API, and other apps start after migrations complete
+
+3. **Rollback**: If migrations fail, entire deployment fails
+
+#### 5. Preview Deployments
+
+The `apps/postgres` app is automatically included in preview deployments:
+- Detected by `detect-affected-apps.sh` when migrations change
+- Image built and pushed like other apps
+- Job runs before web/api pods start
+
+### Configuration
+
+**Parent Helm Chart** (`helm/expressjs-monorepo-template/Chart.yaml`):
+```yaml
+dependencies:
+  - name: expressjs-monorepo-template-postgres
+    version: 0.0.1
+    repository: "file://../../apps/postgres/helm"
+    condition: postgres.enabled
+```
+
+**Preview Values** (`helm/expressjs-monorepo-template/values.preview.template.yaml`):
+```yaml
+postgres:
+  enabled: true
+
+expressjs-monorepo-template-postgres:
+  job:
+    image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-postgres:${POSTGRES_IMAGE}"
+    kind: Job  # One-time job, not CronJob
+```
+
+### Future Improvements
+
+This pattern provides a pragmatic solution until the HMCTS `nodejs` Helm chart supports init containers. When init container support is added, the migration logic could be simplified to run as an init container that exits after completing migrations.
+
+### Why This Change?
+
+1. **Security**: Database credentials managed through Kubernetes secrets
+2. **Reliability**: Migrations must succeed before apps start
+3. **Portability**: Library can be extracted to separate repo
+4. **Kubernetes-native**: Follows standard Job pattern for pre-deployment tasks
+5. **Better separation**: Migration deployment logic separate from client library
 
 ---
 

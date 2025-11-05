@@ -837,6 +837,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
+"@hmcts/postgres@workspace:apps/postgres":
+  version: 0.0.0-use.local
+  resolution: "@hmcts/postgres@workspace:apps/postgres"
+  dependencies:
+    "@hmcts/postgres-prisma": "workspace:*"
+    "@prisma/client": "npm:6.18.0"
+    prisma: "npm:6.18.0"
+  languageName: unknown
+  linkType: soft
+
 "@hmcts/simple-router@workspace:*, @hmcts/simple-router@workspace:libs/simple-router":
   version: 0.0.0-use.local
   resolution: "@hmcts/simple-router@workspace:libs/simple-router"

@@ -7,6 +7,10 @@ annotations:
   team: dtsse
 home: https://github.com/hmcts/expressjs-monorepo-template
 dependencies:
+  - name: expressjs-monorepo-template-postgres
+    version: 0.0.1
+    repository: "file://../../apps/postgres/helm"
+    condition: postgres.enabled
   - name: expressjs-monorepo-template-web
     version: 0.0.1
     repository: "file://../../apps/web/helm"

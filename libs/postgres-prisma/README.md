@@ -1,17 +1,17 @@
 # @hmcts/postgres-prisma
 
-Database layer using Prisma ORM with PostgreSQL.
+Database layer library using Prisma ORM with PostgreSQL. Provides schema collation and Prisma client exports.
 
 ## Schema Collation System
 
-This package uses a schema collation system that combines Prisma schema fragments from multiple modules into a single schema file.
+This package provides schema collation that combines Prisma schema fragments from multiple modules into a single schema file.
 
 ### How it works
 
-1. **Base schema**: `prisma/schema.prisma` contains only the generator and datasource configuration
+1. **Base schema**: `apps/postgres/prisma/base.prisma` contains only the generator and datasource configuration
 2. **Module fragments**: Each module can have Prisma schema fragments in `libs/*/prisma/*.prisma`
-3. **Collation**: The `yarn collate` command combines all fragments into `dist/schema.prisma`
-4. **Usage**: All Prisma commands use the collated schema at `dist/schema.prisma`
+3. **Collation**: The `yarn collate` command combines the base schema with all fragments into `dist/schema.prisma`
+4. **Migrations**: Managed by the `apps/postgres` application (see apps/postgres for migration commands)
 
 ### Adding schema to a module
 
@@ -37,21 +37,17 @@ The collation script will automatically discover and include your models and enu
 
 ### Commands
 
-All commands automatically run collation before execution:
-
 ```bash
-# Generate Prisma Client
+# Generate Prisma Client (runs collation first)
 yarn workspace @hmcts/postgres-prisma generate
 
-# Run migrations
-yarn workspace @hmcts/postgres-prisma migrate:dev
-
-# Open Prisma Studio
-yarn workspace @hmcts/postgres-prisma studio
-
-# Just collate (rarely needed directly)
+# Just collate schemas
 yarn workspace @hmcts/postgres-prisma collate
 ```
+
+### Migration Commands
+
+Migrations are managed by the `apps/postgres` application. See `apps/postgres` for migration workflows.
 
 ### Important Notes
 

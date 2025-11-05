@@ -5,5 +5,8 @@ import { defineConfig } from "prisma/config";
 process.env.DATABASE_URL ??= "postgresql://hmcts@localhost:5432/postgres";
 
 export default defineConfig({
-  schema: path.join("dist", "schema.prisma")
+  schema: path.join("prisma", "schema.prisma"),
+  migrations: {
+    path: path.join("prisma", "migrations")
+  }
 });

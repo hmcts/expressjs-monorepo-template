@@ -5,6 +5,8 @@ global:
     allowInsecureImages: true
 
 # Enable/disable subcharts
+postgres:
+  enabled: true
 web:
   enabled: true
 api:
@@ -35,6 +37,12 @@ expressjs-monorepo-template-crons:
     kind: CronJob
     environment:
       SCRIPT_NAME: "index.js"
+
+# Postgres migration job configuration
+expressjs-monorepo-template-postgres:
+  job:
+    image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-postgres:${POSTGRES_IMAGE}"
+    kind: Job
 
 # PostgreSQL database configuration
 postgresql:
