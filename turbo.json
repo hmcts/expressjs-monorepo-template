@@ -18,7 +18,6 @@
       "cache": false
     },
     "test": {
-      "dependsOn": ["^build"],
       "outputs": ["coverage/**"],
       "inputs": ["package.json", "**/*.ts", "**/*.tsx", "**/*.prisma"],
       "cache": false
