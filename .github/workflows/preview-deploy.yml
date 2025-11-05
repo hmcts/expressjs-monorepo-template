@@ -128,13 +128,14 @@ jobs:
           echo "TIMESTAMP=${{ needs.build-and-publish.outputs.timestamp }}" >> $GITHUB_ENV
           echo "SHORT_SHA=${{ needs.build-and-publish.outputs.short-sha }}" >> $GITHUB_ENV
 
-          # Set dynamic image variables
+          # Set dynamic image variables and release name
           .github/scripts/set-image-variables.sh \
             '${{ needs.detect-affected.outputs.affected-apps }}' \
             '${{ needs.detect-affected.outputs.helm-apps }}' \
             '${{ env.CHANGE_ID }}' \
             '${{ needs.build-and-publish.outputs.short-sha }}' \
-            '${{ needs.build-and-publish.outputs.timestamp }}'
+            '${{ needs.build-and-publish.outputs.timestamp }}' \
+            "${APPLICATION_NAME}"
 
       - name: Azure Login
         uses: azure/login@v2
@@ -182,8 +183,7 @@ jobs:
       - name: Get preview URLs from ingress
         id: preview-urls
         run: |
-          RELEASE_NAME="${TEAM_NAME}-${APPLICATION_NAME}-pr-${{ env.CHANGE_ID }}"
-          .github/scripts/get-preview-urls.sh "${{ env.TEAM_NAME }}" "$RELEASE_NAME"
+          .github/scripts/get-preview-urls.sh "${{ env.TEAM_NAME }}" "${{ env.RELEASE_NAME }}"
 
       - name: Add PR labels for cleanup
         uses: actions/github-script@v7
@@ -194,7 +194,7 @@ jobs:
             const labels = [
               `ns:${teamName}`,
               `prd:${teamName}`,
-              `rel:${teamName}-${applicationName}-pr-${{ env.CHANGE_ID }}`
+              `rel:${applicationName}-pr-${{ env.CHANGE_ID }}`
             ];
 
             for (const label of labels) {
