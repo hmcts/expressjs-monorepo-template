@@ -1,15 +1,5 @@
 import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { getPropertiesVolumeSecrets } from "@hmcts/cloud-native-platform";
 import { defineConfig } from "prisma/config";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const chartPath = path.join(__dirname, "./helm/values.yaml");
-
-if (process.env.NODE_ENV === "production") {
-  await getPropertiesVolumeSecrets({ chartPath });
-}
 
 console.log(`DATABASE_URL: ${process.env.DATABASE_URL}`);
 

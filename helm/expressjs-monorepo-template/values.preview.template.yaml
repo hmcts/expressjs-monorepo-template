@@ -21,6 +21,7 @@ expressjs-monorepo-template-web:
     ingressHost: "${TEAM_NAME}-{{ .Release.Name }}-web.preview.platform.hmcts.net"
     environment:
       REDIS_URL: "redis://{{ .Release.Name }}-redis-master:6379"
+      DATABASE_URL: "postgresql://{{ .Values.global.postgresUsername }}:{{ .Values.global.postgresSecret }}@{{ .Values.global.postgresHostname }}:5432/{{ .Release.Name }}"
 
 # API application configuration
 expressjs-monorepo-template-api:
@@ -43,6 +44,8 @@ expressjs-monorepo-template-postgres:
   job:
     image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-postgres:${POSTGRES_IMAGE}"
     kind: Job
+    environment:
+      DATABASE_URL: "postgresql://{{ .Values.global.postgresUsername }}:{{ .Values.global.postgresSecret }}@{{ .Values.global.postgresHostname }}:5432/{{ .Release.Name }}"
 
 # PostgreSQL database configuration
 postgresql:
