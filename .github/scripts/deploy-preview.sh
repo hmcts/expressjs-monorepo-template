@@ -16,6 +16,7 @@ Arguments:
 
 Options:
   --dry-run        Show what would be deployed without actually deploying
+  --skip-update    Skip Helm dependency updates (use cached charts)
   -h, --help       Show this help message
 
 Examples:
@@ -25,6 +26,9 @@ Examples:
   # Deploy with "local" tag
   $0 local
 
+  # Deploy locally without updating dependencies
+  $0 local --skip-update
+
   # Dry run to see what would be deployed
   $0 114 --dry-run
 EOF
@@ -33,6 +37,7 @@ EOF
 main() {
   local pr_number="${1:-local}"
   local dry_run=false
+  local skip_update=false
 
   # Parse arguments
   while [[ $# -gt 0 ]]; do
@@ -43,6 +48,10 @@ main() {
         ;;
       --dry-run)
         dry_run=true
+        shift
+        ;;
+      --skip-update)
+        skip_update=true
         shift
         ;;
       *)
@@ -120,23 +129,27 @@ main() {
   fi
 
   # Update Helm dependencies
-  echo "Updating subchart dependencies..."
-  for subchart in ../../apps/*/helm; do
-    if [ -f "$subchart/Chart.yaml" ]; then
-      echo "  Updating dependencies for $subchart"
-      if [ "$dry_run" = false ]; then
-        (cd "$subchart" && helm dependency update)
-      else
-        echo "  Would run: cd $subchart && helm dependency update"
-      fi
-    fi
-  done
-
-  echo "Updating parent chart dependencies..."
-  if [ "$dry_run" = false ]; then
-    helm dependency update
+  if [ "$skip_update" = true ]; then
+    echo "Skipping Helm dependency updates (using cached charts)..."
   else
-    echo "Would run: helm dependency update"
+    echo "Updating subchart dependencies..."
+    for subchart in ../../apps/*/helm; do
+      if [ -f "$subchart/Chart.yaml" ]; then
+        echo "  Updating dependencies for $subchart"
+        if [ "$dry_run" = false ]; then
+          (cd "$subchart" && helm dependency update)
+        else
+          echo "  Would run: cd $subchart && helm dependency update"
+        fi
+      fi
+    done
+
+    echo "Updating parent chart dependencies..."
+    if [ "$dry_run" = false ]; then
+      helm dependency update
+    else
+      echo "Would run: helm dependency update"
+    fi
   fi
 
   # Deploy Helm chart
