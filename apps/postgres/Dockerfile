@@ -22,4 +22,4 @@ COPY --from=build /opt/app/node_modules/.prisma ./node_modules/.prisma
 ENV NODE_ENV=production
 
 WORKDIR /opt/app/apps/postgres
-CMD ["npx", "prisma", "migrate", "deploy", "--schema=./prisma/schema.prisma"]
+CMD ["npx", "prisma", "migrate", "deploy", "--schema=./dist/schema.prisma"]
