@@ -52,8 +52,6 @@ jobs:
         with:
           path: .turbo
           key: ${{ runner.os }}-turbo-lint-${{ hashFiles('**/prisma/schema.prisma') }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-turbo-lint-${{ hashFiles('**/prisma/schema.prisma') }}-
 
       - name: Run lint for changed packages
         run: |
@@ -104,8 +102,6 @@ jobs:
         with:
           path: .turbo
           key: ${{ runner.os }}-turbo-test-${{ hashFiles('**/prisma/schema.prisma') }}-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-turbo-test-${{ hashFiles('**/prisma/schema.prisma') }}-
 
       - name: Run unit tests for changed packages
         run: |
