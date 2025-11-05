@@ -841,8 +841,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@hmcts/postgres@workspace:apps/postgres"
   dependencies:
-    "@hmcts/cloud-native-platform": "workspace:*"
-    "@hmcts/onboarding": "workspace:*"
     "@hmcts/postgres-prisma": "workspace:*"
     "@prisma/client": "npm:6.19.0"
     glob: "npm:11.0.3"
