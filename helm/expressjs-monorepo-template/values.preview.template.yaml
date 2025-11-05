@@ -16,7 +16,7 @@ crons:
 expressjs-monorepo-template-web:
   nodejs:
     image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-web:${WEB_IMAGE}"
-    ingressHost: "{{ .Release.Name }}-web.preview.platform.hmcts.net"
+    ingressHost: "${TEAM_NAME}-{{ .Release.Name }}-web.preview.platform.hmcts.net"
     environment:
       REDIS_URL: "redis://{{ .Release.Name }}-redis-master:6379"
 
@@ -24,7 +24,7 @@ expressjs-monorepo-template-web:
 expressjs-monorepo-template-api:
   nodejs:
     image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-api:${API_IMAGE}"
-    ingressHost: "{{ .Release.Name }}-api.preview.platform.hmcts.net"
+    ingressHost: "${TEAM_NAME}-{{ .Release.Name }}-api.preview.platform.hmcts.net"
 
 # Crons application configuration
 expressjs-monorepo-template-crons:
