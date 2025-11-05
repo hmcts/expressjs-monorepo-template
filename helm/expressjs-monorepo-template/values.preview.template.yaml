@@ -54,7 +54,12 @@ redis:
   master:
     persistence:
       enabled: false
+    extraFlags:
+      - --save ""
   replica:
     replicaCount: 0
   auth:
     enabled: false
+  commonConfiguration: |-
+    # Disable RediSearch module
+    # loadmodule /opt/bitnami/redis/lib/redis/modules/redisearch.so
