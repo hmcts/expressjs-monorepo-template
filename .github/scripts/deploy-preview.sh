@@ -85,10 +85,12 @@ main() {
     export WEB_IMAGE="${WEB_IMAGE:-latest}"
     export API_IMAGE="${API_IMAGE:-latest}"
     export CRONS_IMAGE="${CRONS_IMAGE:-latest}"
+    export POSTGRES_IMAGE="${POSTGRES_IMAGE:-latest}"
   else
     export WEB_IMAGE="${WEB_IMAGE:-pr-${pr_number}}"
     export API_IMAGE="${API_IMAGE:-pr-${pr_number}}"
     export CRONS_IMAGE="${CRONS_IMAGE:-pr-${pr_number}}"
+    export POSTGRES_IMAGE="${POSTGRES_IMAGE:-pr-${pr_number}}"
   fi
 
   # Deployment variables
@@ -109,6 +111,7 @@ main() {
   echo "Web Image:      ${WEB_IMAGE}"
   echo "API Image:      ${API_IMAGE}"
   echo "Crons Image:    ${CRONS_IMAGE}"
+  echo "Postgres Image: ${POSTGRES_IMAGE}"
   echo "=========================================="
   echo
 
