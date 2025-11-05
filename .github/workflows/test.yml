@@ -47,12 +47,6 @@ jobs:
       - name: Generate Prisma client
         run: yarn db:generate
 
-      - name: Setup Turbo cache
-        uses: actions/cache@v4
-        with:
-          path: .turbo
-          key: ${{ runner.os }}-turbo-lint-${{ hashFiles('**/prisma/schema.prisma') }}-${{ github.sha }}
-
       - name: Run lint for changed packages
         run: |
           if [ "${{ github.event_name }}" = "pull_request" ]; then
@@ -96,12 +90,6 @@ jobs:
 
       - name: Generate Prisma client
         run: yarn db:generate
-
-      - name: Setup Turbo cache
-        uses: actions/cache@v4
-        with:
-          path: .turbo
-          key: ${{ runner.os }}-turbo-test-${{ hashFiles('**/prisma/schema.prisma') }}-${{ github.sha }}
 
       - name: Run unit tests for changed packages
         run: |
