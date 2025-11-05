@@ -15,23 +15,20 @@ crons:
 # Web application configuration
 expressjs-monorepo-template-web:
   nodejs:
-    releaseNameOverride: "${TEAM_NAME}-${APPLICATION_NAME}-pr-${CHANGE_ID}-web"
     image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-web:${WEB_IMAGE}"
-    ingressHost: "expressjs-monorepo-template-web-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+    ingressHost: "{{ .Release.Name }}-web.preview.platform.hmcts.net"
     environment:
       REDIS_URL: "redis://{{ .Release.Name }}-redis-master:6379"
 
 # API application configuration
 expressjs-monorepo-template-api:
   nodejs:
-    releaseNameOverride: "${TEAM_NAME}-${APPLICATION_NAME}-pr-${CHANGE_ID}-api"
     image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-api:${API_IMAGE}"
-    ingressHost: "expressjs-monorepo-template-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
+    ingressHost: "{{ .Release.Name }}-api.preview.platform.hmcts.net"
 
 # Crons application configuration
 expressjs-monorepo-template-crons:
   job:
-    releaseNameOverride: "${TEAM_NAME}-${APPLICATION_NAME}-pr-${CHANGE_ID}-crons"
     image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-crons:${CRONS_IMAGE}"
     schedule: "*/5 * * * *"  # Every 5 minutes
     suspend: false
@@ -45,7 +42,7 @@ postgresql:
   flexibleserver: dtsse-dashboard-flexdb-data-aat
   setup:
     databases:
-      - name: "pr-${CHANGE_ID}-expressjs-monorepo-template"
+      - name: "{{ .Release.Name }}"
 
 # Redis cache configuration
 redis:
