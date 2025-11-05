@@ -12,7 +12,7 @@ export async function getPropertiesVolumeSecrets(options: GetSecretsOptions = {}
     try {
       return loadFromAzureVault(chartPath, injectEnvVars, omit);
     } catch (error) {
-      if (failOnError) { 
+      if (failOnError) {
         throw new Error(`Failed to load secrets from Azure Vault: ${error}`);
       }
       console.warn(`Warning: Failed to load secrets from Azure Vault: ${error}`);
