@@ -94,7 +94,8 @@ main() {
   fi
 
   # Deployment variables
-  local release_name="${RELEASE_NAME:-${APPLICATION_NAME}-pr-${CHANGE_ID}}"
+  export RELEASE_NAME="${RELEASE_NAME:-${APPLICATION_NAME}-pr-${CHANGE_ID}}"
+  local release_name="${RELEASE_NAME}"
   local namespace="${TEAM_NAME}"
 
   echo "=========================================="

@@ -843,7 +843,6 @@ __metadata:
   dependencies:
     "@hmcts/postgres-prisma": "workspace:*"
     "@prisma/client": "npm:6.19.0"
-    glob: "npm:11.0.3"
     prisma: "npm:6.19.0"
   languageName: unknown
   linkType: soft

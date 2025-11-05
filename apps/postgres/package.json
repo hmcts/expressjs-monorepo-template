@@ -15,11 +15,10 @@
     "lint:fix": "biome check --write ."
   },
   "dependencies": {
-    "@hmcts/postgres-prisma": "workspace:*",
-    "@prisma/client": "6.19.0"
+    "@hmcts/postgres-prisma": "workspace:*"
   },
   "devDependencies": {
-    "glob": "11.0.3",
+    "@prisma/client": "6.19.0",
     "prisma": "6.19.0"
   }
 }
