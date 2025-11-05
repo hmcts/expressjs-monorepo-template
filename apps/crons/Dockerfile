@@ -16,6 +16,7 @@ RUN yarn build
 FROM base AS runtime
 COPY --from=build /opt/app/apps/crons/dist ./apps/crons/dist
 COPY --from=build /opt/app/libs ./libs
+COPY --from=build /opt/app/node_modules/.prisma ./node_modules/.prisma
 
 RUN yarn workspaces focus @hmcts/crons --production
 ENV NODE_ENV=production
