@@ -38,7 +38,7 @@
   "customizations": {
     "vscode": {
       "settings": {
-        "files.autoSave": "onWindowChange"
+        "files.autoSave": "onFocusChange"
       },
       "extensions": [
         "ms-azuretools.vscode-docker",
