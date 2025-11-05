@@ -52,12 +52,6 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Cache Prisma client
-        uses: actions/cache@v4
-        with:
-          path: node_modules/.prisma
-          key: ${{ runner.os }}-prisma-${{ hashFiles('**/prisma/schema.prisma') }}
-
       - name: Generate Prisma client
         run: yarn db:generate
 
