@@ -12,11 +12,6 @@
       "outputs": ["dist/**", "build/**"],
       "inputs": ["**/*.ts", "**/*.tsx", "**/*.prisma", "package.json"]
     },
-    "@hmcts/postgres-prisma#build": {
-      "dependsOn": ["^build"],
-      "outputs": ["dist/**"],
-      "cache": false
-    },
     "test": {
       "outputs": ["coverage/**"],
       "inputs": ["package.json", "**/*.ts", "**/*.tsx", "**/*.prisma"],
