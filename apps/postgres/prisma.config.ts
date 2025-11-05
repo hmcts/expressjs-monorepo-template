@@ -7,7 +7,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const chartPath = path.join(__dirname, "./helm/values.yaml");
 
-await getPropertiesVolumeSecrets({ chartPath });
+if (process.env.NODE_ENV === "production") {
+  await getPropertiesVolumeSecrets({ chartPath });
+}
 
 console.log(`DATABASE_URL: ${process.env.DATABASE_URL}`);
 
