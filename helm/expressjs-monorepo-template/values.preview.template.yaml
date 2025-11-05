@@ -47,19 +47,14 @@ postgresql:
 # Redis cache configuration
 redis:
   enabled: true
-  image:
-    registry: hmctspublic.azurecr.io
-    repository: imported/bitnami/redis
-    tag: 7.4
+  architecture: standalone
   master:
     persistence:
       enabled: false
-    extraFlags:
-      - --save ""
+    auth:
+      enabled: false
   replica:
     replicaCount: 0
-  auth:
-    enabled: false
-  commonConfiguration: |-
-    # Disable RediSearch module
-    # loadmodule /opt/bitnami/redis/lib/redis/modules/redisearch.so
+  image:
+    registry: hmctspublic.azurecr.io
+    repository: imported/bitnami/redis

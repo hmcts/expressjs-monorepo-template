@@ -20,6 +20,6 @@ dependencies:
     repository: "file://../../apps/crons/helm"
     condition: crons.enabled
   - name: redis
-    version: 23.2.3
+    version: 20.11.3
     repository: https://charts.bitnami.com/bitnami
     condition: redis.enabled
