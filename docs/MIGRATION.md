@@ -329,13 +329,13 @@ Remove or update app-specific environment variables:
 **Before:**
 ```yaml
 environment:
-  REDIS_HOST: 'rpe-redis-{{ .Values.global.environment }}.redis.cache.windows.net'
+  REDIS_URL: 'rpe-redis-{{ .Values.global.environment }}.redis.cache.windows.net'
 ```
 
 **After:**
 ```yaml
 environment:
-  REDIS_HOST: 'dtsse-{{ .Values.global.environment }}.redis.cache.windows.net'
+  REDIS_URL: 'dtsse-{{ .Values.global.environment }}.redis.cache.windows.net'
 ```
 
 #### 5. Files to update

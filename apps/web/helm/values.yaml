@@ -4,7 +4,7 @@ nodejs:
   ingressHost: expressjs-monorepo-template-web.{{ .Values.global.environment }}.platform.hmcts.net
   image: 'hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-web:latest'
   environment:
-    REDIS_URL: 'dtsse-{{ .Values.global.environment }}.redis.cache.windows.net'
+    REDIS_URL: 'redis://dtsse-{{ .Values.global.environment }}.redis.cache.windows.net:6379'
   keyVaults:
     dtsse:
       secrets:

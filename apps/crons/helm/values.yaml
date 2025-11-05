@@ -8,7 +8,6 @@ job:
   aadIdentityName: dtsse
   environment:
     SCRIPT_NAME: 'example'
-    REDIS_URL: 'dtsse-{{ .Values.global.environment }}.redis.cache.windows.net'
   keyVaults:
     dtsse:
       secrets:
