@@ -493,9 +493,7 @@ describe("getPropertiesVolumeSecrets", () => {
         }
       ] as any);
 
-      await expect(getPropertiesVolumeSecrets({ failOnError: true })).rejects.toThrow(
-        "Failed to load secrets from /mnt/secrets"
-      );
+      await expect(getPropertiesVolumeSecrets({ failOnError: true })).rejects.toThrow("Failed to load secrets from /mnt/secrets");
     });
   });
 });
