@@ -9,7 +9,14 @@ export async function getPropertiesVolumeSecrets(options: GetSecretsOptions = {}
   const { mountPoint = DEFAULT_MOUNT_POINT, failOnError = isProd, injectEnvVars = true, chartPath, omit = [] } = options;
 
   if (chartPath && !isProd && existsSync(chartPath)) {
-    return loadFromAzureVault(chartPath, injectEnvVars, omit);
+    try {
+      return loadFromAzureVault(chartPath, injectEnvVars, omit);
+    } catch (error) {
+      if (failOnError) { 
+        throw new Error(`Failed to load secrets from Azure Vault: ${error}`);
+      }
+      console.warn(`Warning: Failed to load secrets from Azure Vault: ${error}`);
+    }
   }
 
   if (!existsSync(mountPoint)) {
