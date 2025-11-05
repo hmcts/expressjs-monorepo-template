@@ -14,8 +14,7 @@ RUN yarn build
 
 # ---- Runtime image ----
 FROM base AS runtime
-COPY --from=build /opt/app/apps/postgres/prisma ./apps/postgres/prisma
-COPY --from=build /opt/app/libs/postgres-prisma/dist ./libs/postgres-prisma/dist
+COPY --from=build /opt/app/apps/postgres/dist ./apps/postgres/dist
 
 RUN yarn workspaces focus @hmcts/postgres
 COPY --from=build /opt/app/node_modules/.prisma ./node_modules/.prisma
