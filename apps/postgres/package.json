@@ -16,10 +16,12 @@
   },
   "dependencies": {
     "@hmcts/cloud-native-platform": "workspace:*",
-    "@hmcts/postgres-prisma": "workspace:*"
+    "@hmcts/onboarding": "workspace:*",
+    "@hmcts/postgres-prisma": "workspace:*",
+    "@prisma/client": "6.19.0"
   },
   "devDependencies": {
-    "@prisma/client": "6.18.0",
-    "prisma": "6.18.0"
+    "glob": "11.0.3",
+    "prisma": "6.19.0"
   }
 }
