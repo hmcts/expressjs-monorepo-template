@@ -82,18 +82,23 @@ jobs:
         run: |
           IMAGE_NAME="${{ env.REGISTRY }}/${{ env.REGISTRY_PREFIX }}"
           FULL_TAG="${IMAGE_NAME}:${{ env.IMAGE_TAG }}"
+          STATIC_TAG="${IMAGE_NAME}:pr-${{ env.CHANGE_ID }}"
 
           echo "Building image: ${FULL_TAG}"
 
           docker build \
             --tag "${FULL_TAG}" \
+            --tag "${STATIC_TAG}" \
             --file apps/${{ matrix.app }}/Dockerfile \
             .
 
-          echo "Pushing image: ${FULL_TAG}"
+          echo "Pushing timestamped tag: ${FULL_TAG}"
           docker push "${FULL_TAG}"
 
-          echo "Successfully pushed ${FULL_TAG}"
+          echo "Pushing static tag: ${STATIC_TAG}"
+          docker push "${STATIC_TAG}"
+
+          echo "Successfully pushed both tags"
 
   deploy-preview:
     name: Deploy to Preview

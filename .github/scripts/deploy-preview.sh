@@ -87,10 +87,11 @@ main() {
     export CRONS_IMAGE="${CRONS_IMAGE:-latest}"
     export POSTGRES_IMAGE="${POSTGRES_IMAGE:-latest}"
   else
-    export WEB_IMAGE="${WEB_IMAGE:-pr-${pr_number}-${TIMESTAMP}}"
-    export API_IMAGE="${API_IMAGE:-pr-${pr_number}-${TIMESTAMP}}"
-    export CRONS_IMAGE="${CRONS_IMAGE:-pr-${pr_number}-${TIMESTAMP}}"
-    export POSTGRES_IMAGE="${POSTGRES_IMAGE:-pr-${pr_number}-${TIMESTAMP}}"
+    # Use static PR tag for local deployments (CI pushes both timestamped and static tags)
+    export WEB_IMAGE="${WEB_IMAGE:-pr-${pr_number}}"
+    export API_IMAGE="${API_IMAGE:-pr-${pr_number}}"
+    export CRONS_IMAGE="${CRONS_IMAGE:-pr-${pr_number}}"
+    export POSTGRES_IMAGE="${POSTGRES_IMAGE:-pr-${pr_number}}"
   fi
 
   # Deployment variables
