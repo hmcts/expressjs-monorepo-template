@@ -229,15 +229,15 @@ jobs:
                 ).join(' ');
                 return `- **${appName}**: ${url}`;
               })
-              .join('\n            ');
+              .join('\n');
 
             const body = `## Preview Deployment Successful 🚀
 
-            Your preview environment is ready:
+Your preview environment is ready:
 
-            ${urlList || '_(No ingress URLs found)_'}
+${urlList || '_(No ingress URLs found)_'}
 
-            The environment will be automatically cleaned up when this PR is closed.`;
+The environment will be automatically cleaned up when this PR is closed.`;
 
             await github.rest.issues.createComment({
               owner: context.repo.owner,

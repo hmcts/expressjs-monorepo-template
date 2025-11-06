@@ -18,19 +18,19 @@ main() {
     exit 1
   fi
 
-  echo "Retrieving preview URLs from namespace: ${namespace}, release: ${release_name}"
+  echo "Retrieving preview URLs from namespace: ${namespace}, release: ${release_name}" >&2
 
   # Wait for ingresses to be ready (max 30 seconds)
   local timeout=30
   local elapsed=0
-  echo "Waiting for ingress resources to be ready..."
+  echo "Waiting for ingress resources to be ready..." >&2
 
   while [ $elapsed -lt $timeout ]; do
     local ingress_count
     ingress_count=$(kubectl get ingress -n "$namespace" -l "app.kubernetes.io/instance=${release_name}" --no-headers 2>/dev/null | wc -l || echo "0")
 
     if [ "$ingress_count" -gt 0 ]; then
-      echo "Found ${ingress_count} ingress resource(s)"
+      echo "Found ${ingress_count} ingress resource(s)" >&2
       break
     fi
 
@@ -61,16 +61,20 @@ main() {
 
   # Fallback: if no ingresses found, return empty object
   if [ "$urls_json" = "{}" ]; then
-    echo "Warning: No ingress resources found for release ${release_name} in namespace ${namespace}"
+    echo "Warning: No ingress resources found for release ${release_name} in namespace ${namespace}" >&2
   fi
 
-  # Output JSON
-  echo "$urls_json"
-
-  # Output for GitHub Actions
+  # Output for GitHub Actions (use heredoc format for JSON with special characters)
   if [ -n "${GITHUB_OUTPUT:-}" ]; then
-    echo "urls=${urls_json}" >> "$GITHUB_OUTPUT"
+    {
+      echo "urls<<EOF"
+      echo "$urls_json"
+      echo "EOF"
+    } >> "$GITHUB_OUTPUT"
   fi
+
+  # Also output to stdout for logging
+  echo "$urls_json"
 }
 
 main "$@"
