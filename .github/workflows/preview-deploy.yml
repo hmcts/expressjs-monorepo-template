@@ -57,6 +57,9 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    outputs:
+      timestamp: ${{ steps.metadata.outputs.timestamp }}
+      short-sha: ${{ steps.metadata.outputs.short-sha }}
 
     steps:
       - name: Checkout code
@@ -124,23 +127,19 @@ jobs:
           APPLICATION_NAME=$(grep '^name:' "$CHART_PATH" | awk '{print $2}' | tr -d '"')
           GIT_REPO=$(git config --get remote.origin.url | sed 's/git@github.com:/https:\/\/github.com\//' | sed 's/\.git$//')
 
-          # Use github.sha directly - it's the same for all apps in this commit
-          SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          TIMESTAMP=$(date +%Y%m%d%H%M%S)
-
           echo "TEAM_NAME=${TEAM_NAME}" >> $GITHUB_ENV
           echo "APPLICATION_NAME=${APPLICATION_NAME}" >> $GITHUB_ENV
           echo "GIT_REPO=${GIT_REPO}" >> $GITHUB_ENV
-          echo "TIMESTAMP=${TIMESTAMP}" >> $GITHUB_ENV
-          echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
+          echo "TIMESTAMP=${{ needs.build-and-publish.outputs.timestamp }}" >> $GITHUB_ENV
+          echo "SHORT_SHA=${{ needs.build-and-publish.outputs.short-sha }}" >> $GITHUB_ENV
 
           # Set dynamic image variables and release name
           .github/scripts/set-image-variables.sh \
             '${{ needs.detect-affected.outputs.affected-apps }}' \
             '${{ needs.detect-affected.outputs.helm-apps }}' \
             '${{ env.CHANGE_ID }}' \
-            "${SHORT_SHA}" \
-            "${TIMESTAMP}" \
+            '${{ needs.build-and-publish.outputs.short-sha }}' \
+            '${{ needs.build-and-publish.outputs.timestamp }}' \
             "${APPLICATION_NAME}"
 
       - name: Azure Login
