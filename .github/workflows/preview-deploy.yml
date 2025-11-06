@@ -268,7 +268,7 @@ jobs:
         run: yarn install --immutable
 
       - name: Install Playwright browsers
-        run: yarn playwright install --with-deps chromium
+        run: yarn workspace e2e-tests playwright install --with-deps chromium
 
       - name: Set URL environment variables
         run: |
@@ -280,12 +280,12 @@ jobs:
             exit 1
           fi
 
-          # Convert JSON to uppercase env vars: {"web": "https://..."} -> WEB_URL=https://...
-          echo "$URLS" | jq -r 'to_entries[] | "\(.key | ascii_upcase)_URL=\(.value)"' >> $GITHUB_ENV
+          # Convert JSON to env vars with full prefix for Playwright
+          echo "$URLS" | jq -r 'to_entries[] | "EXPRESSJS_MONOREPO_TEMPLATE_\(.key | ascii_upcase)_URL=\(.value)"' >> $GITHUB_ENV
 
           # Log what we set
           echo "Set the following URL environment variables:"
-          echo "$URLS" | jq -r 'to_entries[] | "  \(.key | ascii_upcase)_URL=\(.value)"'
+          echo "$URLS" | jq -r 'to_entries[] | "  EXPRESSJS_MONOREPO_TEMPLATE_\(.key | ascii_upcase)_URL=\(.value)"'
 
       - name: Run E2E tests against preview
         run: yarn test:e2e

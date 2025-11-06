@@ -42,21 +42,20 @@ main() {
   local urls_json="{"
   local first=true
 
-  # Query ingresses with the release label
-  kubectl get ingress -n "$namespace" -l "app.kubernetes.io/instance=${release_name}" -o json | \
-    jq -r '.items[] | (.metadata.labels["app.kubernetes.io/name"] // .metadata.name) as $name | (.spec.rules[0].host // "") as $host | if $host == "" then empty else "\($name)=\($host)" end' | \
-    while IFS='=' read -r app_name host; do
-      if [ "$first" = true ]; then
-        first=false
-      else
-        urls_json="${urls_json},"
-      fi
+  # Query ingresses with the release label (use process substitution to avoid subshell)
+  while IFS='=' read -r app_name host; do
+    if [ "$first" = true ]; then
+      first=false
+    else
+      urls_json="${urls_json},"
+    fi
 
-      # Clean up app name (remove release prefix if present)
-      app_name=$(echo "$app_name" | sed "s/^${release_name}-//" | sed 's/-/_/g')
+    # Clean up app name (remove release prefix if present)
+    app_name=$(echo "$app_name" | sed "s/^${release_name}-//" | sed 's/-/_/g')
 
-      urls_json="${urls_json}\"${app_name}\":\"https://${host}\""
-    done
+    urls_json="${urls_json}\"${app_name}\":\"https://${host}\""
+  done < <(kubectl get ingress -n "$namespace" -l "app.kubernetes.io/instance=${release_name}" -o json | \
+    jq -r '.items[] | (.metadata.labels["app.kubernetes.io/name"] // .metadata.name) as $name | (.spec.rules[0].host // "") as $host | if $host == "" then empty else "\($name)=\($host)" end')
 
   urls_json="${urls_json}}"
 
