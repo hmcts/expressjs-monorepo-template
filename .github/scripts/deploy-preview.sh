@@ -284,15 +284,6 @@ main() {
     }
   fi
 
-  # Delete any existing Jobs to avoid immutability errors
-  if [ "$dry_run" = false ]; then
-    echo "Checking for existing Jobs..."
-    if kubectl get jobs -n "${namespace}" -l "app.kubernetes.io/instance=${release_name}" --no-headers 2>/dev/null | grep -q .; then
-      echo "Deleting existing Jobs to avoid immutability errors..."
-      kubectl delete jobs -n "${namespace}" -l "app.kubernetes.io/instance=${release_name}"
-    fi
-  fi
-
   local helm_cmd=(
     helm upgrade --install "${release_name}" .
     --namespace "${namespace}"

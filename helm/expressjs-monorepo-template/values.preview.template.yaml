@@ -70,6 +70,16 @@ expressjs-monorepo-template-postgres:
       POSTGRES_PORT:
         secretRef: postgres
         key: PORT
+    livenessProbe:
+      tcpSocket:
+        port: 5555
+      initialDelaySeconds: 60
+      periodSeconds: 30
+    readinessProbe:
+      tcpSocket:
+        port: 5555
+      initialDelaySeconds: 30
+      periodSeconds: 10
 
 # PostgreSQL database configuration
 postgresql:
