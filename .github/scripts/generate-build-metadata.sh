@@ -58,7 +58,7 @@ main() {
 
   # Construct derived values
   local registry_prefix="${team_name}/${application_name}"
-  local image_tag="pr-${change_id}-${short_sha}"
+  local image_tag="pr-${change_id}-${timestamp}"
 
   # Output to GitHub Actions
   if [ -n "${GITHUB_OUTPUT:-}" ]; then

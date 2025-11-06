@@ -87,10 +87,10 @@ main() {
     export CRONS_IMAGE="${CRONS_IMAGE:-latest}"
     export POSTGRES_IMAGE="${POSTGRES_IMAGE:-latest}"
   else
-    export WEB_IMAGE="${WEB_IMAGE:-pr-${pr_number}-${SHORT_SHA}}"
-    export API_IMAGE="${API_IMAGE:-pr-${pr_number}-${SHORT_SHA}}"
-    export CRONS_IMAGE="${CRONS_IMAGE:-pr-${pr_number}-${SHORT_SHA}}"
-    export POSTGRES_IMAGE="${POSTGRES_IMAGE:-pr-${pr_number}-${SHORT_SHA}}"
+    export WEB_IMAGE="${WEB_IMAGE:-pr-${pr_number}-${TIMESTAMP}}"
+    export API_IMAGE="${API_IMAGE:-pr-${pr_number}-${TIMESTAMP}}"
+    export CRONS_IMAGE="${CRONS_IMAGE:-pr-${pr_number}-${TIMESTAMP}}"
+    export POSTGRES_IMAGE="${POSTGRES_IMAGE:-pr-${pr_number}-${TIMESTAMP}}"
   fi
 
   # Deployment variables
