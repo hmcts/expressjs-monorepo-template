@@ -9,13 +9,3 @@ nodejs:
       secrets:
         - name: db-url
           alias: DATABASE_URL
-  livenessProbe:
-    tcpSocket:
-      port: 5555
-    initialDelaySeconds: 60
-    periodSeconds: 30
-  readinessProbe:
-    tcpSocket:
-      port: 5555
-    initialDelaySeconds: 30
-    periodSeconds: 10

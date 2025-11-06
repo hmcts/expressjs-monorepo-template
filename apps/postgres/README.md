@@ -22,9 +22,18 @@ apps/postgres/
 ├── helm/
 │   ├── Chart.yaml         # Uses HMCTS nodejs chart v3.2.0
 │   └── values.yaml        # Configured as long-running service
-├── start.sh               # Startup script: runs migrations then starts Studio
+├── start.sh               # Startup script: runs migrations, health proxy, and Studio
+├── health-server.mjs      # HTTP proxy for health checks (port 5555) -> Studio (port 5556)
 └── Dockerfile             # Executes start.sh
 ```
+
+### Architecture
+
+The postgres service runs two components:
+1. **Health Proxy** (port 5555): HTTP server that responds to K8s health checks and proxies to Studio
+2. **Prisma Studio** (port 5556): Database management interface
+
+This architecture works around the HMCTS nodejs chart v3.2.0 limitation that forces HTTP health checks.
 
 ## Creating Migrations
 
@@ -61,12 +70,13 @@ Use descriptive names that explain the change:
    - Helm deploys `apps/postgres` as a long-running service
    - On startup, `start.sh` runs `prisma migrate deploy`
    - If migrations fail, container restarts (per K8s restart policy)
-   - If migrations succeed, Prisma Studio starts on port 5555
+   - If migrations succeed, health proxy starts on port 5555 and Prisma Studio on port 5556
 
 3. **Service Runtime**:
-   - Prisma Studio runs continuously
+   - Health proxy and Prisma Studio run continuously
    - Accessible via ingress (e.g., `<team>-<release>-postgres.preview.platform.hmcts.net`)
-   - TCP health checks on port 5555 (liveness: 60s initial, readiness: 30s initial)
+   - HTTP health checks on port 5555 (`/health/liveness`, `/health/readiness`)
+   - All other requests proxied to Prisma Studio on port 5556
    - Migrations run again if pod restarts
 
 ### Preview Deployments
@@ -93,17 +103,10 @@ Configure via Flux/ArgoCD to:
 ```yaml
 nodejs:
   releaseNameOverride: "{{ .Release.Name }}-postgres"
-  applicationPort: 5555  # Prisma Studio port
+  applicationPort: 5555  # Health proxy port (proxies to Studio on 5556)
   image: hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-postgres:latest
   ingressHost: expressjs-monorepo-template-postgres.{{ .Values.global.environment }}.platform.hmcts.net
-  livenessProbe:
-    tcpSocket:
-      port: 5555
-    initialDelaySeconds: 60  # Allow time for migrations
-  readinessProbe:
-    tcpSocket:
-      port: 5555
-    initialDelaySeconds: 30
+  # Uses default HTTP health checks provided by nodejs chart
 ```
 
 ### Environment Variables
@@ -188,5 +191,5 @@ npx prisma migrate reset
 Potential enhancements:
 - Add authentication to Prisma Studio (currently open to anyone with ingress access)
 - Run migrations as an init container and Studio as main container
-- Add HTTP health endpoint instead of TCP probe for better diagnostics
+- Simplify health proxy once nodejs chart supports custom probe configurations
 - Implement read-only mode for production environments
