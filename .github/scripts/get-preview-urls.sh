@@ -44,12 +44,7 @@ main() {
 
   # Query ingresses with the release label
   kubectl get ingress -n "$namespace" -l "app.kubernetes.io/instance=${release_name}" -o json | \
-    jq -r '.items[] | {
-      name: .metadata.labels["app.kubernetes.io/name"] // .metadata.name,
-      host: (.spec.rules[0].host // "")
-    } | select(.host != "")' | \
-    jq -s '.' | \
-    jq -r '.[] | "\(.name)=\(.host)"' | \
+    jq -r '.items[] | (.metadata.labels["app.kubernetes.io/name"] // .metadata.name) as $name | (.spec.rules[0].host // "") as $host | if $host == "" then empty else "\($name)=\($host)" end' | \
     while IFS='=' read -r app_name host; do
       if [ "$first" = true ]; then
         first=false
