@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "yarn workspace @hmcts/postgres-prisma run collate && mkdir -p dist && cp ../../libs/postgres-prisma/dist/schema.prisma dist/schema.prisma",
-    "start": "npx prisma migrate deploy --schema=./dist/schema.prisma && npx prisma studio --schema=./dist/schema.prisma --host 0.0.0.0",
+    "start": "npx prisma migrate deploy --schema=./dist/schema.prisma && npx prisma studio --schema=./dist/schema.prisma --hostname 0.0.0.0 --browser none",
     "migrate": "yarn build && npx prisma migrate deploy --schema=./dist/schema.prisma",
     "migrate:dev": "yarn build && npx prisma migrate dev --schema=./dist/schema.prisma",
     "migrate:reset": "yarn build && npx prisma migrate reset --schema=./dist/schema.prisma",
