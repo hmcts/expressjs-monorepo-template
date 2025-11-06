@@ -159,6 +159,13 @@ main() {
   # Deploy Helm chart
   echo "Deploying Helm chart..."
 
+  # Delete any existing Jobs to avoid immutability errors
+  echo "Checking for existing Jobs..."
+  if kubectl get jobs -n "${namespace}" -l "app.kubernetes.io/instance=${release_name}" --no-headers 2>/dev/null | grep -q .; then
+    echo "Deleting existing Jobs to avoid immutability errors..."
+    kubectl delete jobs -n "${namespace}" -l "app.kubernetes.io/instance=${release_name}"
+  fi
+
   local helm_cmd=(
     helm upgrade --install "${release_name}" .
     --namespace "${namespace}"
