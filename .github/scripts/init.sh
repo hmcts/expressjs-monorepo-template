@@ -47,8 +47,8 @@ PRODUCT_NAME_LOWER=$(echo "$PRODUCT_NAME_INPUT" | tr '[:upper:]' '[:lower:]' | t
 
 echo ""
 echo "📝 Configuration:"
-echo "  Team (rpe): $TEAM_NAME_LOWER"
-echo "  Team (RPE): $TEAM_NAME_INPUT"
+echo "  Team (dtsse): $TEAM_NAME_LOWER"
+echo "  Team (DTSSE): $TEAM_NAME_INPUT"
 echo "  Product (lowercase): $PRODUCT_NAME_LOWER"
 echo "  Product (original): $PRODUCT_NAME_INPUT"
 echo "  Full name: ${TEAM_NAME_LOWER}-${PRODUCT_NAME_LOWER}"
@@ -90,11 +90,11 @@ replace_in_files "ExpressJS Monorepo Template" "$PRODUCT_NAME_INPUT"
 echo "Replacing expressjs-monorepo..."
 replace_in_files "expressjs-monorepo" "$PRODUCT_NAME_LOWER"
 
-echo "Replacing RPE..."
-replace_in_files "\\bRPE\\b" "$TEAM_NAME_INPUT"
+echo "Replacing DTSSE..."
+replace_in_files "\\bDTSSE\\b" "$TEAM_NAME_INPUT"
 
-echo "Replacing rpe..."
-replace_in_files "\\brpe\\b" "$TEAM_NAME_LOWER"
+echo "Replacing dtsse..."
+replace_in_files "\\bdtsse\\b" "$TEAM_NAME_LOWER"
 
 echo ""
 echo "📦 Rebuilding lockfile..."
