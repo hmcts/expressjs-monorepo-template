@@ -1,6 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { getPropertiesVolumeSecrets, healthcheck, monitoringMiddleware } from "@hmcts/cloud-native-platform";
+import { getPropertiesVolumeSecrets, hc, healthcheck, monitoringMiddleware } from "@hmcts/cloud-native-platform";
 import {
   configureCookieManager,
   configureGovuk,
@@ -27,17 +27,22 @@ export async function createApp(): Promise<Express> {
   await getPropertiesVolumeSecrets({ chartPath, omit: ["DATABASE_URL"] });
 
   const { default: config } = await import("config");
+  const redisConnection = await getRedisClient(config);
   const app = express();
 
   app.set("trust proxy", 1);
   app.use(compression());
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
-  app.use(healthcheck());
   app.use(monitoringMiddleware(config.get("applicationInsights")));
   app.use(configureNonce());
   app.use(configureHelmet());
-  app.use(expressSessionRedis({ redisConnection: await getRedisClient(config) }));
+  app.use(expressSessionRedis({ redisConnection }));
+  app.use(healthcheck({
+    checks: {
+      redis: hc.raw(() => redisConnection.ping())
+    }
+  }));
 
   const modulePaths = [__dirname, `${onboardingPages.path}/../`, `${footerPages.path}/../`];
 
