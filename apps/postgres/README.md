@@ -98,7 +98,19 @@ job:
 
 ### Environment Variables
 
+The migration job supports two methods of database configuration:
+
+**Method 1: Individual variables** (recommended for K8s secrets):
+- `POSTGRES_HOST`: Database hostname
+- `POSTGRES_USER`: Database username
+- `POSTGRES_PASSWORD`: Database password
+- `POSTGRES_PORT`: Database port
+- `POSTGRES_DATABASE`: Database name
+
+**Method 2: Connection string**:
 - `DATABASE_URL`: PostgreSQL connection string (from Azure Key Vault)
+
+If both methods are provided, individual variables take precedence.
 
 ## Troubleshooting
 
