@@ -66,11 +66,15 @@ main() {
 
   # Output for GitHub Actions (use heredoc format for JSON with special characters)
   if [ -n "${GITHUB_OUTPUT:-}" ]; then
+    # Use a unique delimiter to avoid conflicts
+    delimiter="ghadelimiter_$(date +%s%N)"
     {
-      echo "urls<<EOF"
+      echo "urls<<${delimiter}"
       echo "$urls_json"
-      echo "EOF"
+      echo "${delimiter}"
     } >> "$GITHUB_OUTPUT"
+
+    echo "Debug: Wrote to GITHUB_OUTPUT with delimiter ${delimiter}" >&2
   fi
 
   # Also output to stdout for logging

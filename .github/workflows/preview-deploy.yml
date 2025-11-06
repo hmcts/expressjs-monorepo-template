@@ -189,6 +189,13 @@ jobs:
         id: preview-urls
         run: |
           .github/scripts/get-preview-urls.sh "${{ env.TEAM_NAME }}" "${{ env.RELEASE_NAME }}"
+          echo "Debug: Checking GITHUB_OUTPUT content"
+          if [ -f "$GITHUB_OUTPUT" ]; then
+            echo "GITHUB_OUTPUT file exists"
+            cat "$GITHUB_OUTPUT"
+          else
+            echo "ERROR: GITHUB_OUTPUT file not found at: $GITHUB_OUTPUT"
+          fi
 
       - name: Add PR labels for cleanup
         uses: actions/github-script@v7
@@ -277,8 +284,14 @@ jobs:
           # Set all URL variables from preview deployment
           URLS='${{ needs.deploy-preview.outputs.urls }}'
 
+          echo "Debug: Raw URLS value:"
+          echo "URLS='${URLS}'"
+          echo "Debug: Length: ${#URLS}"
+
           if [ "$URLS" = "{}" ] || [ -z "$URLS" ]; then
             echo "Error: No URLs found in deployment"
+            echo "Debug: deploy-preview outputs:"
+            echo '${{ toJson(needs.deploy-preview.outputs) }}'
             exit 1
           fi
 
