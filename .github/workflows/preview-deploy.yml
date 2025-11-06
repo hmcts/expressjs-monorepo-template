@@ -188,17 +188,16 @@ jobs:
       - name: Get preview URLs from ingress
         id: preview-urls
         run: |
-          # Run script - it logs to stderr and outputs JSON to stdout
-          URLS_JSON=$(.github/scripts/get-preview-urls.sh "${{ env.TEAM_NAME }}" "${{ env.RELEASE_NAME }}")
+          # Run script and capture output to file
+          .github/scripts/get-preview-urls.sh "${{ env.TEAM_NAME }}" "${{ env.RELEASE_NAME }}" > /tmp/urls.json
 
-          echo "Debug: Captured JSON: ${URLS_JSON}"
+          echo "Debug: Script output:"
+          cat /tmp/urls.json
 
           # Write to GITHUB_OUTPUT using heredoc
-          {
-            echo 'urls<<EOF'
-            echo "${URLS_JSON}"
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
+          echo 'urls<<GHEOF' >> "$GITHUB_OUTPUT"
+          cat /tmp/urls.json >> "$GITHUB_OUTPUT"
+          echo 'GHEOF' >> "$GITHUB_OUTPUT"
 
           echo "Debug: GITHUB_OUTPUT content:"
           cat "$GITHUB_OUTPUT"
