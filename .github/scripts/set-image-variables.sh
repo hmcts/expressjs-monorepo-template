@@ -7,14 +7,14 @@ set -euo pipefail
 #   $1: affected_apps - JSON array of affected app names
 #   $2: helm_apps - JSON array of all apps with Helm charts
 #   $3: change_id - PR/change ID
-#   $4: short_sha - Short git SHA (unused, kept for compatibility)
-#   $5: timestamp - Build timestamp
+#   $4: short_sha - Short git SHA
+#   $5: timestamp - Build timestamp (unused, kept for compatibility)
 #   $6: application_name - Application name for release name
 # Outputs:
 #   Environment variables:
 #   - RELEASE_NAME: {application_name}-pr-{change_id}
 #   - {APP}_IMAGE for each Helm app
-#     - If app was affected: pr-{change_id}-{timestamp}
+#     - If app was affected: pr-{change_id}-{sha}
 #     - If app was not affected: latest
 
 main() {
@@ -48,8 +48,8 @@ main() {
 
     # Check if app was affected (needs rebuild)
     if echo "$affected_apps" | jq -e --arg app "$app" 'index($app)' > /dev/null 2>&1; then
-      # App was affected - use PR-specific tag with timestamp
-      local image_tag="pr-${change_id}-${timestamp}"
+      # App was affected - use PR-specific tag with SHA
+      local image_tag="pr-${change_id}-${short_sha}"
 
       if [ -n "${GITHUB_ENV:-}" ]; then
         echo "${env_var_name}=${image_tag}" >> "$GITHUB_ENV"
