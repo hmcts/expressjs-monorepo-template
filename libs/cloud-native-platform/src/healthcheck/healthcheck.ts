@@ -33,7 +33,7 @@ export function raw(check: () => Promise<HealthStatus | unknown> | HealthStatus 
     try {
       const result = await check();
 
-      return (result === "UP" || result === "DOWN") ? result : "UP";
+      return result === "UP" || result === "DOWN" ? result : "UP";
     } catch {
       return "DOWN";
     }

@@ -38,11 +38,13 @@ export async function createApp(): Promise<Express> {
   app.use(configureNonce());
   app.use(configureHelmet());
   app.use(expressSessionRedis({ redisConnection }));
-  app.use(healthcheck({
-    checks: {
-      redis: hc.raw(() => redisConnection.ping())
-    }
-  }));
+  app.use(
+    healthcheck({
+      checks: {
+        redis: hc.raw(() => redisConnection.ping())
+      }
+    })
+  );
 
   const modulePaths = [__dirname, `${onboardingPages.path}/../`, `${footerPages.path}/../`];
 
