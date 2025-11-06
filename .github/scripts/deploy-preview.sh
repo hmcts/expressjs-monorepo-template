@@ -34,6 +34,122 @@ Examples:
 EOF
 }
 
+# Check Helm release status and fix stuck states
+check_helm_status() {
+  local release_name="$1"
+  local namespace="$2"
+
+  echo "Checking Helm release status..."
+
+  # Check if release exists
+  if ! helm status "${release_name}" -n "${namespace}" &>/dev/null; then
+    echo "Release does not exist yet, proceeding with installation"
+    return 0
+  fi
+
+  # Get current status
+  local status
+  status=$(helm status "${release_name}" -n "${namespace}" -o json 2>/dev/null | jq -r '.info.status' || echo "unknown")
+
+  echo "Current release status: ${status}"
+
+  case "$status" in
+    deployed|superseded)
+      echo "Release is in a healthy state, proceeding with upgrade"
+      return 0
+      ;;
+    pending-upgrade|pending-install|pending-rollback)
+      echo "⚠️  Release is stuck in ${status} state"
+      echo "Attempting to recover by rolling back to last deployed revision..."
+
+      # Get last successful revision
+      local last_good_revision
+      last_good_revision=$(helm history "${release_name}" -n "${namespace}" -o json 2>/dev/null | \
+        jq -r '[.[] | select(.status == "deployed" or .status == "superseded")] | max_by(.revision) | .revision' || echo "")
+
+      if [ -n "$last_good_revision" ] && [ "$last_good_revision" != "null" ]; then
+        echo "Rolling back to revision ${last_good_revision}..."
+        if helm rollback "${release_name}" "${last_good_revision}" -n "${namespace}" --wait --timeout 2m; then
+          echo "✓ Rollback successful"
+          return 0
+        else
+          echo "⚠️  Rollback failed, will attempt uninstall and reinstall"
+        fi
+      fi
+
+      echo "No valid revision to rollback to, uninstalling release..."
+      if helm uninstall "${release_name}" -n "${namespace}" --wait --timeout 2m; then
+        echo "✓ Release uninstalled, will proceed with fresh installation"
+        return 0
+      else
+        echo "❌ Failed to uninstall stuck release"
+        return 1
+      fi
+      ;;
+    failed|uninstalling|uninstalled)
+      echo "Release is in ${status} state"
+      if [ "$status" = "failed" ] || [ "$status" = "uninstalled" ]; then
+        echo "Cleaning up failed release..."
+        helm uninstall "${release_name}" -n "${namespace}" --wait --timeout 2m 2>/dev/null || true
+        echo "✓ Cleanup complete, will proceed with fresh installation"
+      fi
+      return 0
+      ;;
+    *)
+      echo "Release is in unknown state: ${status}"
+      echo "Proceeding with caution..."
+      return 0
+      ;;
+  esac
+}
+
+# Deploy with retry logic and exponential backoff
+deploy_with_retry() {
+  local release_name="$1"
+  local namespace="$2"
+  shift 2
+  local helm_cmd=("$@")
+
+  local max_attempts=3
+  local attempt=1
+
+  while [ $attempt -le $max_attempts ]; do
+    echo "=========================================="
+    echo "Deployment attempt ${attempt} of ${max_attempts}"
+    echo "=========================================="
+
+    if "${helm_cmd[@]}"; then
+      echo "✓ Deployment successful on attempt ${attempt}"
+      return 0
+    fi
+
+    local exit_code=$?
+    echo "❌ Deployment failed with exit code ${exit_code}"
+
+    if [ $attempt -lt $max_attempts ]; then
+      local wait_time=$((attempt * 30))
+      echo "Waiting ${wait_time} seconds before retry..."
+      sleep "$wait_time"
+
+      # Re-check Helm status before retrying
+      echo "Checking Helm status before retry..."
+      check_helm_status "${release_name}" "${namespace}" || {
+        echo "Failed to recover from stuck state"
+        return 1
+      }
+
+      attempt=$((attempt + 1))
+    else
+      echo "❌ All ${max_attempts} deployment attempts failed"
+      echo "Checking final Helm status for debugging..."
+      helm status "${release_name}" -n "${namespace}" 2>&1 || true
+      return 1
+    fi
+  done
+
+  return 1
+}
+
 main() {
   local pr_number="${1:-local}"
   local dry_run=false
@@ -160,6 +276,23 @@ main() {
   # Deploy Helm chart
   echo "Deploying Helm chart..."
 
+  # Check and fix any stuck Helm releases before deployment
+  if [ "$dry_run" = false ]; then
+    check_helm_status "${release_name}" "${namespace}" || {
+      echo "❌ Failed to resolve Helm release state"
+      exit 1
+    }
+  fi
+
+  # Delete any existing Jobs to avoid immutability errors
+  if [ "$dry_run" = false ]; then
+    echo "Checking for existing Jobs..."
+    if kubectl get jobs -n "${namespace}" -l "app.kubernetes.io/instance=${release_name}" --no-headers 2>/dev/null | grep -q .; then
+      echo "Deleting existing Jobs to avoid immutability errors..."
+      kubectl delete jobs -n "${namespace}" -l "app.kubernetes.io/instance=${release_name}"
+    fi
+  fi
+
   local helm_cmd=(
     helm upgrade --install "${release_name}" .
     --namespace "${namespace}"
@@ -184,20 +317,35 @@ main() {
     echo "Would run:"
     printf '%s\n' "${helm_cmd[@]}"
   else
-    "${helm_cmd[@]}"
-    echo
-    echo "=========================================="
-    echo "Deployment completed successfully!"
-    echo "=========================================="
-    echo "Release: ${release_name}"
-    echo "Namespace: ${namespace}"
-    echo
-    echo "To check status:"
-    echo "  kubectl get pods -n ${namespace}"
-    echo "  helm status ${release_name} -n ${namespace}"
-    echo
-    echo "To get URLs:"
-    echo "  kubectl get ingress -n ${namespace}"
+    # Use retry logic for robust deployment
+    if deploy_with_retry "${release_name}" "${namespace}" "${helm_cmd[@]}"; then
+      echo
+      echo "=========================================="
+      echo "Deployment completed successfully!"
+      echo "=========================================="
+      echo "Release: ${release_name}"
+      echo "Namespace: ${namespace}"
+      echo
+      echo "To check status:"
+      echo "  kubectl get pods -n ${namespace}"
+      echo "  helm status ${release_name} -n ${namespace}"
+      echo
+      echo "To get URLs:"
+      echo "  kubectl get ingress -n ${namespace}"
+    else
+      echo
+      echo "=========================================="
+      echo "❌ Deployment failed after all retries"
+      echo "=========================================="
+      echo "Release: ${release_name}"
+      echo "Namespace: ${namespace}"
+      echo
+      echo "For debugging:"
+      echo "  kubectl get pods -n ${namespace}"
+      echo "  helm status ${release_name} -n ${namespace}"
+      echo "  kubectl logs -n ${namespace} -l app.kubernetes.io/instance=${release_name}"
+      exit 1
+    fi
   fi
 }
 
