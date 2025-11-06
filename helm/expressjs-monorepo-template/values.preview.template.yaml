@@ -36,8 +36,6 @@ expressjs-monorepo-template-crons:
     schedule: "*/5 * * * *"  # Every 5 minutes
     suspend: false
     kind: CronJob
-    environment:
-      SCRIPT_NAME: "index.js"
 
 # Postgres migration job configuration
 expressjs-monorepo-template-postgres:
