@@ -50,11 +50,11 @@ expressjs-monorepo-template-crons:
     suspend: false
     kind: CronJob
 
-# Postgres migration job configuration
+# Postgres Prisma Studio service configuration
 expressjs-monorepo-template-postgres:
-  job:
+  nodejs:
     image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-postgres:${POSTGRES_IMAGE}"
-    kind: Job
+    ingressHost: "${TEAM_NAME}-{{ .Release.Name }}-postgres.preview.platform.hmcts.net"
     environment:
       POSTGRES_DATABASE: "{{ .Release.Name }}"
     secrets:

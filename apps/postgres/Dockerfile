@@ -15,10 +15,12 @@ RUN yarn build
 # ---- Runtime image ----
 FROM base AS runtime
 COPY --from=build /opt/app/apps/postgres/dist ./apps/postgres/dist
+COPY apps/postgres/start.sh ./apps/postgres/start.sh
 
 RUN yarn workspaces focus @hmcts/postgres
 COPY --from=build /opt/app/node_modules/.prisma ./node_modules/.prisma
 ENV NODE_ENV=production
 
 WORKDIR /opt/app/apps/postgres
-CMD ["npx", "prisma", "migrate", "deploy", "--schema=./dist/schema.prisma"]
+RUN chmod +x start.sh
+CMD ["sh", "./start.sh"]

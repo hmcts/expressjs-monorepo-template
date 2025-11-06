@@ -1,14 +1,15 @@
 # @hmcts/postgres
 
-Database migration runner application. Executes Prisma migrations as a Kubernetes Job during deployment.
+Prisma Studio service with database migration runner. Runs migrations on startup and provides a persistent Prisma Studio interface for database inspection.
 
 ## Purpose
 
 This application:
-1. Runs database migrations before other applications start
-2. Hosts the base Prisma schema and all migration files
-3. Deploys as a Kubernetes Job using the HMCTS `job` chart
-4. Ensures migrations succeed before web/API pods start
+1. Runs database migrations on startup
+2. Provides Prisma Studio for database inspection and management
+3. Hosts the base Prisma schema and all migration files
+4. Deploys as a long-running service using the HMCTS `nodejs` chart
+5. Accessible via ingress for viewing database contents
 
 ## Structure
 
@@ -19,9 +20,10 @@ apps/postgres/
 │   ├── schema.prisma      # Collated schema (generated during build)
 │   └── migrations/         # All migration files
 ├── helm/
-│   ├── Chart.yaml         # Uses HMCTS job chart v2.2.0
-│   └── values.yaml        # Configured as one-time Job
-└── Dockerfile             # Runs: prisma migrate deploy
+│   ├── Chart.yaml         # Uses HMCTS nodejs chart v3.2.0
+│   └── values.yaml        # Configured as long-running service
+├── start.sh               # Startup script: runs migrations then starts Studio
+└── Dockerfile             # Executes start.sh
 ```
 
 ## Creating Migrations
@@ -52,25 +54,27 @@ Use descriptive names that explain the change:
 
 1. **Build**:
    - `yarn build` runs schema collation
-   - Collated `schema.prisma` copied to `apps/postgres/prisma/`
-   - Docker image built with migrations and schema
+   - Collated `schema.prisma` copied to `apps/postgres/dist/`
+   - Docker image built with migrations, schema, and startup script
 
 2. **Deploy**:
-   - Helm deploys `apps/postgres` Job first (due to dependency order)
-   - Job runs `prisma migrate deploy`
-   - If migrations fail, deployment fails
-   - If migrations succeed, other apps deploy
+   - Helm deploys `apps/postgres` as a long-running service
+   - On startup, `start.sh` runs `prisma migrate deploy`
+   - If migrations fail, container restarts (per K8s restart policy)
+   - If migrations succeed, Prisma Studio starts on port 5555
 
-3. **Job Completion**:
-   - Job runs once per deployment
-   - Exits after migrations complete
-   - Kubernetes cleans up completed Job pods
+3. **Service Runtime**:
+   - Prisma Studio runs continuously
+   - Accessible via ingress (e.g., `<team>-<release>-postgres.preview.platform.hmcts.net`)
+   - TCP health checks on port 5555 (liveness: 60s initial, readiness: 30s initial)
+   - Migrations run again if pod restarts
 
 ### Preview Deployments
 
-Migrations run automatically in preview environments:
-- Job deploys before web/API
+Migrations and Studio run automatically in preview environments:
+- Service deploys alongside web/API apps
 - Uses same database as preview apps
+- Prisma Studio accessible at: `<team>-<release>-postgres.preview.platform.hmcts.net`
 - Changes detected by Turborepo
 
 ### Production Deployments
@@ -79,6 +83,7 @@ Configure via Flux/ArgoCD to:
 - Enable the postgres subchart
 - Set the correct image tag
 - Configure DATABASE_URL via Azure Key Vault
+- Set appropriate ingress host for Studio access
 
 ## Configuration
 
@@ -86,19 +91,24 @@ Configure via Flux/ArgoCD to:
 
 **Development/Preview** (`apps/postgres/helm/values.yaml`):
 ```yaml
-global:
-  jobKind: Job  # One-time job
-  enableKeyVaults: true
-
-job:
+nodejs:
+  releaseNameOverride: "{{ .Release.Name }}-postgres"
+  applicationPort: 5555  # Prisma Studio port
   image: hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-postgres:latest
-  backoffLimit: 2      # Retry twice on failure
-  restartPolicy: Never # Don't restart on failure
+  ingressHost: expressjs-monorepo-template-postgres.{{ .Values.global.environment }}.platform.hmcts.net
+  livenessProbe:
+    tcpSocket:
+      port: 5555
+    initialDelaySeconds: 60  # Allow time for migrations
+  readinessProbe:
+    tcpSocket:
+      port: 5555
+    initialDelaySeconds: 30
 ```
 
 ### Environment Variables
 
-The migration job supports two methods of database configuration:
+The postgres service supports two methods of database configuration:
 
 **Method 1: Individual variables** (recommended for K8s secrets):
 - `POSTGRES_HOST`: Database hostname
@@ -112,19 +122,36 @@ The migration job supports two methods of database configuration:
 
 If both methods are provided, individual variables take precedence.
 
+## Accessing Prisma Studio
+
+### Preview Environments
+
+```
+https://<team>-<release>-postgres.preview.platform.hmcts.net
+```
+
+For example:
+```
+https://dtsse-pr-123-postgres.preview.platform.hmcts.net
+```
+
+### Production Environments
+
+Access via the configured ingress host in your Flux/ArgoCD values.
+
 ## Troubleshooting
 
 ### Migration Failed
 
 ```bash
-# Check job logs
+# Check pod logs
 kubectl logs -n <namespace> <release-name>-postgres
 
-# View job status
-kubectl get job -n <namespace> <release-name>-postgres
+# View pod status
+kubectl get pods -n <namespace> -l app=<release-name>-postgres
 
-# Describe job for events
-kubectl describe job -n <namespace> <release-name>-postgres
+# Describe pod for events
+kubectl describe pod -n <namespace> <release-name>-postgres
 ```
 
 ### Manual Migration Run
@@ -158,9 +185,8 @@ npx prisma migrate reset
 
 ## Future Improvements
 
-When the HMCTS `nodejs` chart supports init containers, this app could be simplified to run as an init container instead of a separate Job. The init container would:
-- Run migrations
-- Exit gracefully
-- Allow main container to start
-
-For now, the Job pattern provides a reliable solution.
+Potential enhancements:
+- Add authentication to Prisma Studio (currently open to anyone with ingress access)
+- Run migrations as an init container and Studio as main container
+- Add HTTP health endpoint instead of TCP probe for better diagnostics
+- Implement read-only mode for production environments

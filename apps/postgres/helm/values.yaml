@@ -1,16 +1,21 @@
-global:
-  jobKind: Job
-  enableKeyVaults: true
-  tenantId: "531ff96d-0ae9-462a-8d2d-bec7c0b42082"
-
-job:
+nodejs:
   releaseNameOverride: "{{ .Release.Name }}-postgres"
-  image: hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-postgres:latest
+  applicationPort: 5555
   aadIdentityName: dtsse
+  ingressHost: expressjs-monorepo-template-postgres.{{ .Values.global.environment }}.platform.hmcts.net
+  image: 'hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-postgres:latest'
   keyVaults:
     dtsse:
       secrets:
         - name: db-url
           alias: DATABASE_URL
-  backoffLimit: 2
-  restartPolicy: Never
+  livenessProbe:
+    tcpSocket:
+      port: 5555
+    initialDelaySeconds: 60
+    periodSeconds: 30
+  readinessProbe:
+    tcpSocket:
+      port: 5555
+    initialDelaySeconds: 30
+    periodSeconds: 10
