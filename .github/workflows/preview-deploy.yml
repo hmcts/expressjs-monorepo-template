@@ -188,14 +188,20 @@ jobs:
       - name: Get preview URLs from ingress
         id: preview-urls
         run: |
-          .github/scripts/get-preview-urls.sh "${{ env.TEAM_NAME }}" "${{ env.RELEASE_NAME }}"
-          echo "Debug: Checking GITHUB_OUTPUT content"
-          if [ -f "$GITHUB_OUTPUT" ]; then
-            echo "GITHUB_OUTPUT file exists"
-            cat "$GITHUB_OUTPUT"
-          else
-            echo "ERROR: GITHUB_OUTPUT file not found at: $GITHUB_OUTPUT"
-          fi
+          # Run script - it logs to stderr and outputs JSON to stdout
+          URLS_JSON=$(.github/scripts/get-preview-urls.sh "${{ env.TEAM_NAME }}" "${{ env.RELEASE_NAME }}")
+
+          echo "Debug: Captured JSON: ${URLS_JSON}"
+
+          # Write to GITHUB_OUTPUT using heredoc
+          {
+            echo 'urls<<EOF'
+            echo "${URLS_JSON}"
+            echo 'EOF'
+          } >> "$GITHUB_OUTPUT"
+
+          echo "Debug: GITHUB_OUTPUT content:"
+          cat "$GITHUB_OUTPUT"
 
       - name: Add PR labels for cleanup
         uses: actions/github-script@v7

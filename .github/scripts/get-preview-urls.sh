@@ -64,20 +64,7 @@ main() {
     echo "Warning: No ingress resources found for release ${release_name} in namespace ${namespace}" >&2
   fi
 
-  # Output for GitHub Actions (use heredoc format for JSON with special characters)
-  if [ -n "${GITHUB_OUTPUT:-}" ]; then
-    # Use a unique delimiter to avoid conflicts
-    delimiter="ghadelimiter_$(date +%s%N)"
-    {
-      echo "urls<<${delimiter}"
-      echo "$urls_json"
-      echo "${delimiter}"
-    } >> "$GITHUB_OUTPUT"
-
-    echo "Debug: Wrote to GITHUB_OUTPUT with delimiter ${delimiter}" >&2
-  fi
-
-  # Also output to stdout for logging
+  # Output JSON to stdout (workflow will capture and set as output)
   echo "$urls_json"
 }
 
