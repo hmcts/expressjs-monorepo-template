@@ -48,7 +48,7 @@ main() {
 
     # Check if app was affected (needs rebuild)
     if echo "$affected_apps" | jq -e --arg app "$app" 'index($app)' > /dev/null 2>&1; then
-      # App was affected - use PR-specific tag with SHA
+      # App was affected - use SHA tag to force pod recreation
       local image_tag="pr-${change_id}-${short_sha}"
 
       if [ -n "${GITHUB_ENV:-}" ]; then
@@ -57,12 +57,14 @@ main() {
 
       echo "✓ ${app}: ${image_tag} (rebuilt)"
     else
-      # App not affected - use latest
+      # App not affected - use static PR tag (not 'latest')
+      local image_tag="pr-${change_id}"
+
       if [ -n "${GITHUB_ENV:-}" ]; then
-        echo "${env_var_name}=latest" >> "$GITHUB_ENV"
+        echo "${env_var_name}=${image_tag}" >> "$GITHUB_ENV"
       fi
 
-      echo "○ ${app}: latest (not affected)"
+      echo "○ ${app}: ${image_tag} (not rebuilt, using static tag)"
     fi
   done
 }
