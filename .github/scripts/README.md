@@ -166,6 +166,70 @@ Retrieves preview environment URLs from Kubernetes ingress resources after deplo
 
 ---
 
+### `deploy-preview.sh`
+
+Deploys the Helm umbrella chart to a preview environment with robust error handling and recovery.
+
+**Usage:**
+```bash
+./deploy-preview.sh [PR_NUMBER] [OPTIONS]
+```
+
+**Arguments:**
+- `PR_NUMBER`: PR number for deployment (default: local)
+
+**Options:**
+- `--dry-run`: Show what would be deployed without actually deploying
+- `--skip-update`: Skip Helm dependency updates (use cached charts)
+- `-h, --help`: Show help message
+
+**Key Features:**
+
+1. **Helm Status Checking** (`check_helm_status`)
+   - Detects stuck Helm releases (pending-upgrade/install/rollback)
+   - Automatically rolls back to last successful revision
+   - Falls back to uninstall if rollback fails
+   - Handles failed/uninstalled states with cleanup
+
+2. **Retry Logic** (`deploy_with_retry`)
+   - Retries deployment up to 3 times on failure
+   - Uses exponential backoff (30s, 60s, 90s between attempts)
+   - Re-checks and fixes Helm status before each retry
+   - Provides clear success/failure feedback
+
+3. **Enhanced Deployment Flow**
+   - Pre-flight Helm status check before deployment
+   - Job cleanup to avoid immutability errors
+   - Uses `--atomic` and `--cleanup-on-fail` flags
+   - Detailed error messages and debugging info
+
+**Example:**
+```bash
+# Deploy PR 114
+./deploy-preview.sh 114
+
+# Deploy with "local" tag
+./deploy-preview.sh local
+
+# Deploy without updating dependencies (faster)
+./deploy-preview.sh local --skip-update
+
+# Dry run to see what would be deployed
+./deploy-preview.sh 114 --dry-run
+```
+
+**Error Recovery:**
+
+The script automatically handles common Helm issues:
+- **"Another operation is in progress"**: Rolls back or uninstalls stuck release
+- **Cancelled workflows**: Detects and recovers from pending states
+- **Failed deployments**: Retries with backoff
+- **Transient cluster issues**: Multiple retry attempts
+
+This follows patterns from HMCTS cnp-jenkins-library with adaptations for GitHub Actions.
+
+---
+
 ## Best Practices
 
 ### Error Handling

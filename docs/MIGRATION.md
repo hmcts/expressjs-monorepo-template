@@ -18,10 +18,10 @@ This guide documents breaking changes and migration steps for teams adopting upd
 ### Overview
 
 The database layer has been split into two components:
-- **`apps/postgres`**: Migration runner application that executes database migrations as a Kubernetes Job
+- **`apps/postgres`**: Long-running Prisma Studio service that runs migrations on startup and provides database inspection
 - **`libs/postgres-prisma`**: Prisma client library that provides schema collation and client exports
 
-This separation allows migrations to run before application deployment and keeps the library portable for potential extraction to a separate repository.
+This separation provides a persistent database management interface while keeping the library portable for potential extraction to a separate repository.
 
 ### What Changed
 
@@ -32,9 +32,10 @@ This separation allows migrations to run before application deployment and keeps
 
 **After:**
 - `apps/postgres/prisma/` contains migrations and base schema
-- `apps/postgres` deployed as a Kubernetes Job that runs before other apps
+- `apps/postgres` deployed as a long-running service that runs migrations on startup
+- Provides Prisma Studio interface accessible via ingress
 - `libs/postgres-prisma` only handles schema collation and client generation
-- Migrations run automatically during Helm deployment
+- Migrations run automatically when the postgres pod starts
 
 ### Migration Steps
 
@@ -46,13 +47,15 @@ apps/postgres/
 ├── package.json
 ├── tsconfig.json
 ├── Dockerfile
+├── start.sh               # Startup script: runs migrations, health proxy, and Studio
+├── health-server.mjs      # HTTP proxy for health checks
 ├── prisma/
 │   ├── base.prisma        # Base schema (generator + datasource only)
 │   ├── schema.prisma      # Collated schema (generated during build)
 │   └── migrations/         # All migration files
 └── helm/
-    ├── Chart.yaml         # Uses HMCTS job chart
-    └── values.yaml        # Configured as one-time Job
+    ├── Chart.yaml         # Uses HMCTS nodejs chart v3.2.0
+    └── values.yaml        # Configured as long-running service
 ```
 
 #### 2. Library Changes
@@ -86,19 +89,26 @@ When deploying via Helm:
    - Schema collation runs during build
    - Collated schema copied into Docker image
 
-2. **Deploy Phase**: Helm deploys in order:
-   - `apps/postgres` Job runs first (runs `prisma migrate deploy`)
-   - Job must succeed before other apps deploy
-   - Web, API, and other apps start after migrations complete
+2. **Deploy Phase**: Helm deploys all apps together
+   - `apps/postgres` service starts and runs migrations via `start.sh`
+   - If migrations fail, pod enters CrashLoopBackOff and restarts
+   - Once migrations succeed, health proxy and Prisma Studio start
+   - Web, API, and other apps start simultaneously
 
-3. **Rollback**: If migrations fail, entire deployment fails
+3. **Runtime**: Postgres pod runs continuously
+   - Serves health checks on port 5555
+   - Serves Prisma Studio on port 5556
+   - Accessible via ingress for database inspection
+
+4. **Rollback**: If migrations fail, pod restarts and retries until fixed
 
 #### 5. Preview Deployments
 
 The `apps/postgres` app is automatically included in preview deployments:
-- Detected by `detect-affected-apps.sh` when migrations change
+- Detected by `detect-affected-apps.sh` when migrations or Studio code changes
 - Image built and pushed like other apps
-- Job runs before web/api pods start
+- Service runs alongside web/API apps
+- Prisma Studio accessible at: `<team>-<release>-postgres.preview.platform.hmcts.net`
 
 ### Configuration
 
@@ -117,22 +127,28 @@ postgres:
   enabled: true
 
 expressjs-monorepo-template-postgres:
-  job:
+  nodejs:
     image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-postgres:${POSTGRES_IMAGE}"
-    kind: Job  # One-time job, not CronJob
+    ingressHost: "${TEAM_NAME}-{{ .Release.Name }}-postgres.preview.platform.hmcts.net"
+    applicationPort: 5555  # Health proxy port
 ```
 
 ### Future Improvements
 
-This pattern provides a pragmatic solution until the HMCTS `nodejs` Helm chart supports init containers. When init container support is added, the migration logic could be simplified to run as an init container that exits after completing migrations.
+Potential enhancements:
+- Add authentication to Prisma Studio (currently open to ingress users)
+- Run migrations as init container when `nodejs` chart supports it
+- Simplify health proxy once chart supports custom probe configurations
+- Implement read-only mode for production Studio access
 
 ### Why This Change?
 
-1. **Security**: Database credentials managed through Kubernetes secrets
-2. **Reliability**: Migrations must succeed before apps start
-3. **Portability**: Library can be extracted to separate repo
-4. **Kubernetes-native**: Follows standard Job pattern for pre-deployment tasks
-5. **Better separation**: Migration deployment logic separate from client library
+1. **Database Visibility**: Prisma Studio provides web-based database inspection
+2. **Simplified Migrations**: Migrations run automatically on pod startup
+3. **Developer Experience**: Easy access to database in preview environments
+4. **Security**: Database credentials managed through Kubernetes secrets
+5. **Portability**: Client library can be extracted to separate repo
+6. **Kubernetes-native**: Uses standard HMCTS nodejs chart pattern
 
 ---
 
@@ -555,6 +571,55 @@ In `preview-deploy.yml`, update these values for your environment:
       --name cft-preview-01-aks \           # Update AKS cluster name
       --overwrite-existing
 ```
+
+#### 6. Create Helm umbrella chart
+
+Create a parent Helm chart to coordinate deployment of all apps:
+
+**Structure:**
+```bash
+mkdir -p helm/expressjs-monorepo-template
+```
+
+**Chart.yaml:**
+```yaml
+apiVersion: v2
+name: expressjs-monorepo-template
+description: Umbrella chart for deploying all services
+type: application
+version: 0.0.1
+annotations:
+  team: dtsse  # Update to your team name
+dependencies:
+  - name: expressjs-monorepo-template-postgres
+    version: 0.0.1
+    repository: "file://../../apps/postgres/helm"
+    condition: postgres.enabled
+  - name: expressjs-monorepo-template-web
+    version: 0.0.1
+    repository: "file://../../apps/web/helm"
+    condition: web.enabled
+  - name: expressjs-monorepo-template-api
+    version: 0.0.1
+    repository: "file://../../apps/api/helm"
+    condition: api.enabled
+  - name: redis
+    version: 20.11.3
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+  - name: postgresql
+    version: 1.1.0
+    repository: oci://hmctspublic.azurecr.io/helm
+    condition: postgresql.enabled
+```
+
+**values.preview.template.yaml:**
+- Use `${APP_IMAGE}` placeholders for dynamic image tags
+- Configure ingress hosts with `${TEAM_NAME}` variable
+- Set database connection via Kubernetes secrets
+- Enable/disable services with conditions
+
+See `helm/expressjs-monorepo-template/values.preview.template.yaml` for full example.
 
 ---
 
