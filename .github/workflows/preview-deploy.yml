@@ -188,27 +188,10 @@ jobs:
       - name: Get preview URLs from ingress
         id: preview-urls
         run: |
-          # Run script and capture output to file
-          .github/scripts/get-preview-urls.sh "${{ env.TEAM_NAME }}" "${{ env.RELEASE_NAME }}" > /tmp/urls.json
-
-          echo "Debug: Script output:"
-          cat /tmp/urls.json
-
-          # Compact JSON to single line
-          URLS_JSON=$(cat /tmp/urls.json | jq -c .)
-
-          echo "Debug: Compacted JSON: ${URLS_JSON}"
-
-          # Base64 encode to avoid special character issues in GitHub Actions expressions
+          # Get URLs and base64 encode to avoid special character issues in GitHub Actions
+          URLS_JSON=$(.github/scripts/get-preview-urls.sh "${{ env.TEAM_NAME }}" "${{ env.RELEASE_NAME }}")
           URLS_B64=$(echo -n "${URLS_JSON}" | base64 -w 0)
-
-          echo "Debug: Base64 encoded: ${URLS_B64}"
-
-          # Write base64-encoded value to GITHUB_OUTPUT
           echo "urls=${URLS_B64}" >> "$GITHUB_OUTPUT"
-
-          echo "Debug: GITHUB_OUTPUT content:"
-          cat "$GITHUB_OUTPUT"
 
       - name: Add PR labels for cleanup
         uses: actions/github-script@v7
@@ -301,27 +284,20 @@ jobs:
           # Decode base64-encoded URLs from deploy-preview job
           URLS_B64='${{ needs.deploy-preview.outputs.urls }}'
 
-          echo "Debug: Base64 value: ${URLS_B64}"
-          echo "Debug: Length: ${#URLS_B64}"
-
           if [ -z "$URLS_B64" ]; then
-            echo "Error: No URLs found in deployment"
-            echo "Debug: deploy-preview outputs:"
-            echo '${{ toJson(needs.deploy-preview.outputs) }}'
+            echo "Error: No preview URLs received from deployment"
             exit 1
           fi
 
           # Decode from base64
           URLS=$(echo -n "$URLS_B64" | base64 -d)
 
-          echo "Debug: Decoded JSON: ${URLS}"
-
           # Convert JSON to env vars with full prefix for Playwright
           echo "$URLS" | jq -r 'to_entries[] | "EXPRESSJS_MONOREPO_TEMPLATE_\(.key | ascii_upcase)_URL=\(.value)"' >> $GITHUB_ENV
 
           # Log what we set
-          echo "Set the following URL environment variables:"
-          echo "$URLS" | jq -r 'to_entries[] | "  EXPRESSJS_MONOREPO_TEMPLATE_\(.key | ascii_upcase)_URL=\(.value)"'
+          echo "Preview environment URLs configured:"
+          echo "$URLS" | jq -r 'to_entries[] | "  \(.key | ascii_upcase): \(.value)"'
 
       - name: Run E2E tests against preview
         run: yarn test:e2e
