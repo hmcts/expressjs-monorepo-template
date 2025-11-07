@@ -38,26 +38,30 @@ main() {
     elapsed=$((elapsed + 2))
   done
 
-  # Get all ingress resources for this release
-  local urls_json="{"
-  local first=true
+  # Get all ingress resources for this release - build as array then convert to JSON
+  local -a app_names
+  local -a app_urls
 
   # Query ingresses with the release label (use process substitution to avoid subshell)
   while IFS='=' read -r app_name host; do
-    if [ "$first" = true ]; then
-      first=false
-    else
-      urls_json="${urls_json},"
-    fi
-
     # Clean up app name (remove release prefix if present)
     app_name=$(echo "$app_name" | sed "s/^${release_name}-//" | sed 's/-/_/g')
 
-    urls_json="${urls_json}\"${app_name}\":\"https://${host}\""
+    app_names+=("$app_name")
+    app_urls+=("https://${host}")
   done < <(kubectl get ingress -n "$namespace" -l "app.kubernetes.io/instance=${release_name}" -o json | \
     jq -r '.items[] | (.metadata.labels["app.kubernetes.io/name"] // .metadata.name) as $name | (.spec.rules[0].host // "") as $host | if $host == "" then empty else "\($name)=\($host)" end')
 
-  urls_json="${urls_json}}"
+  # Build JSON using jq to avoid bash brace issues
+  local urls_json="{}"
+  if [ ${#app_names[@]} -gt 0 ]; then
+    # Build JSON object using jq
+    urls_json=$(jq -n '$ARGS.named' $(
+      for i in "${!app_names[@]}"; do
+        echo "--arg ${app_names[$i]} ${app_urls[$i]}"
+      done
+    ))
+  fi
 
   # Fallback: if no ingresses found, return empty object
   if [ "$urls_json" = "{}" ]; then
