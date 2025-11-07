@@ -194,10 +194,13 @@ jobs:
           echo "Debug: Script output:"
           cat /tmp/urls.json
 
-          # Write to GITHUB_OUTPUT using heredoc
-          echo 'urls<<GHEOF' >> "$GITHUB_OUTPUT"
-          cat /tmp/urls.json >> "$GITHUB_OUTPUT"
-          echo 'GHEOF' >> "$GITHUB_OUTPUT"
+          # Compact JSON to single line (this avoids multiline heredoc issues)
+          URLS_JSON=$(cat /tmp/urls.json | jq -c .)
+
+          echo "Debug: Compacted JSON: ${URLS_JSON}"
+
+          # Write to GITHUB_OUTPUT as single line
+          echo "urls=${URLS_JSON}" >> "$GITHUB_OUTPUT"
 
           echo "Debug: GITHUB_OUTPUT content:"
           cat "$GITHUB_OUTPUT"
