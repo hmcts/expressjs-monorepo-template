@@ -194,13 +194,18 @@ jobs:
           echo "Debug: Script output:"
           cat /tmp/urls.json
 
-          # Compact JSON to single line (this avoids multiline heredoc issues)
+          # Compact JSON to single line
           URLS_JSON=$(cat /tmp/urls.json | jq -c .)
 
           echo "Debug: Compacted JSON: ${URLS_JSON}"
 
-          # Write to GITHUB_OUTPUT as single line
-          echo "urls=${URLS_JSON}" >> "$GITHUB_OUTPUT"
+          # Base64 encode to avoid special character issues in GitHub Actions expressions
+          URLS_B64=$(echo -n "${URLS_JSON}" | base64 -w 0)
+
+          echo "Debug: Base64 encoded: ${URLS_B64}"
+
+          # Write base64-encoded value to GITHUB_OUTPUT
+          echo "urls=${URLS_B64}" >> "$GITHUB_OUTPUT"
 
           echo "Debug: GITHUB_OUTPUT content:"
           cat "$GITHUB_OUTPUT"
@@ -234,7 +239,10 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const urls = JSON.parse('${{ steps.preview-urls.outputs.urls }}' || '{}');
+            // Decode base64-encoded URLs
+            const urlsB64 = '${{ steps.preview-urls.outputs.urls }}';
+            const urlsJson = Buffer.from(urlsB64, 'base64').toString('utf-8');
+            const urls = JSON.parse(urlsJson || '{}');
 
             // Build URL list dynamically from ingress resources
             const urlList = Object.entries(urls)
@@ -266,7 +274,8 @@ jobs:
   e2e-tests:
     name: E2E Tests
     runs-on: ubuntu-latest
-    needs: deploy-preview
+    needs: [detect-affected, deploy-preview]
+    if: needs.detect-affected.outputs.has-changes == 'true'
     timeout-minutes: 15
 
     steps:
@@ -289,19 +298,23 @@ jobs:
 
       - name: Set URL environment variables
         run: |
-          # Set all URL variables from preview deployment
-          URLS='${{ needs.deploy-preview.outputs.urls }}'
+          # Decode base64-encoded URLs from deploy-preview job
+          URLS_B64='${{ needs.deploy-preview.outputs.urls }}'
 
-          echo "Debug: Raw URLS value:"
-          echo "URLS='${URLS}'"
-          echo "Debug: Length: ${#URLS}"
+          echo "Debug: Base64 value: ${URLS_B64}"
+          echo "Debug: Length: ${#URLS_B64}"
 
-          if [ "$URLS" = "{}" ] || [ -z "$URLS" ]; then
+          if [ -z "$URLS_B64" ]; then
             echo "Error: No URLs found in deployment"
             echo "Debug: deploy-preview outputs:"
             echo '${{ toJson(needs.deploy-preview.outputs) }}'
             exit 1
           fi
+
+          # Decode from base64
+          URLS=$(echo -n "$URLS_B64" | base64 -d)
+
+          echo "Debug: Decoded JSON: ${URLS}"
 
           # Convert JSON to env vars with full prefix for Playwright
           echo "$URLS" | jq -r 'to_entries[] | "EXPRESSJS_MONOREPO_TEMPLATE_\(.key | ascii_upcase)_URL=\(.value)"' >> $GITHUB_ENV
