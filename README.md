@@ -73,7 +73,6 @@ A lightweight file-system router for Express applications, inspired by Next.js r
 - Workspace-based structure with Yarn workspaces
 - Shared libraries for common functionality
 - Testing with Vitest and Playwright
-- Docker multi-stage builds for production
 - Helm charts for Kubernetes deployment
 - GitHub Actions CI/CD pipeline
 - Biome for fast linting and formatting
@@ -84,11 +83,13 @@ A lightweight file-system router for Express applications, inspired by Next.js r
 expressjs-monorepo-template/
 ├── apps/                       # Deployable applications
 │   ├── api/                    # REST API server (Express 5.x)
+│   ├── crons/                  # Cron jobs
+│   ├── postgres/               # Migration runner + Prisma S
 │   └── web/                    # Web frontend (Express 5.x + Nunjucks)
 ├── libs/                       # Modular packages (explicitly registered)
 │   ├── cloud-native-platform/  # Cloud Native Platform features
 │   ├── express-gov-uk-starter/ # GOV.UK Frontend integration
-│   ├── postgres-prisma/        # Database configuration (Prisma)
+│   ├── postgres-prisma/        # Database client (Prisma)
 │   ├── simple-router/          # Simple Router features
 │   ├── footer-pages/           # Module with example footer pages
 │   └── [your-module]/          # Your feature modules
@@ -100,6 +101,7 @@ expressjs-monorepo-template/
 │           └── assets/         # Module assets (compiled by vite)
 ├── e2e-tests/                  # End-to-end tests (Playwright)
 ├── docs/                       # Documentation and ADRs
+├── helm/                       # Helm charts for Kubernetes deployment
 └── package.json                # Root configuration
 ```
 
@@ -127,7 +129,7 @@ yarn dev
 |---------|-----|-------------|
 | Web Application | http://localhost:3000 | Main web interface with GOV.UK styling |
 | API Server | http://localhost:3001 | REST API backend |
-| Prisma Studio | Run `yarn workspace @hmcts/postgres-prisma run studio` | Database management UI |
+| Prisma Studio | http://localhost:5555 | Database management UI |
 
 
 ## 📦 Development
