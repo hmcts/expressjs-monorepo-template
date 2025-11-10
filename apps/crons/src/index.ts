@@ -1,15 +1,13 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { configurePropertiesVolume } from "@hmcts/cloud-native-platform";
-import config from "config";
+import { getPropertiesVolumeSecrets } from "@hmcts/cloud-native-platform";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const chartPath = path.join(__dirname, "../helm/values.yaml");
 
 export const main = async () => {
-  await configurePropertiesVolume(config, { chartPath });
-
+  await getPropertiesVolumeSecrets({ chartPath, omit: ["DATABASE_URL"] });
   const scriptName = process.env.SCRIPT_NAME;
 
   if (!scriptName) {

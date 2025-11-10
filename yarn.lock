@@ -723,9 +723,10 @@ __metadata:
   dependencies:
     "@hmcts/cloud-native-platform": "workspace:*"
     "@hmcts/onboarding": "workspace:*"
-    "@hmcts/postgres": "workspace:*"
+    "@hmcts/postgres-prisma": "workspace:*"
     "@hmcts/simple-router": "workspace:*"
     "@types/compression": "npm:1.8.1"
+    "@types/config": "npm:3.3.5"
     "@types/cors": "npm:2.8.19"
     "@types/express": "npm:5.0.5"
     "@types/supertest": "npm:6.0.3"
@@ -766,7 +767,7 @@ __metadata:
   resolution: "@hmcts/crons@workspace:apps/crons"
   dependencies:
     "@hmcts/cloud-native-platform": "workspace:*"
-    "@hmcts/postgres": "workspace:*"
+    "@hmcts/postgres-prisma": "workspace:*"
     "@types/config": "npm:3.3.5"
     "@types/node": "npm:24.10.0"
     config: "npm:4.1.1"
@@ -794,8 +795,6 @@ __metadata:
     govuk-frontend: ^5.2.0
     helmet: ^8.0.0
     nunjucks: ^3.2.4
-    pg: ^8.13.1
-    pg-format: ^1.0.4
     sass: ^1.90.0
     vite: ^7.0.0
     vite-plugin-static-copy: ^3.1.0
@@ -803,10 +802,6 @@ __metadata:
     connect-redis:
       optional: true
     express-session:
-      optional: true
-    pg:
-      optional: true
-    pg-format:
       optional: true
   languageName: unknown
   linkType: soft
@@ -825,19 +820,30 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@hmcts/onboarding@workspace:libs/onboarding"
   dependencies:
+    "@hmcts/postgres-prisma": "workspace:*"
     zod: "npm:4.1.12"
   peerDependencies:
     express: ^5.1.0
   languageName: unknown
   linkType: soft
 
-"@hmcts/postgres@workspace:*, @hmcts/postgres@workspace:apps/postgres":
+"@hmcts/postgres-prisma@workspace:*, @hmcts/postgres-prisma@workspace:libs/postgres-prisma":
+  version: 0.0.0-use.local
+  resolution: "@hmcts/postgres-prisma@workspace:libs/postgres-prisma"
+  dependencies:
+    "@prisma/client": "npm:6.19.0"
+    glob: "npm:11.0.3"
+    prisma: "npm:6.19.0"
+  languageName: unknown
+  linkType: soft
+
+"@hmcts/postgres@workspace:apps/postgres":
   version: 0.0.0-use.local
   resolution: "@hmcts/postgres@workspace:apps/postgres"
   dependencies:
-    "@hmcts/onboarding": "workspace:*"
+    "@hmcts/postgres-prisma": "workspace:*"
     "@prisma/client": "npm:6.19.0"
-    glob: "npm:11.0.3"
+    http-proxy: "npm:1.18.1"
     prisma: "npm:6.19.0"
   languageName: unknown
   linkType: soft
@@ -861,7 +867,7 @@ __metadata:
     "@hmcts/express-govuk-starter": "workspace:*"
     "@hmcts/footer-pages": "workspace:*"
     "@hmcts/onboarding": "workspace:*"
-    "@hmcts/postgres": "workspace:*"
+    "@hmcts/postgres-prisma": "workspace:*"
     "@hmcts/simple-router": "workspace:*"
     "@types/compression": "npm:1.8.1"
     "@types/config": "npm:3.3.5"
@@ -3729,6 +3735,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"eventemitter3@npm:^4.0.0":
+  version: 4.0.7
+  resolution: "eventemitter3@npm:4.0.7"
+  checksum: 10c0/5f6d97cbcbac47be798e6355e3a7639a84ee1f7d9b199a07017f1d2f1e2fe236004d14fa5dfaeba661f94ea57805385e326236a6debbc7145c8877fbc0297c6b
+  languageName: node
+  linkType: hard
+
 "expect-type@npm:^1.2.2":
   version: 1.2.2
   resolution: "expect-type@npm:1.2.2"
@@ -3888,6 +3901,16 @@ __metadata:
   version: 3.3.3
   resolution: "flatted@npm:3.3.3"
   checksum: 10c0/e957a1c6b0254aa15b8cce8533e24165abd98fadc98575db082b786b5da1b7d72062b81bfdcd1da2f4d46b6ed93bec2434e62333e9b4261d79ef2e75a10dd538
+  languageName: node
+  linkType: hard
+
+"follow-redirects@npm:^1.0.0":
+  version: 1.15.11
+  resolution: "follow-redirects@npm:1.15.11"
+  peerDependenciesMeta:
+    debug:
+      optional: true
+  checksum: 10c0/d301f430542520a54058d4aeeb453233c564aaccac835d29d15e050beb33f339ad67d9bddbce01739c5dc46a6716dbe3d9d0d5134b1ca203effa11a7ef092343
   languageName: node
   linkType: hard
 
@@ -4202,6 +4225,17 @@ __metadata:
     agent-base: "npm:^7.1.0"
     debug: "npm:^4.3.4"
   checksum: 10c0/4207b06a4580fb85dd6dff521f0abf6db517489e70863dca1a0291daa7f2d3d2d6015a57bd702af068ea5cf9f1f6ff72314f5f5b4228d299c0904135d2aef921
+  languageName: node
+  linkType: hard
+
+"http-proxy@npm:1.18.1":
+  version: 1.18.1
+  resolution: "http-proxy@npm:1.18.1"
+  dependencies:
+    eventemitter3: "npm:^4.0.0"
+    follow-redirects: "npm:^1.0.0"
+    requires-port: "npm:^1.0.0"
+  checksum: 10c0/148dfa700a03fb421e383aaaf88ac1d94521dfc34072f6c59770528c65250983c2e4ec996f2f03aa9f3fe46cd1270a593126068319311e3e8d9e610a37533e94
   languageName: node
   linkType: hard
 
@@ -5504,6 +5538,13 @@ __metadata:
     module-details-from-path: "npm:^1.0.3"
     resolve: "npm:^1.22.8"
   checksum: 10c0/43a2dac5520e39d13c413650895715e102d6802e6cc6ff322017bd948f12a9657fe28435f7cbbcba437b167f02e192ac7af29fa35cabd5d0c375d071c0605e01
+  languageName: node
+  linkType: hard
+
+"requires-port@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "requires-port@npm:1.0.0"
+  checksum: 10c0/b2bfdd09db16c082c4326e573a82c0771daaf7b53b9ce8ad60ea46aa6e30aaf475fe9b164800b89f93b748d2c234d8abff945d2551ba47bf5698e04cd7713267
   languageName: node
   linkType: hard
 

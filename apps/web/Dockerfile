@@ -1,18 +1,26 @@
 # ---- Base image ----
 FROM hmctspublic.azurecr.io/base/node:22-alpine AS base
 USER root
+RUN npm install -g corepack
 RUN corepack enable
 COPY --chown=hmcts:hmcts . .
 USER hmcts
 
 # ---- Build image ----
 FROM base AS build
-RUN yarn --version && yarn install
-RUN yarn build:prod
-
-# ---- Runtime image ----
-FROM build AS runtime
-COPY --from=build $WORKDIR/src/main ./src/main
+RUN yarn install
 RUN yarn build
 
+# ---- Runtime image ----
+FROM base AS runtime
+COPY --from=build /opt/app/apps/web/dist ./apps/web/dist
+COPY --from=build /opt/app/libs ./libs
+
+RUN yarn workspaces focus @hmcts/web --production
+COPY --from=build /opt/app/node_modules/.prisma ./node_modules/.prisma
+ENV NODE_ENV=production
+ENV NODE_OPTIONS='--conditions=production'
+
+WORKDIR /opt/app/apps/web
 EXPOSE 3000
+CMD ["node", "dist/server.js"]

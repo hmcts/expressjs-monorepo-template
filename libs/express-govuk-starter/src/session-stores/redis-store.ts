@@ -15,7 +15,7 @@ export function expressSessionRedis(options: ExpressSessionRedisOptions): Reques
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: process.env.NODE_ENV === "production",
+      secure: false, // disabled until https preview is working process.env.NODE_ENV === "production",
       httpOnly: true,
       maxAge: options.cookieMaxAge || 1000 * 60 * 60 * 4 // 4 hours
     }

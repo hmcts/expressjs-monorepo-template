@@ -27,7 +27,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '24.11.0'
+          node-version-file: '.nvmrc'
+          cache: 'yarn'
+          cache-dependency-path: '**/yarn.lock'
 
       - name: Cache Yarn dependencies
         uses: actions/cache@v4
@@ -35,7 +37,6 @@ jobs:
           path: |
             .yarn/cache
             .yarn/install-state.gz
-            node_modules
           key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
@@ -43,13 +44,8 @@ jobs:
       - name: Install dependencies
         run: yarn install --immutable
 
-      - name: Setup Turbo cache
-        uses: actions/cache@v4
-        with:
-          path: .turbo
-          key: ${{ runner.os }}-turbo-lint-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-turbo-lint-
+      - name: Generate Prisma client
+        run: yarn db:generate
 
       - name: Run lint for changed packages
         run: |
@@ -75,7 +71,9 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '24.11.0'
+          node-version-file: '.nvmrc'
+          cache: 'yarn'
+          cache-dependency-path: '**/yarn.lock'
 
       - name: Cache Yarn dependencies
         uses: actions/cache@v4
@@ -83,7 +81,6 @@ jobs:
           path: |
             .yarn/cache
             .yarn/install-state.gz
-            node_modules
           key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
@@ -93,14 +90,6 @@ jobs:
 
       - name: Generate Prisma client
         run: yarn db:generate
-
-      - name: Setup Turbo cache
-        uses: actions/cache@v4
-        with:
-          path: .turbo
-          key: ${{ runner.os }}-turbo-test-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-turbo-test-
 
       - name: Run unit tests for changed packages
         run: |

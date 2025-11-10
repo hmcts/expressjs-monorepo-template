@@ -15,6 +15,7 @@
     "enabled": false
   },
   "applicationInsights": {
+    "serviceName": "expressjs-monorepo-template-web",
     "connectionString": "InstrumentationKey=your-instrumentation-key;IngestionEndpoint=https://dc.services.visualstudio.com/",
     "enabled": false
   }

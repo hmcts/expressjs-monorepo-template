@@ -1,0 +1,68 @@
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# Development files
+.env
+.env.*
+!.env.example
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Dependencies
+node_modules/
+.yarn/*
+!.yarn/patches
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+.pnp.*
+
+# Build outputs
+dist/
+build/
+*.tsbuildinfo
+coverage/
+.nyc_output/
+lcov.info
+
+# Testing
+test-results/
+playwright-report/
+e2e-tests/
+*.test.ts
+*.spec.ts
+.playwright-mcp/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Documentation
+*.md
+!README.md
+docs/
+DEMO.md
+CLAUDE.md
+
+# CI/CD
+.github/
+.turbo/
+.dockerignore
+Dockerfile*
+
+# MCP
+.mcp.env
+.claude/
+
+# Temporary files
+tmp/
+temp/

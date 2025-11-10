@@ -23,6 +23,34 @@ yarn db:studio                  # Open Prisma Studio
 yarn db:drop                    # Drop all tables and reset the database
 ```
 
+## Project Structure
+
+```
+expressjs-monorepo-template/
+├── apps/                       # Deployable applications
+│   ├── api/                    # REST API server (Express 5.x)
+│   ├── crons/                  # Cron jobs
+│   ├── postgres/               # Migration runner + Prisma S
+│   └── web/                    # Web frontend (Express 5.x + Nunjucks)
+├── libs/                       # Modular packages (explicitly registered)
+│   ├── cloud-native-platform/  # Cloud Native Platform features
+│   ├── express-gov-uk-starter/ # GOV.UK Frontend integration
+│   ├── postgres-prisma/        # Database client (Prisma)
+│   ├── simple-router/          # Simple Router features
+│   ├── footer-pages/           # Module with example footer pages
+│   └── [your-module]/          # Your feature modules
+│       └── src/
+│           ├── pages/          # Page routes (imported in web app)
+│           ├── routes/         # API routes (imported in API app)
+│           ├── prisma/         # Prisma schema
+│           ├── locales/        # Translations (loaded by govuk-starter)
+│           └── assets/         # Module assets (compiled by vite)
+├── e2e-tests/                  # End-to-end tests (Playwright)
+├── docs/                       # Documentation and ADRs
+├── helm/                       # Helm charts for Kubernetes deployment
+└── package.json                # Root configuration
+```
+
 ## Naming Conventions (STRICT - MUST FOLLOW)
 
 ### 1. Database Tables and Fields
@@ -188,7 +216,7 @@ const baseConfig = createBaseViteConfig([
 import { apiRoutes as myFeatureRoutes } from "@hmcts/my-feature/config";
 app.use(await createSimpleRouter(myFeatureRoutes));
 
-// apps/postgres/src/schema-discovery.ts
+// libs/postgres-prisma/src/schema-discovery.ts
 import { prismaSchemas as myFeatureSchemas } from "@hmcts/my-feature/config";
 const schemaPaths = [myFeatureSchemas, /* other schemas */];
 ```
@@ -352,7 +380,7 @@ export function authenticate() {
 import { describe, it, expect, vi } from 'vitest';
 import { UserService } from './user-service';
 
-vi.mock('@hmcts/postgres', () => ({
+vi.mock('@hmcts/postgres-prisma', () => ({
   prisma: {
     user: {
       findUnique: vi.fn()

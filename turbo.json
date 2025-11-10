@@ -1,13 +1,18 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": ["**/.env", "**/.env.*"],
+  "globalDependencies": [
+    "**/.env",
+    "**/.env.*",
+    "**/helm/**",
+    "**/Dockerfile"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", "build/**"]
+      "outputs": ["dist/**", "build/**"],
+      "inputs": ["**/*.ts", "**/*.tsx", "**/*.prisma", "package.json"]
     },
     "test": {
-      "dependsOn": ["^build"],
       "outputs": ["coverage/**"],
       "inputs": ["package.json", "**/*.ts", "**/*.tsx", "**/*.prisma"],
       "cache": false

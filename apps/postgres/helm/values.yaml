@@ -1,0 +1,11 @@
+nodejs:
+  releaseNameOverride: "{{ .Release.Name }}-postgres"
+  applicationPort: 5555
+  aadIdentityName: dtsse
+  ingressHost: expressjs-monorepo-template-postgres.{{ .Values.global.environment }}.platform.hmcts.net
+  image: 'hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-postgres:latest'
+  keyVaults:
+    dtsse:
+      secrets:
+        - name: db-url
+          alias: DATABASE_URL

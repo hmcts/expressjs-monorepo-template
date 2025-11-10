@@ -1,0 +1,33 @@
+apiVersion: v2
+name: expressjs-monorepo-template
+description: Umbrella chart for deploying all services
+type: application
+version: 0.0.1
+annotations:
+  team: dtsse
+home: https://github.com/hmcts/expressjs-monorepo-template
+dependencies:
+  - name: expressjs-monorepo-template-postgres
+    version: 0.0.1
+    repository: "file://../../apps/postgres/helm"
+    condition: postgres.enabled
+  - name: expressjs-monorepo-template-web
+    version: 0.0.1
+    repository: "file://../../apps/web/helm"
+    condition: web.enabled
+  - name: expressjs-monorepo-template-api
+    version: 0.0.1
+    repository: "file://../../apps/api/helm"
+    condition: api.enabled
+  - name: expressjs-monorepo-template-crons
+    version: 0.0.1
+    repository: "file://../../apps/crons/helm"
+    condition: crons.enabled
+  - name: redis
+    version: 20.11.3
+    repository: https://charts.bitnami.com/bitnami
+    condition: redis.enabled
+  - name: postgresql
+    version: 1.1.0
+    repository: oci://hmctspublic.azurecr.io/helm
+    condition: postgresql.enabled

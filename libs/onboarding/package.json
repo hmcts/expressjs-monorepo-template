@@ -25,6 +25,7 @@
     "express": "^5.1.0"
   },
   "dependencies": {
+    "@hmcts/postgres-prisma": "workspace:*",
     "zod": "4.1.12"
   }
 }

@@ -2,13 +2,13 @@ import type { NextFunction, Request, Response } from "express";
 import { MonitoringService } from "./monitoring-service.js";
 
 export function monitoringMiddleware(config: MonitoringMiddlewareConfig): (req: Request, res: Response, next: NextFunction) => void {
-  const { serviceName, appInsightsConnectionString, enabled = true } = config;
+  const { serviceName, connectionString, enabled = true } = config;
 
   if (!enabled) {
     return (_req: Request, _res: Response, next: NextFunction) => next();
   }
 
-  const monitoringService = new MonitoringService(appInsightsConnectionString, serviceName);
+  const monitoringService = new MonitoringService(connectionString, serviceName);
 
   return (req: Request, res: Response, next: NextFunction) => {
     const startTime = Date.now();
@@ -44,6 +44,6 @@ export function monitoringMiddleware(config: MonitoringMiddlewareConfig): (req: 
 
 export type MonitoringMiddlewareConfig = {
   serviceName: string;
-  appInsightsConnectionString: string;
+  connectionString: string;
   enabled?: boolean;
 };

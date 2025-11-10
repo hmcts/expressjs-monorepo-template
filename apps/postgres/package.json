@@ -3,32 +3,24 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "exports": {
-    ".": {
-      "production": "./dist/index.js",
-      "default": "./src/index.ts"
-    }
-  },
   "scripts": {
-    "build": "yarn collate && tsc",
-    "collate": "tsx src/collate-schema.ts",
-    "generate": "yarn collate && prisma generate --no-hints",
-    "migrate": "yarn collate && prisma migrate deploy",
-    "migrate:dev": "yarn collate && prisma migrate dev",
-    "migrate:reset": "yarn collate && prisma migrate reset",
-    "studio": "yarn collate && prisma studio",
-    "test": "vitest run",
-    "test:watch": "vitest watch",
+    "build": "yarn workspace @hmcts/postgres-prisma run collate && mkdir -p dist && cp ../../libs/postgres-prisma/dist/schema.prisma dist/schema.prisma",
+    "start": "npx prisma migrate deploy --schema=./dist/schema.prisma && npx prisma studio --schema=./dist/schema.prisma --hostname 0.0.0.0 --browser none",
+    "migrate": "yarn build && npx prisma migrate deploy --schema=./dist/schema.prisma",
+    "migrate:dev": "yarn build && npx prisma migrate dev --schema=./dist/schema.prisma",
+    "migrate:reset": "yarn build && npx prisma migrate reset --schema=./dist/schema.prisma",
+    "studio": "yarn build && npx prisma studio --schema=./dist/schema.prisma",
+    "test": "echo 'No tests for migration runner'",
     "format": "biome format --write .",
     "lint": "biome check .",
     "lint:fix": "biome check --write ."
   },
   "dependencies": {
-    "@hmcts/onboarding": "workspace:*",
-    "@prisma/client": "6.19.0"
+    "@hmcts/postgres-prisma": "workspace:*",
+    "http-proxy": "1.18.1"
   },
   "devDependencies": {
-    "glob": "11.0.3",
+    "@prisma/client": "6.19.0",
     "prisma": "6.19.0"
   }
 }

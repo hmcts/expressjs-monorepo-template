@@ -14,7 +14,7 @@ export async function collateSchemas(
     globSync
   }
 ) {
-  const baseSchemaPath = path.join(__dirname, "../prisma/schema.prisma");
+  const baseSchemaPath = path.join(__dirname, "../../../apps/postgres/prisma/base.prisma");
   const baseSchema = await deps.readFile(baseSchemaPath, "utf-8");
   const libs = getPrismaSchemas();
   const schemaPaths = libs.flatMap((lib) =>

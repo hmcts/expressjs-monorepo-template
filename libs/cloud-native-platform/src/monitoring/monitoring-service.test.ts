@@ -23,13 +23,13 @@ vi.mock("applicationinsights", () => {
     setAutoCollectExceptions: vi.fn(() => mockSetup),
     setAutoCollectDependencies: vi.fn(() => mockSetup),
     setAutoCollectConsole: vi.fn(() => mockSetup),
-    setUseDiskRetryCaching: vi.fn(() => mockSetup)
+    setUseDiskRetryCaching: vi.fn(() => mockSetup),
+    start: vi.fn(() => mockSetup)
   };
 
   return {
     setup: vi.fn(() => mockSetup),
-    defaultClient: mockClient,
-    start: vi.fn()
+    defaultClient: mockClient
   };
 });
 
@@ -61,13 +61,13 @@ describe("MonitoringService", () => {
       expect(setupMock.setAutoCollectDependencies).toHaveBeenCalledWith(true);
       expect(setupMock.setAutoCollectConsole).toHaveBeenCalledWith(true, true);
       expect(setupMock.setUseDiskRetryCaching).toHaveBeenCalledWith(true);
-      expect(appInsights.start).toHaveBeenCalled();
+      expect(setupMock.start).toHaveBeenCalled();
     });
 
     it("should set cloud role name before starting", () => {
       service = new MonitoringService(connectionString, "test-service", mockLogger);
 
-      expect(appInsights.defaultClient.context.tags.cloudRole).toBe("test-service");
+      expect(process.env.APPLICATIONINSIGHTS_ROLE_NAME).toBe("test-service");
     });
 
     it("should use console as default logger", () => {

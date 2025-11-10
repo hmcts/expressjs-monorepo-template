@@ -6,7 +6,8 @@
     "paths": {
       "@hmcts/api": ["apps/api/src"],
       "@hmcts/crons": ["apps/crons/src"],
-      "@hmcts/postgres": ["apps/database/src"],
+      "@hmcts/postgres": ["apps/postgres/src"],
+      "@hmcts/postgres-prisma": ["libs/postgres-prisma/src"],
       "@hmcts/web": ["apps/web/src"],
       "@hmcts/express-govuk-starter": ["libs/express-govuk-starter/src"],
       "@hmcts/cloud-native-platform": ["libs/cloud-native-platform/src"],

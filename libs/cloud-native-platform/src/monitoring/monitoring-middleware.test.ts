@@ -33,7 +33,7 @@ describe("monitoringMiddleware", () => {
 
     config = {
       serviceName: "test-service",
-      appInsightsConnectionString: "InstrumentationKey=test",
+      connectionString: "InstrumentationKey=test",
       enabled: true
     };
   });

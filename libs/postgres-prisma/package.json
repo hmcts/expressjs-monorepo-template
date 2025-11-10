@@ -1,0 +1,29 @@
+{
+  "name": "@hmcts/postgres-prisma",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "production": "./dist/index.js",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "build": "yarn collate && prisma generate --no-hints && tsc",
+    "collate": "tsx src/collate-schema.ts",
+    "generate": "yarn collate && prisma generate --no-hints",
+    "test": "vitest run",
+    "test:watch": "vitest watch",
+    "format": "biome format --write .",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write ."
+  },
+  "dependencies": {
+    "@prisma/client": "6.19.0"
+  },
+  "devDependencies": {
+    "glob": "11.0.3",
+    "prisma": "6.19.0"
+  }
+}
