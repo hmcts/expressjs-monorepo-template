@@ -20,11 +20,14 @@ main() {
 
   echo "Setting up port forwards for namespace: ${namespace}, release: ${release_name}"
 
-  # Define services and their target ports
+  # Define services with local port and service port
+  # Format: service_name => "local_port:service_port"
+  # Service port is what Kubernetes exposes (usually 80 for HTTP services)
+  # Local port is what we forward to on localhost
   declare -A services=(
-    ["web"]="3000"
-    ["api"]="3001"
-    ["postgres"]="5555"  # Prisma Studio runs on port 5555
+    ["web"]="3000:80"
+    ["api"]="3001:80"
+    ["postgres"]="5555:80"
   )
 
   # Store PID file location
@@ -33,14 +36,15 @@ main() {
 
   # Start port-forwards
   for service in "${!services[@]}"; do
-    local local_port="${services[$service]}"
+    local ports="${services[$service]}"
+    local local_port="${ports%%:*}"
+    local service_port="${ports##*:}"
     local service_name="${release_name}-${service}"
-    local target_port="$local_port"
 
     echo "Setting up port-forward for ${service_name}..."
     echo "  Service: ${service_name}"
     echo "  Local port: ${local_port}"
-    echo "  Target port: ${target_port}"
+    echo "  Service port: ${service_port}"
 
     # Check if service exists
     if ! kubectl get service "${service_name}" -n "${namespace}" &>/dev/null; then
@@ -51,7 +55,7 @@ main() {
     # Start port-forward in background
     kubectl port-forward \
       "service/${service_name}" \
-      "${local_port}:${target_port}" \
+      "${local_port}:${service_port}" \
       -n "${namespace}" \
       > "/tmp/port-forward-${service}.log" 2>&1 &
 
@@ -80,7 +84,8 @@ main() {
   echo ""
   echo "Testing connectivity..."
   for service in "${!services[@]}"; do
-    local local_port="${services[$service]}"
+    local ports="${services[$service]}"
+    local local_port="${ports%%:*}"
     local service_name="${release_name}-${service}"
 
     # Skip if service wasn't started
