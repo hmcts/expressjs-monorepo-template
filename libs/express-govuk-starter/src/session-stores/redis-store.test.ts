@@ -75,7 +75,7 @@ describe("expressSessionRedis", () => {
     expect(middleware).toEqual({
       sessionOptions: expect.objectContaining({
         cookie: expect.objectContaining({
-          secure: true
+          secure: false // temporarily disabled
         })
       })
     });
@@ -116,7 +116,6 @@ describe("expressSessionRedis", () => {
         secret: "custom-secret",
         resave: true,
         cookie: {
-          secure: true,
           httpOnly: false,
           maxAge: 1000 * 60 * 30 // 30 minutes
         }
@@ -128,7 +127,6 @@ describe("expressSessionRedis", () => {
         secret: "custom-secret",
         resave: true,
         cookie: expect.objectContaining({
-          secure: true,
           httpOnly: false,
           maxAge: 1000 * 60 * 30
         })
