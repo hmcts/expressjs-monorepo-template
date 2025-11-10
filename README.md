@@ -174,6 +174,16 @@ cd libs/my-feature
   "name": "@hmcts/my-feature",
   "version": "1.0.0",
   "type": "module",
+  "exports": {
+    ".": {
+      "production": "./dist/index.js",
+      "default": "./src/index.ts"
+    },
+    "./config": {
+      "production": "./dist/config.js",
+      "default": "./src/config.ts"
+    }
+  },
   "scripts": {
     "build": "tsc && yarn build:nunjucks",
     "build:nunjucks": "mkdir -p dist/pages && cd src/pages && find . -name '*.njk' -exec sh -c 'mkdir -p ../../dist/pages/$(dirname {}) && cp {} ../../dist/pages/{}' \\;",
@@ -218,16 +228,13 @@ cd libs/my-feature
 }
 ```
 
-5. **Create src/index.ts with module exports**:
+5. **Create src/config.ts for module configuration**:
 ```typescript
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// Business logic exports
-export * from "./my-feature/service.js";
 
 // Module configuration for app registration
 export const pageRoutes = { path: path.join(__dirname, "pages") };
@@ -236,10 +243,40 @@ export const prismaSchemas = path.join(__dirname, "../prisma");
 export const assets = path.join(__dirname, "assets/");
 ```
 
+**Create src/index.ts for business logic exports**:
+```typescript
+// Business logic exports only
+export * from "./my-feature/service.js";
+export * from "./my-feature/validation.js";
+```
+
+**IMPORTANT**: Config exports (pageRoutes, apiRoutes, prismaSchemas, assets) must be in a separate `config.ts` file to avoid circular dependencies during Prisma client generation. Apps import config using the `/config` path (e.g., `@hmcts/my-feature/config`).
+
 6. **Register module in applications**:
-   - **For web app** (if module has pages): Add import and route to `apps/web/src/app.ts`
-   - **For API app** (if module has routes): Add import and route to `apps/api/src/app.ts`
-   - **For database schemas** (if module has prisma): Add import to `libs/postgres-prisma/src/schema-discovery.ts`
+
+```typescript
+// apps/web/src/app.ts
+import { pageRoutes as myFeaturePages } from "@hmcts/my-feature/config";
+
+app.use(await createGovukFrontend(app, [myFeaturePages.path], { /* options */ }));
+app.use(await createSimpleRouter(myFeaturePages));
+
+// apps/web/vite.config.ts
+import { assets as myFeatureAssets } from "@hmcts/my-feature/config";
+const baseConfig = createBaseViteConfig([
+  path.join(__dirname, "src"),
+  myFeatureAssets
+]);
+
+// apps/api/src/app.ts
+import { apiRoutes as myFeatureRoutes } from "@hmcts/my-feature/config";
+app.use(await createSimpleRouter(myFeatureRoutes));
+
+// libs/postgres-prisma/src/schema-discovery.ts
+import { prismaSchemas as myFeatureSchemas } from "@hmcts/my-feature/config";
+const schemaPaths = [myFeatureSchemas, /* other schemas */];
+```
+
    - **Add dependency** to relevant app package.json files: `"@hmcts/my-feature": "workspace:*"`
 
 ## 🧪 Testing Strategy

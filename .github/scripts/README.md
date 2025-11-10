@@ -54,21 +54,21 @@ Generates build metadata from the repository state.
 - `short-sha`: Short git SHA (first 7 characters)
 
 **Outputs (via GITHUB_ENV):**
-- `REGISTRY_PREFIX`: ACR registry prefix (`team/team-app`)
-- `IMAGE_TAG`: Combined image tag (`pr-{id}-{sha}-{timestamp}`)
+- `REGISTRY_PREFIX`: ACR registry prefix (`team/application-name`)
+- `IMAGE_TAG`: Combined image tag (`pr-{id}-{sha}`)
 
 **Example:**
 ```bash
-./generate-build-metadata.sh 123 abc1234567890def
+./generate-build-metadata.sh 123 abc1234567890def web
 
 # Outputs:
-# team-name=expressjs
-# application-name=monorepo-template
+# team-name=dtsse
+# application-name=expressjs-monorepo-template-web
 # git-repo=https://github.com/hmcts/expressjs-monorepo-template
 # timestamp=20240101120000
 # short-sha=abc1234
-# REGISTRY_PREFIX=expressjs/expressjs-monorepo-template
-# IMAGE_TAG=pr-123-abc1234-20240101120000
+# REGISTRY_PREFIX=dtsse/expressjs-monorepo-template-web
+# IMAGE_TAG=pr-123-abc1234
 ```
 
 **Logic:**
@@ -103,9 +103,9 @@ Sets dynamic image tag variables for Helm deployment based on which apps were af
 1. Iterates through all apps with Helm charts
 2. Converts app name to env var name (e.g., `web` → `WEB_IMAGE`)
 3. If app was affected (rebuilt):
-   - Sets `{APP}_IMAGE=pr-{id}-{sha}-{timestamp}`
+   - Sets `{APP}_IMAGE=pr-{id}-{sha}` (with SHA to force pod recreation)
 4. If app was not affected:
-   - Sets `{APP}_IMAGE=latest`
+   - Sets `{APP}_IMAGE=pr-{id}` (static PR tag, not latest)
 
 **Example:**
 ```bash
@@ -114,12 +114,14 @@ Sets dynamic image tag variables for Helm deployment based on which apps were af
   '["web","api","crons"]' \
   123 \
   abc1234 \
-  20240101120000
+  20240101120000 \
+  expressjs-monorepo-template
 
 # Outputs:
-# WEB_IMAGE=pr-123-abc1234-20240101120000 (rebuilt)
-# API_IMAGE=pr-123-abc1234-20240101120000 (rebuilt)
-# CRONS_IMAGE=latest (not affected)
+# Release name: expressjs-monorepo-template-pr-123
+# WEB_IMAGE=pr-123-abc1234 (rebuilt)
+# API_IMAGE=pr-123-abc1234 (rebuilt)
+# CRONS_IMAGE=pr-123 (not rebuilt, using static tag)
 ```
 
 ---
@@ -227,6 +229,167 @@ The script automatically handles common Helm issues:
 - **Transient cluster issues**: Multiple retry attempts
 
 This follows patterns from HMCTS cnp-jenkins-library with adaptations for GitHub Actions.
+
+---
+
+### `init.sh`
+
+Initializes a new repository from the template by replacing placeholder values with team-specific names.
+
+**Usage:**
+```bash
+./.github/scripts/init.sh
+```
+
+**Interactive Prompts:**
+- Team name (e.g., CaTH, Civil, Divorce)
+- Product name (e.g., Service, Money-Claims, Possessions)
+
+**Actions:**
+1. Validates input (alphanumeric, spaces, and hyphens only)
+2. Converts to lowercase with hyphens (e.g., CaTH Service → cath-service)
+3. Replaces all template values throughout the codebase:
+   - `expressjs-monorepo-template` → `{team}-{product}`
+   - `dtsse` → `{team}` (lowercase)
+   - `DTSSE` → `{TEAM}` (uppercase)
+4. Rebuilds yarn lockfile
+5. Runs tests to verify setup
+6. Removes itself after completion
+
+**Files excluded from replacement:**
+- `node_modules/`
+- `.git/`
+- `dist/`
+- `.turbo/`
+- `coverage/`
+
+**Example:**
+```bash
+$ ./.github/scripts/init.sh
+Enter team name (e.g., CaTH): Civil
+Enter product name (e.g., Service): Money-Claims
+# Replaces values and creates civil-money-claims repository
+```
+
+---
+
+### `setup-sonarcloud-project.sh`
+
+Automatically creates SonarCloud projects if they don't already exist, enabling seamless CI/CD integration.
+
+**Usage:**
+```bash
+export SONAR_TOKEN="your-token"
+./.github/scripts/setup-sonarcloud-project.sh
+```
+
+**Required Environment Variables:**
+- `SONAR_TOKEN`: SonarCloud authentication token with project creation permissions
+
+**Configuration Source:**
+Reads from `sonar-project.properties`:
+- `sonar.projectKey`: Unique project identifier
+- `sonar.projectName`: Display name
+- `sonar.organization`: SonarCloud organization
+
+**Logic:**
+1. Checks if project exists via SonarCloud API
+2. If exists: Exits successfully
+3. If not exists: Creates new project with public visibility
+4. Sets up main branch configuration
+
+**Example:**
+```bash
+# In CI/CD pipeline
+- name: Setup SonarCloud project
+  run: .github/scripts/setup-sonarcloud-project.sh
+  env:
+    SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+```
+
+**Error Handling:**
+- Validates all required configuration is present
+- Provides clear error messages for permission issues
+- Suggests manual creation if token lacks permissions
+
+---
+
+### `setup-port-forwards.sh`
+
+Sets up kubectl port-forwards to preview environment services for local testing against deployed preview environments.
+
+**Usage:**
+```bash
+./.github/scripts/setup-port-forwards.sh <namespace> <release_name>
+```
+
+**Arguments:**
+- `namespace`: Kubernetes namespace (typically team name)
+- `release_name`: Helm release name (e.g., `expressjs-monorepo-template-pr-123`)
+
+**Port Mappings:**
+- Web: `localhost:3000` → service port 80
+- API: `localhost:3001` → service port 80
+- Postgres: `localhost:5555` → service port 80
+
+**Outputs:**
+- PID file: `/tmp/port-forward-pids-{release_name}.txt`
+- Service URLs printed to console
+
+**Example:**
+```bash
+./setup-port-forwards.sh dtsse dtsse-expressjs-monorepo-template-pr-123
+
+# Outputs:
+# Port-forwards established successfully!
+# Service URLs:
+#   Web:      http://localhost:3000
+#   API:      http://localhost:3001
+#   Postgres: http://localhost:5555
+```
+
+**Features:**
+- Skips services that don't exist in the deployment
+- Verifies port-forwards are running after startup
+- Tests connectivity to each service
+- Stores PIDs for cleanup
+
+**Cleanup:**
+```bash
+.github/scripts/cleanup-port-forwards.sh <release_name>
+```
+
+---
+
+### `cleanup-port-forwards.sh`
+
+Cleans up kubectl port-forward processes created by `setup-port-forwards.sh`.
+
+**Usage:**
+```bash
+./.github/scripts/cleanup-port-forwards.sh <release_name>
+```
+
+**Arguments:**
+- `release_name`: Helm release name (must match the one used in setup)
+
+**Logic:**
+1. Reads PIDs from `/tmp/port-forward-pids-{release_name}.txt`
+2. Terminates each process gracefully
+3. Removes PID file
+4. Cleans up log files (`/tmp/port-forward-*.log`)
+
+**Fallback:**
+If PID file not found, attempts to kill all `kubectl port-forward` processes.
+
+**Example:**
+```bash
+# After testing preview environment
+.github/scripts/cleanup-port-forwards.sh dtsse-expressjs-monorepo-template-pr-123
+
+# Outputs:
+# Cleanup complete: 3/3 processes terminated
+```
 
 ---
 

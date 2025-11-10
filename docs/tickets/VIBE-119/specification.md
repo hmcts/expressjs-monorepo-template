@@ -23,7 +23,7 @@ This specification outlines the infrastructure pipeline implementation for autom
 │  │  ├───────────────────────────────────────────────────────┤     │          │
 │  │  │ • Detect affected apps via Turborepo                  │     │          │
 │  │  │ • Build Docker Image                                  │     │          │
-│  │  │ • Tag: pr-123-abc1234-20240922120000                  │     │          │
+│  │  │ • Tag: pr-123-abc1234                                 │     │          │
 │  │  │ • Push to ACR                                         │     │          │
 │  │  └───────────────────────────────────────────────────────┘     │          │
 │  └────────────────────┬───────────────────────────────────────────┘          │
@@ -94,12 +94,12 @@ The workflow consists of the following jobs:
 - **Metadata Extraction**: Each app reads from its own `apps/{app}/helm/Chart.yaml`:
   - Team name from `annotations.team` field
   - Application name from `name` field
-  - Produces image path: `${TEAM_NAME}/${TEAM_NAME}-${APPLICATION_NAME}`
+  - Produces image path: `${TEAM_NAME}/${APPLICATION_NAME}`
 - **Steps per app**:
   1. Extract metadata from app's Helm chart
   2. Build Docker image with app-specific naming
-  3. Tag with `pr-{number}-{sha}-{timestamp}`
-  4. Push to Azure Container Registry
+  3. Tag with `pr-{number}-{sha}` (timestamped tag) and `pr-{number}` (static tag)
+  4. Push both tags to Azure Container Registry
 - **Outputs**:
   - `timestamp`: Build timestamp (shared across all apps)
   - `short-sha`: Short git SHA (shared across all apps)
@@ -114,9 +114,9 @@ The workflow consists of the following jobs:
   - Application name from `name` field
   - Determines Helm release name and Kubernetes namespace
 - **Dynamic Image Variables**: Sets environment variables for all apps:
-  - Affected apps: `{APP}_IMAGE=pr-{number}-{sha}-{timestamp}`
-  - Unaffected apps: `{APP}_IMAGE=latest`
-  - Example: `WEB_IMAGE=pr-123-abc1234-20241008120000`, `CRONS_IMAGE=latest`
+  - Affected apps: `{APP}_IMAGE=pr-{number}-{sha}` (with SHA to force pod recreation)
+  - Unaffected apps: `{APP}_IMAGE=pr-{number}` (static PR tag)
+  - Example: `WEB_IMAGE=pr-123-abc1234`, `CRONS_IMAGE=pr-123`
 - **Configuration**: Uses values.preview.template.yaml with PR-specific overrides
 - **Platform Tags**: Sets global tags for Azure resource management (teamName, applicationName, etc.)
 - **GitHub Labels**: Adds labels for automated cleanup (ns:{team}, prd:{team}, rel:{team}-{app}-pr-{number})
@@ -158,11 +158,12 @@ Using the DCD-CNP-DEV subscription (Tenant: CJS Common Platform)
 **Registry**: `hmctspublic.azurecr.io`
 
 **Image Naming Convention**:
-- `${TEAM_NAME}/${TEAM_NAME}-${APPLICATION_NAME}:pr-{number}-{sha}-{timestamp}`
+- `${TEAM_NAME}/${APPLICATION_NAME}:pr-{number}-{sha}`
 - Team and application names extracted from app's `helm/Chart.yaml`
-- Example: `rpe/rpe-expressjs-monorepo-template-web:pr-123-abc1234-20240922120000`
-  - Team: `rpe` (from `annotations.team`)
+- Example: `dtsse/expressjs-monorepo-template-web:pr-123-abc1234`
+  - Team: `dtsse` (from `annotations.team`)
   - App: `expressjs-monorepo-template-web` (from `name`)
+- Both timestamped (`pr-{number}-{sha}`) and static (`pr-{number}`) tags pushed
 
 ### 4.2 Build Strategy
 
@@ -250,7 +251,7 @@ web:
   enabled: true
   expressjs-monorepo-template-web:
     nodejs:
-      image: "hmctspublic.azurecr.io/${TEAM_NAME}/${TEAM_NAME}-${APPLICATION_NAME}-web:${WEB_IMAGE}"
+      image: "hmctspublic.azurecr.io/${TEAM_NAME}/${APPLICATION_NAME}-web:${WEB_IMAGE}"
       ingressHost: "web-pr-${CHANGE_ID}.preview.platform.hmcts.net"
       applicationPort: 3000
       aadIdentityName: ${TEAM_NAME}
@@ -277,7 +278,7 @@ api:
   enabled: true
   expressjs-monorepo-template-api:
     nodejs:
-      image: "hmctspublic.azurecr.io/${TEAM_NAME}/${TEAM_NAME}-${APPLICATION_NAME}-api:${API_IMAGE}"
+      image: "hmctspublic.azurecr.io/${TEAM_NAME}/${APPLICATION_NAME}-api:${API_IMAGE}"
       ingressHost: "${APPLICATION_NAME}-api-pr-${CHANGE_ID}.preview.platform.hmcts.net"
       applicationPort: 3001
       aadIdentityName: ${TEAM_NAME}
@@ -343,9 +344,9 @@ postgresql:
 - `REGISTRY`: Azure Container Registry URL (`hmctspublic.azurecr.io`)
 
 **Build Job Variables** (per app in matrix):
-- `REGISTRY_PREFIX`: ACR image path (`${TEAM_NAME}/${TEAM_NAME}-${APPLICATION_NAME}`)
-- `IMAGE_TAG`: Full image tag (`pr-{number}-{sha}-{timestamp}`)
-- `TIMESTAMP`: Build timestamp in YYYYMMDDHHmmss format
+- `REGISTRY_PREFIX`: ACR image path (`${TEAM_NAME}/${APPLICATION_NAME}`)
+- `IMAGE_TAG`: Full image tag (`pr-{number}-{sha}`)
+- `TIMESTAMP`: Build timestamp in YYYYMMDDHHmmss format (for reference only)
 
 **Deploy Job Variables**:
 - `TEAM_NAME`: From root chart's `annotations.team` (e.g., `rpe`)
