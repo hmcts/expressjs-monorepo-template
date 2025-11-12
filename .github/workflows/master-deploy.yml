@@ -35,10 +35,10 @@ jobs:
       contents: read
       id-token: write
     env:
-      ARM_CLIENT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS_CFT_PREVIEW).clientId }}
-      ARM_CLIENT_SECRET: ${{ fromJSON(secrets.AZURE_CREDENTIALS_CFT_PREVIEW).clientSecret }}
-      ARM_SUBSCRIPTION_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS_CFT_PREVIEW).subscriptionId }}
-      ARM_TENANT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS_CFT_PREVIEW).tenantId }}
+      ARM_CLIENT_ID: ${{ fromJSON(secrets.AZURE_SUBSCRIPTION_CNP_DEV).clientId }}
+      ARM_CLIENT_SECRET: ${{ fromJSON(secrets.AZURE_SUBSCRIPTION_CNP_DEV).clientSecret }}
+      ARM_SUBSCRIPTION_ID: ${{ fromJSON(secrets.AZURE_SUBSCRIPTION_CNP_DEV).subscriptionId }}
+      ARM_TENANT_ID: ${{ fromJSON(secrets.AZURE_SUBSCRIPTION_CNP_DEV).tenantId }}
 
     steps:
       - name: Checkout code
@@ -52,7 +52,10 @@ jobs:
       - name: Azure Login
         uses: azure/login@v2
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS_CFT_PREVIEW }}
+          creds: ${{ secrets.AZURE_SUBSCRIPTION_CNP_DEV }}
+
+      - name: Set Azure Subscription
+        run: az account set --subscription 1c4f0704-a29e-403d-b719-b90c34ef14c9
 
       - name: Terraform Init
         working-directory: infrastructure
