@@ -12,7 +12,7 @@ data "azurerm_key_vault" "key_vault" {
 }
 
 module "redis" {
-  source                  = "git@github.com:hmcts/cnp-module-redis?ref=master"
+  source                  = "git::https://github.com/hmcts/cnp-module-redis.git?ref=master"
   product                 = var.product
   location                = var.location
   env                     = var.env
