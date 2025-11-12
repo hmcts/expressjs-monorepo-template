@@ -1,6 +1,17 @@
+# Deployment Guide
+
+This guide explains how automated deployments work in this project.
+
+## Deployment Types
+
+1. **Preview Deployments**: Automated PR environments for testing changes
+2. **Master Deployments**: Production artifact publishing on merge to master
+
+---
+
 # Preview Deployment Guide
 
-This guide explains how the automated preview deployment workflow works when pull requests are created or updated.
+This section explains how the automated preview deployment workflow works when pull requests are created or updated.
 
 ## Overview
 
@@ -758,10 +769,281 @@ kubectl get events -n dtsse --sort-by='.lastTimestamp'
 
 ---
 
+---
+
+# Master Deployment Guide
+
+This section explains the automated master branch deployment pipeline for publishing production artifacts.
+
+## Overview
+
+The master deployment pipeline provisions infrastructure, builds Docker images, and publishes the Helm chart to Azure Container Registry when code is merged to the master branch.
+
+**Trigger**: Push to `master` branch or manual workflow dispatch
+
+**Result**: Infrastructure provisioned, Docker images published to ACR, Helm chart published to ACR OCI registry
+
+**Target Environments**: AAT (default), Production (manual approval)
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    Master Deployment Flow                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  Push to Master                                                 │
+│         ↓                                                       │
+│  ┌──────────────────────────────────────────────────┐           │
+│  │ 1. TERRAFORM: Provision Infrastructure           │           │
+│  │    • Azure login and setup                       │           │
+│  │    • Terraform init with Azure backend           │           │
+│  │    • Terraform plan and apply                    │           │
+│  └──────────────────┬───────────────────────────────┘           │
+│                     ↓                                           │
+│  ┌──────────────────────────────────────────────────┐           │
+│  │ 2. DETECT: Find Affected Apps (Parallel)         │           │
+│  │    • Use Turborepo to detect changes             │           │
+│  │    • Reuse detect-affected-apps.sh               │           │
+│  └──────────────────┬───────────────────────────────┘           │
+│                     ↓                                           │
+│  ┌──────────────────────────────────────────────────┐           │
+│  │ 3. BUILD: Docker Images (Parallel Matrix)        │           │
+│  │    • Build affected apps only                    │           │
+│  │    • Tag: {git-sha}, {short-sha}, latest         │           │
+│  │    • Push to hmctspublic.azurecr.io              │           │
+│  └──────────────────┬───────────────────────────────┘           │
+│                     ↓                                           │
+│  ┌──────────────────────────────────────────────────┐           │
+│  │ 4. HELM: Package and Publish Chart               │           │
+│  │    • Update chart dependencies                   │           │
+│  │    • Package umbrella chart                      │           │
+│  │    • Push to oci://hmctspublic.azurecr.io/helm/  │           │
+│  └──────────────────────────────────────────────────┘           │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+## Pipeline Stages
+
+### 1. Terraform Infrastructure Provisioning
+
+**Job**: `terraform`
+
+**Purpose**: Provision and update Azure infrastructure using Terraform.
+
+**Process**:
+1. Checkout code
+2. Setup Terraform CLI (version from `.terraform-version`)
+3. Azure login using service principal
+4. Terraform init (with Azure Storage backend)
+5. Terraform plan (output to `tfplan`)
+6. Terraform apply (auto-approve)
+
+**Infrastructure Directory**: `infrastructure/`
+
+**Files**:
+- `main.tf`: Provider and resource definitions
+- `variables.tf`: Input variables (env, product, component)
+- `state.tf`: Azure Storage backend configuration
+- `versions.tf`: Provider version constraints
+- `.terraform-version`: Terraform version (1.9.0)
+
+**State Backend**:
+```hcl
+terraform {
+  backend "azurerm" {
+    resource_group_name  = "terraform-state-rg"
+    storage_account_name = "hmctstfstate"
+    container_name       = "tfstate"
+    key                  = "expressjs-monorepo-template.terraform.tfstate"
+  }
+}
+```
+
+**Environment Variable**:
+- Default: `env=aat`
+- Manual dispatch: user selects environment (aat or prod)
+
+### 2. Detect Affected Apps
+
+**Job**: `detect-affected`
+
+**Purpose**: Determine which apps changed and need Docker image rebuilds.
+
+**Process**: Identical to preview deployment
+1. Checkout with full git history
+2. Install dependencies
+3. Run `.github/scripts/detect-affected-apps.sh`
+4. Use Turborepo to detect affected apps
+5. Filter to apps with Dockerfiles
+
+**Outputs**:
+- `affected-apps`: JSON array (e.g., `["web", "api"]`)
+- `has-changes`: Boolean
+
+### 3. Build and Publish Docker Images
+
+**Job**: `build-and-publish` (matrix strategy)
+
+**Purpose**: Build Docker images for affected apps and publish to ACR with production tags.
+
+**Process**:
+1. Checkout code
+2. Generate git SHAs (full and short)
+3. Azure Docker login
+4. Build Docker image
+5. Tag with multiple tags
+6. Push all tags to ACR
+
+**Image Tags**:
+- Full SHA: `abc1234567890def` (40 chars)
+- Short SHA: `abc1234` (7 chars)
+- Latest: `latest`
+
+**Example**:
+```bash
+docker build \
+  --tag "hmctspublic.azurecr.io/expressjs-monorepo-template-web:abc1234567890def" \
+  --tag "hmctspublic.azurecr.io/expressjs-monorepo-template-web:abc1234" \
+  --tag "hmctspublic.azurecr.io/expressjs-monorepo-template-web:latest" \
+  --file apps/web/Dockerfile \
+  .
+```
+
+**Registry**: `hmctspublic.azurecr.io`
+
+**Parallelization**: Each affected app builds in parallel using matrix strategy
+
+### 4. Package and Publish Helm Chart
+
+**Job**: `publish-helm-chart`
+
+**Purpose**: Package the umbrella Helm chart and publish to ACR OCI registry.
+
+**Process**:
+1. Checkout code
+2. Install Helm (version 3.13.0)
+3. Login to Helm registry
+4. Run `.github/scripts/publish-helm-chart.sh`
+
+**Script Logic** (`publish-helm-chart.sh`):
+```bash
+# Navigate to chart directory
+cd helm/expressjs-monorepo-template
+
+# Update subchart dependencies
+for subchart in ../../apps/*/helm; do
+  helm dependency update
+done
+
+# Update parent chart dependencies
+helm dependency update
+
+# Package chart
+helm package .
+
+# Push to ACR OCI registry
+helm push expressjs-monorepo-template-0.0.1.tgz \
+  oci://hmctspublic.azurecr.io/helm
+```
+
+**Chart Registry**: `oci://hmctspublic.azurecr.io/helm/expressjs-monorepo-template`
+
+**Installation**:
+```bash
+helm install my-release \
+  oci://hmctspublic.azurecr.io/helm/expressjs-monorepo-template \
+  --version 0.0.1
+```
+
+## Concurrency Control
+
+**Workflow Concurrency**:
+```yaml
+concurrency:
+  group: master-deploy
+  cancel-in-progress: false
+```
+
+**Behavior**:
+- Only one master deployment at a time
+- New deployment waits for previous to complete
+- Prevents concurrent terraform state modifications
+- Avoids registry conflicts
+
+## Required GitHub Secrets
+
+**Azure Authentication**:
+- `AZURE_CREDENTIALS`: Service principal credentials for Terraform and Azure operations
+
+**Azure Container Registry**:
+- `REGISTRY_LOGIN_SERVER`: `hmctspublic.azurecr.io`
+- `REGISTRY_USERNAME`: ACR username
+- `REGISTRY_PASSWORD`: ACR password/token
+
+## Azure Permissions Required
+
+**Service Principal Permissions**:
+1. **Terraform State Storage**: Read/write access to Azure Storage account
+2. **Resource Provisioning**: Contributor role on resource group
+3. **Key Vault**: Get/List secrets for Key Vault resources
+4. **Container Registry**: AcrPush role for pushing images and charts
+
+## Manual Deployment
+
+Trigger workflow manually via GitHub Actions UI:
+
+1. Go to Actions tab
+2. Select "Master Deployment" workflow
+3. Click "Run workflow"
+4. Select target environment (aat or prod)
+5. Click "Run workflow"
+
+## Troubleshooting
+
+### Terraform Apply Failed
+
+**Check**:
+1. Review Terraform logs in GitHub Actions
+2. Verify Azure credentials are valid
+3. Check state file access (Storage account permissions)
+4. Ensure no manual changes in Azure conflict with Terraform
+
+**Common Issues**:
+- State lock timeout (another deployment in progress)
+- Insufficient permissions on service principal
+- Resource already exists (import required)
+
+### Image Push Failed
+
+**Check**:
+1. Verify ACR credentials in GitHub Secrets
+2. Check ACR has sufficient storage quota
+3. Ensure service principal has AcrPush role
+
+**Common Issues**:
+- Authentication failure (expired credentials)
+- Registry quota exceeded
+- Network timeout
+
+### Helm Chart Push Failed
+
+**Check**:
+1. Verify Helm registry credentials
+2. Check chart version doesn't already exist
+3. Ensure chart dependencies are available
+
+**Common Issues**:
+- Chart version conflict (increment version)
+- Missing subchart dependencies
+- OCI registry authentication failure
+
 ## References
 
 - **Scripts**: `.github/scripts/README.md`
 - **Architecture**: `docs/ARCHITECTURE.md`
 - **Migration Guide**: `docs/MIGRATION.md`
-- **Specification**: `docs/tickets/VIBE-119/specification.md`
-- **Workflow**: `.github/workflows/preview-deploy.yml`
+- **Preview Deployment**: See above
+- **Master Workflow**: `.github/workflows/master-deploy.yml`
+- **Preview Workflow**: `.github/workflows/preview-deploy.yml`
