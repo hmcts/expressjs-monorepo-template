@@ -34,6 +34,11 @@ jobs:
     permissions:
       contents: read
       id-token: write
+    env:
+      ARM_CLIENT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS_CFT_PREVIEW).clientId }}
+      ARM_CLIENT_SECRET: ${{ fromJSON(secrets.AZURE_CREDENTIALS_CFT_PREVIEW).clientSecret }}
+      ARM_SUBSCRIPTION_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS_CFT_PREVIEW).subscriptionId }}
+      ARM_TENANT_ID: ${{ fromJSON(secrets.AZURE_CREDENTIALS_CFT_PREVIEW).tenantId }}
 
     steps:
       - name: Checkout code
