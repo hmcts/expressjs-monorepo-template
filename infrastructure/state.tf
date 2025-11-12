@@ -1,8 +1,8 @@
 terraform {
   backend "azurerm" {
-    resource_group_name  = "terraform-state-rg"
-    storage_account_name = "hmctstfstate"
-    container_name       = "tfstate"
+    resource_group_name  = "mgmt-state-store-nonprod"
+    storage_account_name = "mgmtstatestorenonprod"
+    container_name       = "mgmtstatestorecontaineraat"
     key                  = "expressjs-monorepo-template.terraform.tfstate"
   }
 }
