@@ -3,8 +3,6 @@ name: JIRA Ticket Planning Automation
 on:
   schedule:
     - cron: '0 * * * *'  # Hourly
-  workflow_dispatch:
-  pull_request:
 
 permissions:
   contents: write
