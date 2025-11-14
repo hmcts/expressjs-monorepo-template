@@ -67,9 +67,9 @@ jobs:
                   "Edit(**)",
                   "Glob(**)",
                   "SlashCommand(**)",
-                  "mcp__plugin_expressjs-monorepo_jira__jira_search",
-                  "mcp__plugin_expressjs-monorepo_jira__jira_get_issue",
-                  "mcp__plugin_expressjs-monorepo_jira__jira_add_comment"
+                  "mcp__jira__jira_search",
+                  "mcp__jira__jira_get_issue",
+                  "mcp__jira__jira_add_comment"
                 ]
               },
               "enableAllProjectMcpServers": true
