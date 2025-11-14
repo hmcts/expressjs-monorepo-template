@@ -19,7 +19,10 @@
       "Edit(**)",
       "Glob(**)",
       "SlashCommand(:*:*)",
-      "mcp__plugin_expressjs-monorepo_jira__**"
+      "mcp__plugin_expressjs-monorepo_jira__jira_search",
+      "mcp__plugin_expressjs-monorepo_jira__jira_get_issue",
+      "mcp__plugin_expressjs-monorepo_jira__jira_add_comment",
+      "mcp__plugin_expressjs-monorepo_jira__jira_download_attachments"
     ]
   }
 }
