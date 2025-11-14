@@ -57,7 +57,28 @@ jobs:
             https://github.com/hmcts/.claude.git
           plugins: |
             expressjs-monorepo
+          settings: |
+            {
+              "permissions": {
+                "allow": [
+                  "Bash(git:*)",
+                  "Bash(yarn:*)",
+                  "Read(**)",
+                  "Write(**)",
+                  "Edit(**)",
+                  "Glob(**)",
+                  "mcp__plugin_expressjs-monorepo_jira__jira_search",
+                  "mcp__plugin_expressjs-monorepo_jira__jira_get_issue",
+                  "mcp__plugin_expressjs-monorepo_jira__jira_add_comment"
+                ]
+              }
+            }
           prompt: |
+            You are running in a GitHub Action for automated JIRA ticket planning.
+            The environment has been set up and dependencies installed.
+            You have access to JIRA via MCP tools (jira_search, jira_get_issue, jira_add_comment).
+            You have access to the /expressjs-monorepo:wf-plan command from the hmcts/.claude marketplace.
+
             Automate JIRA ticket planning for prioritized backlog items.
 
             Task:
@@ -79,19 +100,5 @@ jobs:
             - If a ticket fails, log the error and continue with next ticket
             - Include error handling for JIRA API failures
             - Format JIRA comments clearly with headings and links
-          allow_tools: |
-            Bash(git:*)
-            Bash(yarn:*)
-            Read(**)
-            Write(**)
-            Edit(**)
-            Glob(**)
-            mcp__plugin_expressjs-monorepo_jira__jira_search
-            mcp__plugin_expressjs-monorepo_jira__jira_get_issue
-            mcp__plugin_expressjs-monorepo_jira__jira_add_comment
-          system_prompt_append: |
-            You are running in a GitHub Action for automated JIRA ticket planning.
-            The environment has been set up and dependencies installed.
-            You have access to JIRA via MCP tools (jira_search, jira_get_issue, jira_add_comment).
-            You have access to the /expressjs-monorepo:wf-plan command from the hmcts/.claude marketplace.
+
             Process all tickets systematically and provide clear logging.
