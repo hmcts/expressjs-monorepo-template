@@ -1,0 +1,99 @@
+name: JIRA Ticket Planning Automation
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Hourly
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  plan-tickets:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for branch operations
+
+      - name: Read .nvmrc
+        id: nvm
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_OUTPUT
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ steps.nvm.outputs.NODE_VERSION }}
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Get Yarn cache directory
+        id: yarn-cache-dir
+        run: echo "dir=$(yarn config get cacheFolder)" >> $GITHUB_OUTPUT
+
+      - name: Cache Yarn
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.yarn-cache-dir.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Generate Prisma client
+        run: yarn db:generate
+
+      - name: Run Claude Code for JIRA Planning
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_api_key: ${{ secrets.CLAUDE_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          marketplace_config: |
+            extraKnownMarketplaces:
+              team-tools:
+                source:
+                  source: github
+                  repo: hmcts/.claude
+            enabledPlugins:
+              expressjs-monorepo: true
+          prompt: |
+            Automate JIRA ticket planning for prioritized backlog items.
+
+            Task:
+            1. Use jira_search to find all VIBE tickets with status "Prioritized Backlog"
+            2. For each ticket, check if a branch feature/VIBE-[num]-[slug] exists
+            3. For tickets without branches:
+               a. Create the branch with appropriate slug from ticket title
+               b. Run /expressjs-monorepo:wf-plan VIBE-[num] to generate technical planning
+               c. Commit generated docs to the branch
+               d. Push the branch to remote
+               e. Extract a 2-3 sentence summary from the specification.md
+               f. Use jira_add_comment to post the summary with links to:
+                  - Branch URL
+                  - Specification doc URL
+                  - Tasks doc URL
+
+            Important:
+            - Process all tickets sequentially (not in parallel)
+            - If a ticket fails, log the error and continue with next ticket
+            - Include error handling for JIRA API failures
+            - Format JIRA comments clearly with headings and links
+          allow_tools: |
+            Bash(git:*)
+            Bash(yarn:*)
+            Read(**)
+            Write(**)
+            Edit(**)
+            Glob(**)
+          system_prompt_append: |
+            You are running in a GitHub Action for automated JIRA ticket planning.
+            The environment has been set up and dependencies installed.
+            You have access to JIRA via MCP tools (jira_search, jira_get_issue, jira_add_comment).
+            You have access to the /expressjs-monorepo:wf-plan command from the hmcts/.claude marketplace.
+            Process all tickets systematically and provide clear logging.
