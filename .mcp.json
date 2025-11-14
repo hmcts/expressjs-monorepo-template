@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "jira": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["${HOME}/.local/share/Claude/marketplaces/hmcts/expressjs-monorepo/mcp/jira/server.js"],
+      "env": {}
+    }
+  }
+}
