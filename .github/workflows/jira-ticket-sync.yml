@@ -50,6 +50,9 @@ jobs:
 
       - name: Run Claude Code for JIRA Planning
         uses: anthropics/claude-code-action@v1
+        env:
+          JIRA_URL: ${{ secrets.JIRA_URL }}
+          JIRA_PERSONAL_TOKEN: ${{ secrets.JIRA_PERSONAL_TOKEN }}
         with:
           anthropic_api_key: ${{ secrets.CLAUDE_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
@@ -71,7 +74,8 @@ jobs:
                   "mcp__plugin_expressjs-monorepo_jira__jira_get_issue",
                   "mcp__plugin_expressjs-monorepo_jira__jira_add_comment"
                 ]
-              }
+              },
+              "enableAllProjectMcpServers": true
             }
           prompt: |
             You are running in a GitHub Action for automated JIRA ticket planning.
