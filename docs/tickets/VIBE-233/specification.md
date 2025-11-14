@@ -197,14 +197,10 @@ jobs:
         with:
           claude_api_key: ${{ secrets.CLAUDE_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          marketplace_config: |
-            extraKnownMarketplaces:
-              team-tools:
-                source:
-                  source: github
-                  repo: hmcts/.claude
-            enabledPlugins:
-              expressjs-monorepo: true
+          plugin_marketplaces: |
+            https://github.com/hmcts/.claude
+          plugins: |
+            expressjs-monorepo
           prompt: |
             Automate JIRA ticket planning for prioritized backlog items.
 
@@ -714,16 +710,12 @@ Unlike the original design which required separate Node.js scripts with dependen
    - `CLAUDE_API_KEY`: Claude API key
 
 **Marketplace Configuration** (required in GitHub Action):
-The `claude-code-action` must be configured with marketplace access:
+The `claude-code-action` must be configured with marketplace and plugin access:
 ```yaml
-marketplace_config: |
-  extraKnownMarketplaces:
-    team-tools:
-      source:
-        source: github
-        repo: hmcts/.claude
-  enabledPlugins:
-    expressjs-monorepo: true
+plugin_marketplaces: |
+  https://github.com/hmcts/.claude
+plugins: |
+  expressjs-monorepo
 ```
 
 **New Infrastructure** (this ticket adds):
