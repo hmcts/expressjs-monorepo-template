@@ -13,7 +13,8 @@
   "enableAllProjectMcpServers": true,
   "permissions": {
     "allow": [
-      "Bash(:*:*)",
+      "Bash(git:*)",
+      "Bash(yarn:*)",
       "Read(**)",
       "Write(**)",
       "Edit(**)",
