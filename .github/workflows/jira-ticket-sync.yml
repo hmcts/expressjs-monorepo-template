@@ -51,7 +51,7 @@ jobs:
       - name: Run Claude Code for JIRA Planning
         uses: anthropics/claude-code-action@v1
         with:
-          claude_api_key: ${{ secrets.CLAUDE_API_KEY }}
+          anthropic_api_key: ${{ secrets.CLAUDE_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           plugin_marketplaces: |
             https://github.com/hmcts/.claude
