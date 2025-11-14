@@ -86,6 +86,9 @@ jobs:
             Write(**)
             Edit(**)
             Glob(**)
+            mcp__plugin_expressjs-monorepo_jira__jira_search
+            mcp__plugin_expressjs-monorepo_jira__jira_get_issue
+            mcp__plugin_expressjs-monorepo_jira__jira_add_comment
           system_prompt_append: |
             You are running in a GitHub Action for automated JIRA ticket planning.
             The environment has been set up and dependencies installed.
