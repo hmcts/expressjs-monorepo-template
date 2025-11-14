@@ -10,5 +10,16 @@
   "enabledPlugins": {
     "expressjs-monorepo": true
   },
-  "enableAllProjectMcpServers": true
+  "enableAllProjectMcpServers": true,
+  "permissions": {
+    "allow": [
+      "Bash(:*:*)",
+      "Read(**)",
+      "Write(**)",
+      "Edit(**)",
+      "Glob(**)",
+      "SlashCommand(:*:*)",
+      "mcp__jira__:*"
+    ]
+  }
 }

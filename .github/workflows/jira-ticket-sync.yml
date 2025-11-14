@@ -61,13 +61,13 @@ jobs:
             {
               "permissions": {
                 "allow": [
-                  "Bash(**)",
+                  "Bash(:*:*)",
                   "Read(**)",
                   "Write(**)",
                   "Edit(**)",
                   "Glob(**)",
-                  "SlashCommand(**)",
-                  "mcp__jira__**"
+                  "SlashCommand(:*:*)",
+                  "mcp__jira__:*"
                 ]
               },
               "enableAllProjectMcpServers": true
