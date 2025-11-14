@@ -67,7 +67,7 @@ jobs:
                   "Edit(**)",
                   "Glob(**)",
                   "SlashCommand(:*:*)",
-                  "mcp__jira__:*"
+                  "mcp__plugin_expressjs-monorepo_jira__:*"
                 ]
               },
               "enableAllProjectMcpServers": true
