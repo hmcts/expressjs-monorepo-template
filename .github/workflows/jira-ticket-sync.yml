@@ -78,7 +78,7 @@ jobs:
             You are running in a GitHub Action for automated JIRA ticket planning.
             The environment has been set up and dependencies installed.
             You have access to JIRA via MCP tools (jira_search, jira_get_issue, jira_add_comment).
-            You have access to the /expressjs-monorepo:wf-plan command from the hmcts/.claude marketplace.
+            You have access to the /expressjs-monorepo:qk-plan command from the hmcts/.claude marketplace.
 
             Automate JIRA ticket planning for prioritized backlog items.
 
@@ -87,7 +87,7 @@ jobs:
             2. For each ticket, check if a branch feature/VIBE-[num]-[slug] exists
             3. For tickets without branches:
                a. Create the branch with appropriate slug from ticket title
-               b. Run /expressjs-monorepo:wf-plan VIBE-[num] to generate technical planning
+               b. Run /expressjs-monorepo:qk-plan VIBE-[num] to generate technical planning
                c. Commit generated docs to the branch
                d. Push the branch to remote
                e. Extract a 2-3 sentence summary from the specification.md
