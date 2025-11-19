@@ -61,6 +61,11 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.CLAUDE_API_KEY }}
+          prompt: |
+            Repository: ${{ github.repository }}
+            Issue/PR: #${{ github.event.issue.number || github.event.pull_request.number }}
+
+            ${{ github.event.comment.body || github.event.review.body || github.event.issue.body }}
           claude_args: |
             --append-system-prompt "You are running in a GitHub Action. The environment has been set up and yarn install has been run. You can use bash and yarn commands. Run yarn format, yarn lint and yarn test before committing changes."
             --allowedTools "Bash(corepack:*),Bash(yarn:*),Bash(git:*)"
