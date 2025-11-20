@@ -25,10 +25,25 @@ jobs:
       id-token: write
       actions: read # Required for Claude to read CI results on PRs
     steps:
+      - name: Get PR information
+        id: get-pr
+        if: github.event.issue.pull_request
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            return pr.data;
+
       - name: Checkout repository
         uses: actions/checkout@v5
         with:
           fetch-depth: 1
+          repository: ${{ github.event.issue.pull_request && fromJSON(steps.get-pr.outputs.result).head.repo.full_name || github.repository }}
+          ref: ${{ github.event.issue.pull_request && fromJSON(steps.get-pr.outputs.result).head.ref || github.ref }}
 
       - name: Enable Corepack
         run: corepack enable
@@ -68,5 +83,5 @@ jobs:
             ${{ github.event.comment.body || github.event.review.body || github.event.issue.body }}
           claude_args: |
             --dangerously-skip-permissions
-            --append-system-prompt "You are running in a GitHub Action. The environment has been set up and yarn install has been run. You can use bash and yarn commands. Run yarn format, yarn lint and yarn test before committing changes."
+            --append-system-prompt "You are running in a GitHub Action. The environment has been set up and yarn install has been run. You can use bash and yarn commands. Read @CLAUDE.md. Run yarn format, yarn lint and yarn test before committing changes. IMPORTANT: After committing, you MUST push the changes using 'git push'."
             --allowedTools "Bash(corepack:*),Bash(yarn:*),Bash(git:*)"
