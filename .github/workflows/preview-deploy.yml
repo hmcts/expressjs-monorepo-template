@@ -256,7 +256,8 @@ jobs:
 
   e2e-tests:
     name: E2E Tests
-    runs-on: ubuntu-latest
+    runs-on:
+      group: azure-nonprod
     needs: [detect-affected, deploy-preview]
     if: needs.detect-affected.outputs.has-changes == 'true'
     timeout-minutes: 15
@@ -284,58 +285,29 @@ jobs:
       - name: Install Playwright browsers
         run: yarn workspace e2e-tests playwright install --with-deps chromium
 
-      - name: Set environment variables
+      - name: Set preview URLs from deployment
         run: |
-          # Read metadata from root Helm chart
-          CHART_PATH="helm/expressjs-monorepo-template/Chart.yaml"
+          # Decode base64-encoded URLs from deploy-preview job
+          URLS_B64="${{ needs.deploy-preview.outputs.urls }}"
+          URLS_JSON=$(echo -n "${URLS_B64}" | base64 -d)
 
-          TEAM_NAME=$(grep -A 1 'annotations:' "$CHART_PATH" | grep 'team:' | awk '{print $2}' | tr -d '"')
-          APPLICATION_NAME=$(grep '^name:' "$CHART_PATH" | awk '{print $2}' | tr -d '"')
+          echo "Preview URLs JSON: ${URLS_JSON}"
 
-          echo "TEAM_NAME=${TEAM_NAME}" >> $GITHUB_ENV
-          echo "APPLICATION_NAME=${APPLICATION_NAME}" >> $GITHUB_ENV
-          echo "RELEASE_NAME=${APPLICATION_NAME}-pr-${{ env.CHANGE_ID }}" >> $GITHUB_ENV
+          # Extract URLs using jq and set as environment variables
+          WEB_URL=$(echo "${URLS_JSON}" | jq -r '.web // empty')
+          API_URL=$(echo "${URLS_JSON}" | jq -r '.api // empty')
 
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS_CFT_PREVIEW }}
+          if [ -n "${WEB_URL}" ]; then
+            echo "EXPRESSJS_MONOREPO_TEMPLATE_WEB_URL=${WEB_URL}" >> $GITHUB_ENV
+            echo "Web URL: ${WEB_URL}"
+          else
+            echo "Warning: No web URL found in preview deployment"
+          fi
 
-      - name: Get AKS credentials
-        run: |
-          az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_CFT_PREVIEW }}
-          az aks get-credentials \
-            --admin \
-            --resource-group cft-preview-01-rg \
-            --name cft-preview-01-aks \
-            --overwrite-existing
-
-      - name: Install and configure kubelogin
-        run: |
-          # Get latest kubelogin version
-          KUBELOGIN_VERSION=$(curl -s https://api.github.com/repos/Azure/kubelogin/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
-
-          # Install kubelogin
-          curl -LO "https://github.com/Azure/kubelogin/releases/download/${KUBELOGIN_VERSION}/kubelogin-linux-amd64.zip"
-          unzip kubelogin-linux-amd64.zip
-          sudo mv bin/linux_amd64/kubelogin /usr/local/bin/
-          rm -rf kubelogin-linux-amd64.zip bin/
-
-          # Convert kubeconfig to use kubelogin
-          kubelogin convert-kubeconfig -l azurecli
-
-      - name: Setup port-forwards to preview environment
-        run: |
-          .github/scripts/setup-port-forwards.sh "${{ env.TEAM_NAME }}" "${{ env.RELEASE_NAME }}"
-
-          # Set environment variables for Playwright to use localhost URLs
-          echo "EXPRESSJS_MONOREPO_TEMPLATE_WEB_URL=http://localhost:3000" >> $GITHUB_ENV
-          echo "EXPRESSJS_MONOREPO_TEMPLATE_API_URL=http://localhost:3001" >> $GITHUB_ENV
-          echo "EXPRESSJS_MONOREPO_TEMPLATE_POSTGRES_URL=http://localhost:5555" >> $GITHUB_ENV
-
-          echo "Preview environment accessible via port-forwards:"
-          echo "  Web: http://localhost:3000"
-          echo "  API: http://localhost:3001"
+          if [ -n "${API_URL}" ]; then
+            echo "EXPRESSJS_MONOREPO_TEMPLATE_API_URL=${API_URL}" >> $GITHUB_ENV
+            echo "API URL: ${API_URL}"
+          fi
 
       - name: Run E2E tests against preview
         id: e2e-tests
@@ -384,8 +356,3 @@ jobs:
           check_name: E2E Test Results (Preview)
           comment_title: 🎭 Playwright E2E Test Results (Preview Environment)
           fail_on: nothing
-
-      # Cleanup port-forwards
-      - name: Cleanup port-forwards
-        if: always()
-        run: .github/scripts/cleanup-port-forwards.sh "${{ env.RELEASE_NAME }}"
