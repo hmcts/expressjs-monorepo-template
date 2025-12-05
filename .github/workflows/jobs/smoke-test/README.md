@@ -51,6 +51,10 @@ The smoke test performs HTTP health checks on:
 - If any service returns a 4xx or 5xx status, the job fails
 - If a service URL is not found, the check is skipped with a warning
 
+## Runner
+
+This job runs on the `azure-nonprod` runner group which has network access to the preview environment.
+
 ## When to Use
 
 This job runs after deployment to quickly verify services are up before investing time in full E2E tests. It catches obvious deployment failures early.

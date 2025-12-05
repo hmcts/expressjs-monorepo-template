@@ -11,7 +11,8 @@ on:
 jobs:
   smoke-test:
     name: Smoke Test
-    runs-on: ubuntu-latest
+    runs-on:
+      group: azure-nonprod
 
     steps:
       - name: Decode preview URLs
