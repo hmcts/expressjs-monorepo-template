@@ -11,7 +11,7 @@ on:
 jobs:
   e2e-test:
     name: E2E Tests
-    uses: ./.github/workflows/_job-e2e-test.yml
+    uses: ./.github/workflows/job.e2e-test.yml
     with:
       preview-urls: ${{ inputs.preview-urls }}
     secrets: inherit

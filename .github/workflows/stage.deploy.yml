@@ -27,7 +27,7 @@ on:
 jobs:
   helm-deploy:
     name: Deploy
-    uses: ./.github/workflows/_job-helm-deploy.yml
+    uses: ./.github/workflows/job.helm-deploy.yml
     with:
       timestamp: ${{ inputs.timestamp }}
       short-sha: ${{ inputs.short-sha }}

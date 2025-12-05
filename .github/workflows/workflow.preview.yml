@@ -13,14 +13,14 @@ concurrency:
 jobs:
   build-stage:
     name: Build
-    uses: ./.github/workflows/_stage-build.yml
+    uses: ./.github/workflows/stage.build.yml
     secrets: inherit
 
   deploy-stage:
     name: Deploy
     needs: [build-stage]
     if: needs.build-stage.outputs.has-changes == 'true'
-    uses: ./.github/workflows/_stage-deploy.yml
+    uses: ./.github/workflows/stage.deploy.yml
     with:
       timestamp: ${{ needs.build-stage.outputs.timestamp }}
       short-sha: ${{ needs.build-stage.outputs.short-sha }}
@@ -31,14 +31,14 @@ jobs:
   smoke-test-stage:
     name: Smoke Test
     needs: [deploy-stage]
-    uses: ./.github/workflows/_stage-smoke-test.yml
+    uses: ./.github/workflows/stage.smoke-test.yml
     with:
       preview-urls: ${{ needs.deploy-stage.outputs.preview-urls }}
 
   e2e-stage:
     name: E2E
     needs: [smoke-test-stage, deploy-stage]
-    uses: ./.github/workflows/_stage-e2e.yml
+    uses: ./.github/workflows/stage.e2e.yml
     with:
       preview-urls: ${{ needs.deploy-stage.outputs.preview-urls }}
     secrets: inherit

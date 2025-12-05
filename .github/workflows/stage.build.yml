@@ -22,18 +22,18 @@ on:
 jobs:
   lint:
     name: Lint
-    uses: ./.github/workflows/_job-lint.yml
+    uses: ./.github/workflows/job.lint.yml
 
   test:
     name: Test
-    uses: ./.github/workflows/_job-test.yml
+    uses: ./.github/workflows/job.test.yml
     secrets: inherit
 
   osv-scanner:
     name: Security Scan
-    uses: ./.github/workflows/_job-osv-scanner.yml
+    uses: ./.github/workflows/job.osv-scanner.yml
 
   build-and-publish-images:
     name: Build Images
-    uses: ./.github/workflows/_job-build-and-publish-images.yml
+    uses: ./.github/workflows/job.build-and-publish-images.yml
     secrets: inherit

@@ -7,9 +7,9 @@ This document explains the GitHub Actions pipeline architecture, including the d
 The pipeline system follows a **modular, hierarchical structure**:
 
 ```
-Pipeline (preview.yml, main.yml)
-    └── Stage (build-stage.yml, deploy-stage.yml, etc.)
-        └── Job (lint-job.yml, test-job.yml, etc.)
+Workflow (workflow.preview.yml, workflow.main.yml)
+    └── Stage (stage.build.yml, stage.deploy.yml, etc.)
+        └── Job (job.lint.yml, job.test.yml, etc.)
 ```
 
 **Design Principles:**
@@ -21,25 +21,25 @@ Pipeline (preview.yml, main.yml)
 
 ## Directory Structure
 
-GitHub Actions requires all reusable workflows to be at the top level of `.github/workflows/`. We use a naming convention with underscore prefixes to organize them:
+GitHub Actions requires all reusable workflows to be at the top level of `.github/workflows/`. We use a dot-prefix naming convention to organize them:
 
 ```
 .github/workflows/
-├── preview.yml                    # PR pipeline
-├── main.yml                       # Master branch pipeline
-├── claude.yml                     # AI assistant
-├── _stage-build.yml               # Build stage workflow
-├── _stage-deploy.yml              # Deploy stage workflow
-├── _stage-smoke-test.yml          # Smoke test stage workflow
-├── _stage-e2e.yml                 # E2E stage workflow
-├── _job-lint.yml                  # Lint job
-├── _job-test.yml                  # Test job
-├── _job-osv-scanner.yml           # Security scanning job
-├── _job-build-and-publish-images.yml  # Build images job
-├── _job-helm-deploy.yml           # Helm deploy job
-├── _job-pr-comment.yml            # PR comment job
-├── _job-smoke-test.yml            # Smoke test job
-├── _job-e2e-test.yml              # E2E test job
+├── workflow.preview.yml           # PR pipeline
+├── workflow.main.yml              # Master branch pipeline
+├── workflow.claude.yml            # AI assistant
+├── stage.build.yml                # Build stage workflow
+├── stage.deploy.yml               # Deploy stage workflow
+├── stage.smoke-test.yml           # Smoke test stage workflow
+├── stage.e2e.yml                  # E2E stage workflow
+├── job.lint.yml                   # Lint job
+├── job.test.yml                   # Test job
+├── job.osv-scanner.yml            # Security scanning job
+├── job.build-and-publish-images.yml  # Build images job
+├── job.helm-deploy.yml            # Helm deploy job
+├── job.pr-comment.yml             # PR comment job
+├── job.smoke-test.yml             # Smoke test job
+├── job.e2e-test.yml               # E2E test job
 └── jobs/                          # Documentation and scripts
     ├── lint/
     │   └── README.md
@@ -65,13 +65,14 @@ GitHub Actions requires all reusable workflows to be at the top level of `.githu
 ```
 
 **Naming Convention:**
-- `_stage-*.yml` - Stage workflows (prefixed with underscore for grouping)
-- `_job-*.yml` - Job workflows (prefixed with underscore for grouping)
+- `workflow.*.yml` - Main pipeline workflows
+- `stage.*.yml` - Stage workflows that orchestrate jobs
+- `job.*.yml` - Individual job workflows
 - `jobs/*/` - Documentation and scripts for each job
 
 ## Pipelines
 
-### Preview Pipeline (`preview.yml`)
+### Preview Pipeline (`workflow.preview.yml`)
 
 **Trigger:** Pull requests to `master` branch
 
@@ -114,7 +115,7 @@ GitHub Actions requires all reusable workflows to be at the top level of `.githu
 
 **Concurrency:** One deployment per PR (new pushes cancel in-progress runs)
 
-### Main Pipeline (`main.yml`)
+### Main Pipeline (`workflow.main.yml`)
 
 **Trigger:** Push to `master` branch
 
@@ -194,7 +195,7 @@ GitHub Actions requires all reusable workflows to be at the top level of `.githu
 ## Jobs
 
 Each job has:
-- `_job-*.yml`: The reusable workflow (at top level)
+- `job.*.yml`: The reusable workflow (at top level)
 - `jobs/*/README.md`: Documentation with inputs, outputs, secrets, artifacts
 - `jobs/*/*.sh`: Any required scripts
 
@@ -245,7 +246,7 @@ Secrets are passed using `secrets: inherit`:
 ```yaml
 jobs:
   build-stage:
-    uses: ./.github/workflows/_stage-build.yml
+    uses: ./.github/workflows/stage.build.yml
     secrets: inherit  # Passes all repository secrets
 ```
 
@@ -273,7 +274,7 @@ Kubernetes only pulls images if the tag changes. Using dual tagging:
 ### 1. Create Workflow File
 
 ```yaml
-# .github/workflows/_job-my-new-job.yml
+# .github/workflows/job.my-new-job.yml
 name: My New Job
 
 on:
@@ -316,11 +317,11 @@ Document the job following the standard format in `jobs/my-new-job/README.md`.
 ### 4. Add to Stage
 
 ```yaml
-# In the appropriate _stage-*.yml file
+# In the appropriate stage.*.yml file
 jobs:
   my-new-job:
     name: My New Job
-    uses: ./.github/workflows/_job-my-new-job.yml
+    uses: ./.github/workflows/job.my-new-job.yml
     with:
       some-input: ${{ inputs.some-value }}
 ```
@@ -330,7 +331,7 @@ jobs:
 ### 1. Create Stage File
 
 ```yaml
-# .github/workflows/_stage-my-stage.yml
+# .github/workflows/stage.my-stage.yml
 name: My Stage
 
 on:
@@ -345,12 +346,12 @@ on:
 
 jobs:
   job-one:
-    uses: ./.github/workflows/_job-job-one.yml
+    uses: ./.github/workflows/job.job-one.yml
     with:
       input: ${{ inputs.required-input }}
 
   job-two:
-    uses: ./.github/workflows/_job-job-two.yml
+    uses: ./.github/workflows/job.job-two.yml
 ```
 
 ### 2. Add to Pipeline
@@ -360,7 +361,7 @@ jobs:
 jobs:
   my-stage:
     needs: [previous-stage]
-    uses: ./.github/workflows/_stage-my-stage.yml
+    uses: ./.github/workflows/stage.my-stage.yml
     with:
       required-input: ${{ needs.previous-stage.outputs.value }}
     secrets: inherit
