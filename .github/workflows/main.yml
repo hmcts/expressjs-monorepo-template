@@ -12,5 +12,5 @@ concurrency:
 jobs:
   build-stage:
     name: Build
-    uses: ./.github/workflows/stages/build-stage.yml
+    uses: ./.github/workflows/_stage-build.yml
     secrets: inherit

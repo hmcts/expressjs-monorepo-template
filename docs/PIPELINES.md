@@ -21,47 +21,53 @@ Pipeline (preview.yml, main.yml)
 
 ## Directory Structure
 
+GitHub Actions requires all reusable workflows to be at the top level of `.github/workflows/`. We use a naming convention with underscore prefixes to organize them:
+
 ```
 .github/workflows/
-├── preview.yml                # PR pipeline
-├── main.yml                   # Master branch pipeline
-├── claude.yml                 # AI assistant (unchanged)
-├── stages/
-│   ├── build-stage.yml
-│   ├── deploy-stage.yml
-│   ├── smoke-test-stage.yml
-│   └── e2e-stage.yml
-└── jobs/
+├── preview.yml                    # PR pipeline
+├── main.yml                       # Master branch pipeline
+├── claude.yml                     # AI assistant
+├── _stage-build.yml               # Build stage workflow
+├── _stage-deploy.yml              # Deploy stage workflow
+├── _stage-smoke-test.yml          # Smoke test stage workflow
+├── _stage-e2e.yml                 # E2E stage workflow
+├── _job-lint.yml                  # Lint job
+├── _job-test.yml                  # Test job
+├── _job-osv-scanner.yml           # Security scanning job
+├── _job-build-and-publish-images.yml  # Build images job
+├── _job-helm-deploy.yml           # Helm deploy job
+├── _job-pr-comment.yml            # PR comment job
+├── _job-smoke-test.yml            # Smoke test job
+├── _job-e2e-test.yml              # E2E test job
+└── jobs/                          # Documentation and scripts
     ├── lint/
-    │   ├── lint-job.yml
     │   └── README.md
     ├── test/
-    │   ├── test-job.yml
     │   └── README.md
     ├── osv-scanner/
-    │   ├── osv-scanner-job.yml
     │   └── README.md
     ├── build-and-publish-images/
-    │   ├── build-and-publish-images-job.yml
     │   ├── README.md
     │   ├── detect-affected-apps.sh
     │   ├── generate-build-metadata.sh
     │   └── set-image-variables.sh
     ├── helm-deploy/
-    │   ├── helm-deploy-job.yml
     │   ├── README.md
     │   └── deploy-preview.sh
     ├── pr-comment/
-    │   ├── pr-comment-job.yml
     │   ├── README.md
     │   └── get-preview-urls.sh
     ├── smoke-test/
-    │   ├── smoke-test-job.yml
     │   └── README.md
     └── e2e-test/
-        ├── e2e-test-job.yml
         └── README.md
 ```
+
+**Naming Convention:**
+- `_stage-*.yml` - Stage workflows (prefixed with underscore for grouping)
+- `_job-*.yml` - Job workflows (prefixed with underscore for grouping)
+- `jobs/*/` - Documentation and scripts for each job
 
 ## Pipelines
 
@@ -187,10 +193,10 @@ Pipeline (preview.yml, main.yml)
 
 ## Jobs
 
-Each job folder contains:
-- `*-job.yml`: The reusable workflow
-- `README.md`: Documentation with inputs, outputs, secrets, artifacts
-- `*.sh`: Any required scripts
+Each job has:
+- `_job-*.yml`: The reusable workflow (at top level)
+- `jobs/*/README.md`: Documentation with inputs, outputs, secrets, artifacts
+- `jobs/*/*.sh`: Any required scripts
 
 ### Job Documentation Format
 
@@ -239,7 +245,7 @@ Secrets are passed using `secrets: inherit`:
 ```yaml
 jobs:
   build-stage:
-    uses: ./.github/workflows/stages/build-stage.yml
+    uses: ./.github/workflows/_stage-build.yml
     secrets: inherit  # Passes all repository secrets
 ```
 
@@ -264,16 +270,10 @@ Kubernetes only pulls images if the tag changes. Using dual tagging:
 
 ## Adding New Jobs
 
-### 1. Create Job Folder
-
-```bash
-mkdir -p .github/workflows/jobs/my-new-job
-```
-
-### 2. Create Workflow File
+### 1. Create Workflow File
 
 ```yaml
-# .github/workflows/jobs/my-new-job/my-new-job.yml
+# .github/workflows/_job-my-new-job.yml
 name: My New Job
 
 on:
@@ -303,18 +303,24 @@ jobs:
         run: echo "result=value" >> "$GITHUB_OUTPUT"
 ```
 
+### 2. Create Documentation Folder
+
+```bash
+mkdir -p .github/workflows/jobs/my-new-job
+```
+
 ### 3. Create README.md
 
-Document the job following the standard format.
+Document the job following the standard format in `jobs/my-new-job/README.md`.
 
 ### 4. Add to Stage
 
 ```yaml
-# In the appropriate stage file
+# In the appropriate _stage-*.yml file
 jobs:
   my-new-job:
     name: My New Job
-    uses: ./.github/workflows/jobs/my-new-job/my-new-job.yml
+    uses: ./.github/workflows/_job-my-new-job.yml
     with:
       some-input: ${{ inputs.some-value }}
 ```
@@ -324,7 +330,7 @@ jobs:
 ### 1. Create Stage File
 
 ```yaml
-# .github/workflows/stages/my-stage.yml
+# .github/workflows/_stage-my-stage.yml
 name: My Stage
 
 on:
@@ -339,12 +345,12 @@ on:
 
 jobs:
   job-one:
-    uses: ./.github/workflows/jobs/job-one/job-one.yml
+    uses: ./.github/workflows/_job-job-one.yml
     with:
       input: ${{ inputs.required-input }}
 
   job-two:
-    uses: ./.github/workflows/jobs/job-two/job-two.yml
+    uses: ./.github/workflows/_job-job-two.yml
 ```
 
 ### 2. Add to Pipeline
@@ -354,7 +360,7 @@ jobs:
 jobs:
   my-stage:
     needs: [previous-stage]
-    uses: ./.github/workflows/stages/my-stage.yml
+    uses: ./.github/workflows/_stage-my-stage.yml
     with:
       required-input: ${{ needs.previous-stage.outputs.value }}
     secrets: inherit

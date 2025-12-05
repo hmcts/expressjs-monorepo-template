@@ -11,12 +11,12 @@ on:
 jobs:
   pr-comment:
     name: PR Comment
-    uses: ./.github/workflows/jobs/pr-comment/pr-comment-job.yml
+    uses: ./.github/workflows/_job-pr-comment.yml
     with:
       preview-urls: ${{ inputs.preview-urls }}
 
   smoke-test:
     name: Smoke Test
-    uses: ./.github/workflows/jobs/smoke-test/smoke-test-job.yml
+    uses: ./.github/workflows/_job-smoke-test.yml
     with:
       preview-urls: ${{ inputs.preview-urls }}
