@@ -40,7 +40,7 @@ Runs code quality checks including Biome linting and Prisma schema validation. U
 2. **Setup Node.js** - Configure Node.js using `.nvmrc` version
 3. **Install dependencies** - Run `yarn install --immutable`
 4. **Generate Prisma client** - Generate database client code
-5. **Validate Prisma schema** - Run `yarn db:validate` to check schema validity
+5. **Validate Prisma schema** - Run `prisma validate` to check schema validity
 6. **Run lint** - Execute Biome linting via Turborepo with smart filtering for PRs
 
 ## Smart Filtering

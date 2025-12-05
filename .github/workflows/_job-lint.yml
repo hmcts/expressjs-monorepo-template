@@ -41,7 +41,7 @@ jobs:
         run: yarn db:generate
 
       - name: Validate Prisma schema
-        run: yarn db:validate
+        run: yarn workspace @hmcts/postgres-prisma exec prisma validate
 
       - name: Run lint for changed packages
         run: |
