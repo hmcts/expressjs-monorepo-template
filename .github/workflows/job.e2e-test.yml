@@ -1,0 +1,111 @@
+name: E2E Test Job
+
+on:
+  workflow_call:
+    inputs:
+      preview-urls:
+        required: true
+        type: string
+        description: "Base64-encoded JSON of preview URLs"
+
+jobs:
+  e2e-test:
+    name: E2E Tests
+    runs-on:
+      group: azure-nonprod
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      checks: write
+      pull-requests: write
+      actions: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Install Playwright browsers
+        run: yarn workspace e2e-tests playwright install --with-deps chromium
+
+      - name: Set preview URLs from deployment
+        run: |
+          # Decode base64-encoded URLs from deploy-preview job
+          URLS_B64="${{ inputs.preview-urls }}"
+          URLS_JSON=$(echo -n "${URLS_B64}" | base64 -d)
+
+          echo "Preview URLs JSON: ${URLS_JSON}"
+
+          # Extract URLs using jq and set as environment variables
+          WEB_URL=$(echo "${URLS_JSON}" | jq -r '.web // empty')
+          API_URL=$(echo "${URLS_JSON}" | jq -r '.api // empty')
+
+          if [ -n "${WEB_URL}" ]; then
+            echo "EXPRESSJS_MONOREPO_TEMPLATE_WEB_URL=${WEB_URL}" >> $GITHUB_ENV
+            echo "Web URL: ${WEB_URL}"
+          else
+            echo "Warning: No web URL found in preview deployment"
+          fi
+
+          if [ -n "${API_URL}" ]; then
+            echo "EXPRESSJS_MONOREPO_TEMPLATE_API_URL=${API_URL}" >> $GITHUB_ENV
+            echo "API URL: ${API_URL}"
+          fi
+
+      - name: Run E2E tests against preview
+        id: e2e-tests
+        run: |
+          # Capture all output including server logs
+          set -o pipefail
+          yarn workspace e2e-tests run test:e2e 2>&1 | tee e2e-server-logs.txt
+
+      # Publish test results to PR checks
+      - name: Test Report
+        id: test-report
+        uses: dorny/test-reporter@v2
+        if: always()
+        with:
+          name: E2E Test Results (Preview)
+          path: e2e-tests/junit-results.xml
+          reporter: java-junit
+          fail-on-error: false
+
+      # Upload artifacts on failure for debugging
+      - name: Upload Playwright test results
+        uses: actions/upload-artifact@v5
+        if: always() && steps.e2e-tests.outcome == 'failure'
+        with:
+          name: playwright-test-results-preview
+          path: |
+            e2e-tests/test-results/
+            e2e-tests/playwright-report/
+          retention-days: 7
+
+      # Upload application logs on failure for debugging
+      - name: Upload application logs
+        uses: actions/upload-artifact@v5
+        if: always() && steps.e2e-tests.outcome == 'failure'
+        with:
+          name: application-logs-preview
+          path: e2e-server-logs.txt
+          retention-days: 7
+
+      # Publish test results as a PR comment
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always() && github.event_name == 'pull_request'
+        with:
+          files: e2e-tests/junit-results.xml
+          check_name: E2E Test Results (Preview)
+          comment_title: 🎭 Playwright E2E Test Results (Preview Environment)
+          fail_on: nothing

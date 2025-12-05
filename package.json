@@ -57,6 +57,7 @@
   "resolutions": {
     "vite": "7.2.6",
     "glob": "13.0.0",
-    "body-parser": "2.2.1"
+    "body-parser": "2.2.1",
+    "jsonwebtoken": "9.0.3"
   }
 }
