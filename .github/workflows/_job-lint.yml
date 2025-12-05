@@ -42,6 +42,8 @@ jobs:
 
       - name: Validate Prisma schema
         run: yarn workspace @hmcts/postgres-prisma exec prisma validate
+        env:
+          DATABASE_URL: "postgresql://user:pass@localhost:5432/db"
 
       - name: Run lint for changed packages
         run: |
