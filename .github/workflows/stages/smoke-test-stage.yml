@@ -1,0 +1,22 @@
+name: Smoke Test Stage
+
+on:
+  workflow_call:
+    inputs:
+      preview-urls:
+        required: true
+        type: string
+        description: "Base64-encoded JSON of preview URLs"
+
+jobs:
+  pr-comment:
+    name: PR Comment
+    uses: ./.github/workflows/jobs/pr-comment/pr-comment-job.yml
+    with:
+      preview-urls: ${{ inputs.preview-urls }}
+
+  smoke-test:
+    name: Smoke Test
+    uses: ./.github/workflows/jobs/smoke-test/smoke-test-job.yml
+    with:
+      preview-urls: ${{ inputs.preview-urls }}

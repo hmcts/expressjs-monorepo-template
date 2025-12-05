@@ -1,0 +1,39 @@
+name: Build Stage
+
+on:
+  workflow_call:
+    outputs:
+      affected-apps:
+        description: "JSON array of apps that were affected by changes"
+        value: ${{ jobs.build-and-publish-images.outputs.affected-apps }}
+      helm-apps:
+        description: "JSON array of all apps with Helm charts"
+        value: ${{ jobs.build-and-publish-images.outputs.helm-apps }}
+      has-changes:
+        description: "Whether any apps were affected by changes"
+        value: ${{ jobs.build-and-publish-images.outputs.has-changes }}
+      timestamp:
+        description: "Build timestamp"
+        value: ${{ jobs.build-and-publish-images.outputs.timestamp }}
+      short-sha:
+        description: "Short git SHA"
+        value: ${{ jobs.build-and-publish-images.outputs.short-sha }}
+
+jobs:
+  lint:
+    name: Lint
+    uses: ./.github/workflows/jobs/lint/lint-job.yml
+
+  test:
+    name: Test
+    uses: ./.github/workflows/jobs/test/test-job.yml
+    secrets: inherit
+
+  osv-scanner:
+    name: Security Scan
+    uses: ./.github/workflows/jobs/osv-scanner/osv-scanner-job.yml
+
+  build-and-publish-images:
+    name: Build Images
+    uses: ./.github/workflows/jobs/build-and-publish-images/build-and-publish-images-job.yml
+    secrets: inherit

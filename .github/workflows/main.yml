@@ -1,0 +1,16 @@
+name: Main
+
+on:
+  push:
+    branches:
+      - master
+
+concurrency:
+  group: main-${{ github.sha }}
+  cancel-in-progress: true
+
+jobs:
+  build-stage:
+    name: Build
+    uses: ./.github/workflows/stages/build-stage.yml
+    secrets: inherit
