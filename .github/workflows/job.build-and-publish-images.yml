@@ -2,6 +2,11 @@ name: Build and Publish Images Job
 
 on:
   workflow_call:
+    inputs:
+      change-id:
+        required: true
+        type: string
+        description: "PR number or change identifier"
     outputs:
       affected-apps:
         description: "JSON array of apps that were affected by changes"
@@ -20,7 +25,7 @@ on:
         value: ${{ jobs.build-and-publish.outputs.short-sha }}
 
 env:
-  CHANGE_ID: ${{ github.event.pull_request.number }}
+  CHANGE_ID: ${{ inputs.change-id }}
   SHORT_SHA: ${{ github.sha }}
   REGISTRY: hmctspublic.azurecr.io
 

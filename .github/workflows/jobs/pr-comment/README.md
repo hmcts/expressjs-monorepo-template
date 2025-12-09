@@ -8,6 +8,7 @@ Adds a comment to the pull request with preview environment URLs and adds cleanu
 
 | Type | Name | Required | Description |
 |------|------|----------|-------------|
+| `string` | `change-id` | Yes | PR number or change identifier |
 | `string` | `preview-urls` | Yes | Base64-encoded JSON of preview URLs |
 
 ## Artifacts
@@ -20,7 +21,7 @@ Adds a comment to the pull request with preview environment URLs and adds cleanu
 
 | Name | Required | Description |
 |------|----------|-------------|
-| `CHANGE_ID` | Auto | PR number (set from `github.event.pull_request.number`) |
+| `CHANGE_ID` | Auto | PR number (set from `inputs.change-id`) |
 | `TEAM_NAME` | Auto | Team name from Helm chart annotations |
 | `APPLICATION_NAME` | Auto | Application name from Helm chart |
 

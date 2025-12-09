@@ -8,6 +8,7 @@ Deploys the preview environment to Azure Kubernetes Service (AKS) using Helm. Ha
 
 | Type | Name | Required | Description |
 |------|------|----------|-------------|
+| `string` | `change-id` | Yes | PR number or change identifier |
 | `string` | `timestamp` | Yes | Build timestamp for image tagging |
 | `string` | `short-sha` | Yes | Short git SHA for image tagging |
 | `string` | `affected-apps` | Yes | JSON array of affected apps |
@@ -23,7 +24,7 @@ Deploys the preview environment to Azure Kubernetes Service (AKS) using Helm. Ha
 
 | Name | Required | Description |
 |------|----------|-------------|
-| `CHANGE_ID` | Auto | PR number (set from `github.event.pull_request.number`) |
+| `CHANGE_ID` | Auto | PR number (set from `inputs.change-id`) |
 | `TEAM_NAME` | Auto | Team name from Helm chart annotations |
 | `APPLICATION_NAME` | Auto | Application name from Helm chart |
 | `RELEASE_NAME` | Auto | Helm release name (`{app}-pr-{PR#}`) |

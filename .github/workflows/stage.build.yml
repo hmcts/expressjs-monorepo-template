@@ -2,6 +2,11 @@ name: Build Stage
 
 on:
   workflow_call:
+    inputs:
+      change-id:
+        required: true
+        type: string
+        description: "PR number or change identifier"
     outputs:
       affected-apps:
         description: "JSON array of apps that were affected by changes"
@@ -37,4 +42,6 @@ jobs:
   build-and-publish-images:
     name: Build Images
     uses: ./.github/workflows/job.build-and-publish-images.yml
+    with:
+      change-id: ${{ inputs.change-id }}
     secrets: inherit

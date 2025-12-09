@@ -3,13 +3,17 @@ name: PR Comment Job
 on:
   workflow_call:
     inputs:
+      change-id:
+        required: true
+        type: string
+        description: "PR number or change identifier"
       preview-urls:
         required: true
         type: string
         description: "Base64-encoded JSON of preview URLs"
 
 env:
-  CHANGE_ID: ${{ github.event.pull_request.number }}
+  CHANGE_ID: ${{ inputs.change-id }}
 
 jobs:
   pr-comment:
@@ -57,11 +61,18 @@ jobs:
                 console.log(`Failed to add label ${label}: ${error.message}`);
               }
             }
-
-      - name: Comment preview URLs
-        uses: actions/github-script@v8
-        with:
           script: |
+            // Decode base64-encoded URLs
+            const urlsB64 = '${{ inputs.preview-urls }}';
+            let urls = {};
+            try {
+              const urlsJson = Buffer.from(urlsB64, 'base64').toString('utf-8');
+              urls = JSON.parse(urlsJson);
+              console.log('Parsed preview URLs:', urls);
+            } catch (error) {
+              console.error('Failed to decode or parse preview URLs:', error.message);
+              console.log('Using empty URL map; preview URLs will show as not found');
+            }
             // Decode base64-encoded URLs
             const urlsB64 = '${{ inputs.preview-urls }}';
             const urlsJson = Buffer.from(urlsB64, 'base64').toString('utf-8');

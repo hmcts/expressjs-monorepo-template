@@ -14,6 +14,8 @@ jobs:
   build-stage:
     name: Build
     uses: ./.github/workflows/stage.build.yml
+    with:
+      change-id: ${{ github.event.pull_request.number }}
     secrets: inherit
 
   deploy-stage:
@@ -22,6 +24,7 @@ jobs:
     if: needs.build-stage.outputs.has-changes == 'true'
     uses: ./.github/workflows/stage.deploy.yml
     with:
+      change-id: ${{ github.event.pull_request.number }}
       timestamp: ${{ needs.build-stage.outputs.timestamp }}
       short-sha: ${{ needs.build-stage.outputs.short-sha }}
       affected-apps: ${{ needs.build-stage.outputs.affected-apps }}
@@ -33,6 +36,7 @@ jobs:
     needs: [deploy-stage]
     uses: ./.github/workflows/stage.smoke-test.yml
     with:
+      change-id: ${{ github.event.pull_request.number }}
       preview-urls: ${{ needs.deploy-stage.outputs.preview-urls }}
 
   e2e-stage:

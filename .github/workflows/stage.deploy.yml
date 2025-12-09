@@ -3,6 +3,10 @@ name: Deploy Stage
 on:
   workflow_call:
     inputs:
+      change-id:
+        required: true
+        type: string
+        description: "PR number or change identifier"
       timestamp:
         required: true
         type: string
@@ -29,6 +33,7 @@ jobs:
     name: Deploy
     uses: ./.github/workflows/job.helm-deploy.yml
     with:
+      change-id: ${{ inputs.change-id }}
       timestamp: ${{ inputs.timestamp }}
       short-sha: ${{ inputs.short-sha }}
       affected-apps: ${{ inputs.affected-apps }}

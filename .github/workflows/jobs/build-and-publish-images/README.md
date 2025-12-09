@@ -8,7 +8,7 @@ Detects which applications have been affected by code changes using Turborepo, t
 
 | Type | Name | Required | Description |
 |------|------|----------|-------------|
-| - | - | - | No inputs required (uses PR context) |
+| `string` | `change-id` | Yes | PR number or change identifier |
 
 ## Artifacts
 
@@ -20,7 +20,7 @@ Detects which applications have been affected by code changes using Turborepo, t
 
 | Name | Required | Description |
 |------|----------|-------------|
-| `CHANGE_ID` | Auto | PR number (set automatically from `github.event.pull_request.number`) |
+| `CHANGE_ID` | Auto | PR number (set from `inputs.change-id`) |
 | `SHORT_SHA` | Auto | Git SHA (set automatically from `github.sha`) |
 | `REGISTRY` | Auto | Container registry URL (`hmctspublic.azurecr.io`) |
 

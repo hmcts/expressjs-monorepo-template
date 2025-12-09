@@ -189,8 +189,8 @@ main() {
 
   # Extract metadata
   export AZURE_TENANT_ID=531ff96d-0ae9-462a-8d2d-bec7c0b42082
-  export TEAM_NAME=$(grep -A 1 'annotations:' "$chart_path" | grep 'team:' | awk '{print $2}' | tr -d '"')
-  export APPLICATION_NAME=$(grep '^name:' "$chart_path" | awk '{print $2}' | tr -d '"')
+  export TEAM_NAME=$(yq '.annotations.team' "$chart_path")
+  export APPLICATION_NAME=$(yq '.name' "$chart_path")
   export GIT_REPO=$(git config --get remote.origin.url | sed 's/git@github.com:/https:\/\/github.com\//' | sed 's/\.git$//')
   export TIMESTAMP=$(date +%Y%m%d%H%M%S)
   export SHORT_SHA=$(git rev-parse --short HEAD)

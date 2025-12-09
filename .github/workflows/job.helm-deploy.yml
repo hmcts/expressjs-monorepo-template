@@ -3,6 +3,10 @@ name: Helm Deploy Job
 on:
   workflow_call:
     inputs:
+      change-id:
+        required: true
+        type: string
+        description: "PR number or change identifier"
       timestamp:
         required: true
         type: string
@@ -25,7 +29,7 @@ on:
         value: ${{ jobs.helm-deploy.outputs.preview-urls }}
 
 env:
-  CHANGE_ID: ${{ github.event.pull_request.number }}
+  CHANGE_ID: ${{ inputs.change-id }}
   REGISTRY: hmctspublic.azurecr.io
 
 jobs:
@@ -79,19 +83,23 @@ jobs:
           az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_CFT_PREVIEW }}
           az aks get-credentials \
             --admin \
-            --resource-group cft-preview-01-rg \
-            --name cft-preview-01-aks \
-            --overwrite-existing
-
       - name: Install and configure kubelogin
         run: |
           # Get latest kubelogin version
-          KUBELOGIN_VERSION=$(curl -s https://api.github.com/repos/Azure/kubelogin/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')
+          KUBELOGIN_VERSION=$(curl -sf https://api.github.com/repos/Azure/kubelogin/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' || { echo "Failed to fetch kubelogin version"; exit 1; })
+          if [ -z "$KUBELOGIN_VERSION" ]; then
+            echo "Error: Could not determine kubelogin version"
+            exit 1
+          fi
 
           # Install kubelogin
-          curl -LO "https://github.com/Azure/kubelogin/releases/download/${KUBELOGIN_VERSION}/kubelogin-linux-amd64.zip"
+          curl -fLO "https://github.com/Azure/kubelogin/releases/download/${KUBELOGIN_VERSION}/kubelogin-linux-amd64.zip" || { echo "Failed to download kubelogin"; exit 1; }
           unzip kubelogin-linux-amd64.zip
           sudo mv bin/linux_amd64/kubelogin /usr/local/bin/
+          rm -rf kubelogin-linux-amd64.zip bin/
+
+          # Convert kubeconfig to use kubelogin
+          kubelogin convert-kubeconfig -l azurecli
           rm -rf kubelogin-linux-amd64.zip bin/
 
           # Convert kubeconfig to use kubelogin

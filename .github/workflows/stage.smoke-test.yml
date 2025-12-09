@@ -3,6 +3,10 @@ name: Smoke Test Stage
 on:
   workflow_call:
     inputs:
+      change-id:
+        required: true
+        type: string
+        description: "PR number or change identifier"
       preview-urls:
         required: true
         type: string
@@ -13,6 +17,7 @@ jobs:
     name: PR Comment
     uses: ./.github/workflows/job.pr-comment.yml
     with:
+      change-id: ${{ inputs.change-id }}
       preview-urls: ${{ inputs.preview-urls }}
 
   smoke-test:

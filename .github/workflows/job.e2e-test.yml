@@ -42,7 +42,16 @@ jobs:
         run: |
           # Decode base64-encoded URLs from deploy-preview job
           URLS_B64="${{ inputs.preview-urls }}"
-          URLS_JSON=$(echo -n "${URLS_B64}" | base64 -d)
+          URLS_JSON=$(echo -n "${URLS_B64}" | base64 -d 2>/dev/null) || {
+            echo "::error::Failed to decode base64-encoded preview URLs"
+            exit 1
+          }
+          
+          # Validate JSON structure
+          echo "${URLS_JSON}" | jq . > /dev/null 2>&1 || {
+            echo "::error::Invalid JSON in decoded preview URLs"
+            exit 1
+          }
 
           echo "Preview URLs JSON: ${URLS_JSON}"
 
@@ -54,7 +63,8 @@ jobs:
             echo "EXPRESSJS_MONOREPO_TEMPLATE_WEB_URL=${WEB_URL}" >> $GITHUB_ENV
             echo "Web URL: ${WEB_URL}"
           else
-            echo "Warning: No web URL found in preview deployment"
+            echo "::error::No web URL found in preview deployment"
+            exit 1
           fi
 
           if [ -n "${API_URL}" ]; then
