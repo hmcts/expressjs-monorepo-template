@@ -1,14 +1,7 @@
-name: Security
+name: OSV Scanner Job
 
 on:
-  pull_request:
-    branches: [master, main]
-  merge_group:
-    branches: [master, main]
-  push:
-    branches: [master, main]
-  schedule:
-    - cron: '0 2 * * *'
+  workflow_call:
 
 permissions:
   # Required to upload SARIF file to CodeQL
@@ -21,7 +14,6 @@ permissions:
 jobs:
   scan:
     name: Dependency Scan
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'schedule' || github.event_name == 'pull_request' || github.event_name == 'merge_group'
     uses: google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2.3.0
     with:
       scan-args: |-

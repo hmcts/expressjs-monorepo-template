@@ -1,0 +1,16 @@
+name: Main
+
+on:
+  push:
+    branches:
+      - master
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-stage:
+    name: Build
+    uses: ./.github/workflows/stage.build.yml
+    secrets: inherit

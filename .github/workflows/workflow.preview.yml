@@ -1,0 +1,48 @@
+name: Preview
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - master
+
+concurrency:
+  group: preview-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build-stage:
+    name: Build
+    uses: ./.github/workflows/stage.build.yml
+    with:
+      change-id: ${{ github.event.pull_request.number }}
+    secrets: inherit
+
+  deploy-stage:
+    name: Deploy
+    needs: [build-stage]
+    if: needs.build-stage.outputs.has-changes == 'true'
+    uses: ./.github/workflows/stage.deploy.yml
+    with:
+      change-id: ${{ github.event.pull_request.number }}
+      timestamp: ${{ needs.build-stage.outputs.timestamp }}
+      short-sha: ${{ needs.build-stage.outputs.short-sha }}
+      affected-apps: ${{ needs.build-stage.outputs.affected-apps }}
+      helm-apps: ${{ needs.build-stage.outputs.helm-apps }}
+    secrets: inherit
+
+  smoke-test-stage:
+    name: Smoke Test
+    needs: [deploy-stage]
+    uses: ./.github/workflows/stage.smoke-test.yml
+    with:
+      change-id: ${{ github.event.pull_request.number }}
+      preview-urls: ${{ needs.deploy-stage.outputs.preview-urls }}
+
+  e2e-stage:
+    name: E2E
+    needs: [smoke-test-stage, deploy-stage]
+    uses: ./.github/workflows/stage.e2e.yml
+    with:
+      preview-urls: ${{ needs.deploy-stage.outputs.preview-urls }}
+    secrets: inherit

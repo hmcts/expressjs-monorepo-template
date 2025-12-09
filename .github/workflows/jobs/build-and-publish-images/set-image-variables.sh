@@ -57,8 +57,8 @@ main() {
 
       echo "✓ ${app}: ${image_tag} (rebuilt)"
     else
-      # App not affected - use static PR tag (not 'latest')
-      local image_tag="pr-${change_id}"
+      # App not affected - use latest
+      local image_tag="latest"
 
       if [ -n "${GITHUB_ENV:-}" ]; then
         echo "${env_var_name}=${image_tag}" >> "$GITHUB_ENV"

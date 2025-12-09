@@ -1,0 +1,128 @@
+name: Helm Deploy Job
+
+on:
+  workflow_call:
+    inputs:
+      change-id:
+        required: true
+        type: string
+        description: "PR number or change identifier"
+      timestamp:
+        required: true
+        type: string
+        description: "Build timestamp for image tagging"
+      short-sha:
+        required: true
+        type: string
+        description: "Short git SHA for image tagging"
+      affected-apps:
+        required: true
+        type: string
+        description: "JSON array of affected apps"
+      helm-apps:
+        required: true
+        type: string
+        description: "JSON array of all Helm apps"
+    outputs:
+      preview-urls:
+        description: "Base64-encoded JSON of preview URLs"
+        value: ${{ jobs.helm-deploy.outputs.preview-urls }}
+
+env:
+  CHANGE_ID: ${{ inputs.change-id }}
+  REGISTRY: hmctspublic.azurecr.io
+
+jobs:
+  helm-deploy:
+    name: Deploy to Preview
+    runs-on: ubuntu-latest
+    environment:
+      name: preview
+    outputs:
+      preview-urls: ${{ steps.preview-urls.outputs.urls }}
+    permissions:
+      contents: read
+      id-token: write
+      pull-requests: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set environment variables
+        run: |
+          # Read metadata from root Helm chart
+          CHART_PATH="helm/expressjs-monorepo-template/Chart.yaml"
+
+          TEAM_NAME=$(grep -A 1 'annotations:' "$CHART_PATH" | grep 'team:' | awk '{print $2}' | tr -d '"')
+          APPLICATION_NAME=$(grep '^name:' "$CHART_PATH" | awk '{print $2}' | tr -d '"')
+          GIT_REPO=$(git config --get remote.origin.url | sed 's/git@github.com:/https:\/\/github.com\//' | sed 's/\.git$//')
+
+          echo "TEAM_NAME=${TEAM_NAME}" >> $GITHUB_ENV
+          echo "APPLICATION_NAME=${APPLICATION_NAME}" >> $GITHUB_ENV
+          echo "GIT_REPO=${GIT_REPO}" >> $GITHUB_ENV
+          echo "TIMESTAMP=${{ inputs.timestamp }}" >> $GITHUB_ENV
+          echo "SHORT_SHA=${{ inputs.short-sha }}" >> $GITHUB_ENV
+
+          # Set dynamic image variables and release name
+          .github/workflows/jobs/build-and-publish-images/set-image-variables.sh \
+            '${{ inputs.affected-apps }}' \
+            '${{ inputs.helm-apps }}' \
+            '${{ env.CHANGE_ID }}' \
+            '${{ inputs.short-sha }}' \
+            '${{ inputs.timestamp }}' \
+            "${APPLICATION_NAME}"
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_CFT_PREVIEW }}
+
+      - name: Get AKS credentials
+        run: |
+          az account set --subscription ${{ secrets.AZURE_SUBSCRIPTION_CFT_PREVIEW }}
+          az aks get-credentials \
+            --admin \
+            --resource-group cft-preview-01-rg \
+            --name cft-preview-01-aks \
+            --overwrite-existing
+
+      - name: Install and configure kubelogin
+        run: |
+          # Get latest kubelogin version
+          KUBELOGIN_VERSION=$(curl -sf https://api.github.com/repos/Azure/kubelogin/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' || { echo "Failed to fetch kubelogin version"; exit 1; })
+          if [ -z "$KUBELOGIN_VERSION" ]; then
+            echo "Error: Could not determine kubelogin version"
+            exit 1
+          fi
+
+          # Install kubelogin
+          curl -fLO "https://github.com/Azure/kubelogin/releases/download/${KUBELOGIN_VERSION}/kubelogin-linux-amd64.zip" || { echo "Failed to download kubelogin"; exit 1; }
+          unzip kubelogin-linux-amd64.zip
+          sudo mv bin/linux_amd64/kubelogin /usr/local/bin/
+          rm -rf kubelogin-linux-amd64.zip bin/
+
+          # Convert kubeconfig to use kubelogin
+          kubelogin convert-kubeconfig -l azurecli
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: '3.13.0'
+
+      - name: Login to Helm registry
+        run: |
+          echo ${{ secrets.REGISTRY_PASSWORD }} | helm registry login hmctspublic.azurecr.io \
+            --username ${{ secrets.REGISTRY_USERNAME }} \
+            --password-stdin
+
+      - name: Deploy preview environment
+        run: .github/workflows/jobs/helm-deploy/deploy-preview.sh ${{ env.CHANGE_ID }}
+
+      - name: Get preview URLs from ingress
+        id: preview-urls
+        run: |
+          # Get URLs and base64 encode to avoid special character issues in GitHub Actions
+          URLS_JSON=$(.github/workflows/jobs/pr-comment/get-preview-urls.sh "${{ env.TEAM_NAME }}" "${{ env.RELEASE_NAME }}")
+          URLS_B64=$(echo -n "${URLS_JSON}" | base64 -w 0)
+          echo "urls=${URLS_B64}" >> "$GITHUB_OUTPUT"

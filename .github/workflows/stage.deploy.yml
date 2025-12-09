@@ -1,0 +1,41 @@
+name: Deploy Stage
+
+on:
+  workflow_call:
+    inputs:
+      change-id:
+        required: true
+        type: string
+        description: "PR number or change identifier"
+      timestamp:
+        required: true
+        type: string
+        description: "Build timestamp for image tagging"
+      short-sha:
+        required: true
+        type: string
+        description: "Short git SHA for image tagging"
+      affected-apps:
+        required: true
+        type: string
+        description: "JSON array of affected apps"
+      helm-apps:
+        required: true
+        type: string
+        description: "JSON array of all Helm apps"
+    outputs:
+      preview-urls:
+        description: "Base64-encoded JSON of preview URLs"
+        value: ${{ jobs.helm-deploy.outputs.preview-urls }}
+
+jobs:
+  helm-deploy:
+    name: Deploy
+    uses: ./.github/workflows/job.helm-deploy.yml
+    with:
+      change-id: ${{ inputs.change-id }}
+      timestamp: ${{ inputs.timestamp }}
+      short-sha: ${{ inputs.short-sha }}
+      affected-apps: ${{ inputs.affected-apps }}
+      helm-apps: ${{ inputs.helm-apps }}
+    secrets: inherit
