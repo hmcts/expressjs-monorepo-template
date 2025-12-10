@@ -51,7 +51,53 @@ expressjs-monorepo-template/
 └── package.json                # Root configuration
 ```
 
-## Naming Conventions (STRICT - MUST FOLLOW)
+# Agent instructions
+
+Claude must follow these instructions strictly when contributing code. Rules and conventions are mandatory and must be adhered to without exception. After implmementing code, Claude must review it to ensure full compliance with these guidelines.
+
+## Rules
+
+- **TypeScript**: Strict mode enabled, no `any` types without justification
+- **Formatting**: Use Biome (`yarn format` before commits)
+- **Linting**: Fix all Biome warnings (`yarn lint` or `yarn lint:fix`)
+- **Module System**: Use ES modules exclusively - `"type": "module"` is set in package.json
+- **Hooks**: If hooks report failures, Claude must investigate and resolve them immediately
+- **No CommonJS**: Use `import`/`export`, never `require()`/`module.exports`
+- **Pinned dependencies**: Specific versions only (`"express": "5.1.0"`) - except peer dependencies
+- **Tests**: Write tests for all new features and bug fixes. Aim for >90% code coverage
+- **Colocate tests** with the code they test (e.g. `libs/onboarding/src/routes/index.test.ts` next to `libs/onboarding/src/routes/index.ts`)
+- **Encapsulation**: Do not expose internal functions in order to test them
+
+
+## Conventions
+
+**Module Ordering**:
+- consts outside the scope of a function should be at the top (e.g. `const COOKIE_NAME = "cookie_name";`)
+- Exported functions should next
+- Other functions should be ordered in the order they are used
+- Interfaces and types should be at the bottom
+
+**Domain driven folder structure**:
+- Group by feature (e.g. `merge-request/`, `data-sources/`)
+- Do not group by type (e.g. `models/`, `controllers/`, `services/`)
+- Do not create generic folders (e.g. `utils/`, `helpers/`)
+
+**Keep types with the code that uses them**:
+- Do not create a types.ts file
+- Types should be in the same file as the code that uses them
+
+**Comments**:
+- Use comments to explain why code exists, not what it does
+- Keep comments minimal and reference documentation or specifications when possible
+
+**Tests**:
+- Use descriptive test names that explain the behavior being tested
+- Follow Arrange-Act-Assert pattern in tests for clarity
+- Write Playwright tests for user journeys in the `e2e-tests/tests/` folder
+
+### Naming Conventions
+
+Follow these strict naming conventions throughout the project:
 
 ### 1. Database Tables and Fields
 - **MUST be singular and snake_case**: `user`, `case`, `created_at`
@@ -93,6 +139,14 @@ model Case {
 - Exported functions should next
 - Other functions should be ordered in the order they are used
 - Interfaces and types should be at the bottom
+
+## Principles
+
+* **YAGNI**: You Aren't Gonna Need It - Don't add speculative functionality or features. Always take the simplest approach. 
+* **Functional style** favour a simple functional approach. Don't use a class unless you have shared state
+* **KISS**: Keep It Simple, Stupid - Avoid unnecessary complexity. Write code that is easy to understand and maintain.
+* **Immutable**: Data should be immutable by default. Use const and avoid mutations to ensure predictable state.
+* **Side Effects**: Functions should have no side effects. Avoid modifying external state or relying on mutable data.
 
 ## Module Development Guidelines
 
@@ -345,7 +399,6 @@ Every page must support both English and Welsh:
 3. **In Locale Files**: Maintain the same structure between en.ts and cy.ts
 4. **Testing**: Always test pages with `?lng=cy` query parameter to verify Welsh content
 
-
 ### Express Middleware Pattern
 
 Reusable middleware should be placed in a dedicated `libs/[module]/src/[middleware-name]-middleware.ts` file and exported as a function:
@@ -395,58 +448,27 @@ describe('UserService', () => {
 });
 ```
 
-## Code Quality Standards
+## Performance Considerations
 
-- **TypeScript**: Strict mode enabled, no `any` without justification
-- **ES Modules**: Use `"type": "module"` in all package.json files
-- **Express**: Version 5.x only (`"express": "5.1.0"`)
-- **Imports**: Use workspace aliases (`@hmcts/*`)
-  - **IMPORTANT**: Always add `.js` extension to relative imports (e.g., `import { foo } from "./bar.js"`)
-  - This is required for ESM with Node.js "nodenext" module resolution
-  - Applies even when importing TypeScript files (they compile to .js)
-  - **Enforcement**: TypeScript will error on missing `.js` extensions with:
-    - `"module": "nodenext"` and `"moduleResolution": "nodenext"` in tsconfig.json
-    - Error: "Relative import paths need explicit file extensions in ECMAScript imports"
-- **Linting**: Fix all Biome warnings before commit
-- **No CommonJS**: Use `import`/`export`, never `require()`/`module.exports`
-- **Pinned dependencies**: Specific versions only (`"express": "5.1.0"`) - except peer dependencies
+- Use database indexes for frequently queried fields
+- Implement pagination for list endpoints
+- Use incremental data collection in data sources
+- Consider caching for expensive computations
+- Monitor query performance with Prisma logging
 
-## Security Requirements
+## Security Best Practices
 
-- Input validation on all endpoints
-- Parameterized database queries (Prisma)
-- No sensitive data in logs
-
-## Common Pitfalls to Avoid
-
-1. **Don't put business logic in apps/** - Use libs/ modules
-2. **Don't hardcode values** - Use environment variables
-3. **Don't skip Welsh translations** - Required for all user-facing text
-4. **Don't use CommonJS** - ES modules only
-5. **Don't ignore TypeScript errors** - Fix or justify with comments
-6. **Don't duplicate dependencies** - Check root package.json first
-7. **Don't create circular dependencies** between modules
-8. **Don't skip accessibility testing** - WCAG 2.2 AA is mandatory
-9. **Don't commit secrets** - Use environment variables
-10. **Don't use relative imports across packages** - Use @hmcts/* aliases
-11. **Don't create types.ts files** - Colocate types with the appropriate code
-12. **Don't create generic files like utils.ts** - Be specific (e.g., object-properties.ts, date-formatting.ts)
-13. **Don't export functions in order to test them** - Only export functions that are intended to be used outside the module
-14. **Don't add comments unless they are meaningful** - If necessary, explain why something is done, not what is done
+- Validate all user inputs
+- Use parameterized queries (Prisma handles this)
+- Implement proper authentication/authorization
+- Store sensitive data encrypted
+- Follow OWASP guidelines for web security
 
 ## Debugging Tips
 
 1. **Module Loading**: Check imports in apps/*/src/app.ts
 2. **Database Issues**: Enable Prisma logging with `DEBUG=prisma:query`
 3. **Run commands from the root directory**: Run yarn test etc from the root directory
-
-## Core Principles
-
-* **YAGNI**: You Aren't Gonna Need It - Don't add speculative functionality or features. Always take the simplest approach. 
-* **Functional style** favour a simple functional approach. Don't use a class unless you have shared state
-* **KISS**: Keep It Simple, Stupid - Avoid unnecessary complexity. Write code that is easy to understand and maintain.
-* **Immutable**: Data should be immutable by default. Use const and avoid mutations to ensure predictable state.
-* **Side Effects**: Functions should have no side effects. Avoid modifying external state or relying on mutable data.
 
 ## Communication Style
 

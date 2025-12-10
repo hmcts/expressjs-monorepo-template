@@ -1,5 +1,5 @@
 {
-  "name": "Full Dev Environment (DIND)",
+  "name": "Development Container",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "runArgs": ["--privileged"],
   "remoteUser": "vscode",
@@ -14,10 +14,7 @@
   ],
 
   "features": {
-    // Core isolation
     "ghcr.io/devcontainers/features/docker-in-docker:2": {},
-
-    // Common CLI tools
     "ghcr.io/devcontainers/features/common-utils:2": {
       "installZsh": true,
       "installOhMyZsh": true,
