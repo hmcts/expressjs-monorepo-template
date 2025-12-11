@@ -20,7 +20,7 @@
     "http-proxy": "1.18.1"
   },
   "devDependencies": {
-    "@prisma/client": "6.19.0",
-    "prisma": "6.19.0"
+    "@prisma/client": "6.19.1",
+    "prisma": "6.19.1"
   }
 }
