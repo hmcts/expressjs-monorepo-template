@@ -53,7 +53,7 @@ expressjs-monorepo-template/
 
 # Agent instructions
 
-Claude must follow these instructions strictly when contributing code. Rules and conventions are mandatory and must be adhered to without exception. After implmementing code, Claude must review it to ensure full compliance with these guidelines.
+Claude must follow these instructions strictly when contributing code. Rules and conventions are mandatory and must be adhered to without exception. After implementing code, Claude must review it to ensure full compliance with these guidelines.
 
 ## Rules
 
