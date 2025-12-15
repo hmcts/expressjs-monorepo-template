@@ -12,6 +12,7 @@ corepack enable
 
 # Optional: ensure Playwright browsers are installed globally
 npx playwright install --with-deps
+npm install -g @anthropic-ai/claude-code
 
 # Install kubelogin for AKS authentication
 echo "Installing kubelogin..."
