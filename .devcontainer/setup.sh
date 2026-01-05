@@ -28,9 +28,11 @@ echo "✅ kubelogin ${KUBELOGIN_VERSION} installed"
 echo "Configuring bash history..."
 cat >> /home/vscode/.bashrc << 'EOF'
 
-# Unlimited bash history
+# Unlimited bash history with timestamps (matches host format)
 HISTSIZE=-1
 HISTFILESIZE=-1
+HISTTIMEFORMAT="%F %T "
+shopt -s histappend
 EOF
 echo "✅ Bash history configured"
 
