@@ -26,7 +26,6 @@ on:
 
 env:
   CHANGE_ID: ${{ inputs.change-id }}
-  SHORT_SHA: ${{ github.sha }}
   REGISTRY: hmctspublic.azurecr.io
 
 jobs:
@@ -86,31 +85,15 @@ jobs:
         id: metadata
         run: .github/workflows/jobs/build-and-publish-images/generate-build-metadata.sh "${{ env.CHANGE_ID }}" "${{ github.sha }}" "${{ matrix.app }}"
 
-      - name: Login to Azure Container Registry
-        uses: azure/docker-login@v2
-        with:
-          login-server: ${{ secrets.REGISTRY_LOGIN_SERVER }}
-          username: ${{ secrets.REGISTRY_USERNAME }}
-          password: ${{ secrets.REGISTRY_PASSWORD }}
-
       - name: Build and push Docker image
-        run: |
-          IMAGE_NAME="${{ env.REGISTRY }}/${{ env.REGISTRY_PREFIX }}"
-          FULL_TAG="${IMAGE_NAME}:${{ env.IMAGE_TAG }}"
-          STATIC_TAG="${IMAGE_NAME}:pr-${{ env.CHANGE_ID }}"
-
-          echo "Building image: ${FULL_TAG}"
-
-          docker build \
-            --tag "${FULL_TAG}" \
-            --tag "${STATIC_TAG}" \
-            --file apps/${{ matrix.app }}/Dockerfile \
-            .
-
-          echo "Pushing timestamped tag: ${FULL_TAG}"
-          docker push "${FULL_TAG}"
-
-          echo "Pushing static tag: ${STATIC_TAG}"
-          docker push "${STATIC_TAG}"
-
-          echo "Successfully pushed both tags"
+        uses: hmcts/cnp-githubactions-library/container-build-push@main
+        with:
+          registry: ${{ env.REGISTRY }}
+          registry-username: ${{ secrets.REGISTRY_USERNAME }}
+          registry-password: ${{ secrets.REGISTRY_PASSWORD }}
+          image-name: ${{ env.REGISTRY_PREFIX }}
+          dockerfile: apps/${{ matrix.app }}/Dockerfile
+          context: .
+          image-tags: |
+            pr-${{ env.CHANGE_ID }}-${{ steps.metadata.outputs.short-sha }}
+            pr-${{ env.CHANGE_ID }}

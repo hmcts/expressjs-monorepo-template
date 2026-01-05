@@ -87,23 +87,13 @@ jobs:
             --name cft-preview-01-aks \
             --overwrite-existing
 
-      - name: Install and configure kubelogin
-        run: |
-          # Get latest kubelogin version
-          KUBELOGIN_VERSION=$(curl -sf https://api.github.com/repos/Azure/kubelogin/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/' || { echo "Failed to fetch kubelogin version"; exit 1; })
-          if [ -z "$KUBELOGIN_VERSION" ]; then
-            echo "Error: Could not determine kubelogin version"
-            exit 1
-          fi
+      - name: Install kubelogin
+        uses: Azure/use-kubelogin@v1
+        with:
+          kubelogin-version: 'v0.2.13'
 
-          # Install kubelogin
-          curl -fLO "https://github.com/Azure/kubelogin/releases/download/${KUBELOGIN_VERSION}/kubelogin-linux-amd64.zip" || { echo "Failed to download kubelogin"; exit 1; }
-          unzip kubelogin-linux-amd64.zip
-          sudo mv bin/linux_amd64/kubelogin /usr/local/bin/
-          rm -rf kubelogin-linux-amd64.zip bin/
-
-          # Convert kubeconfig to use kubelogin
-          kubelogin convert-kubeconfig -l azurecli
+      - name: Convert kubeconfig
+        run: kubelogin convert-kubeconfig -l azurecli
 
       - name: Install Helm
         uses: azure/setup-helm@v4
