@@ -8,7 +8,7 @@
     }
   },
   "enabledPlugins": {
-    "expressjs-monorepo": true
+    "expressjs-monorepo@hmcts": true
   },
   "enableAllProjectMcpServers": true,
   "hooks": {
