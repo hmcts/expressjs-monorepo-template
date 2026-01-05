@@ -26,7 +26,6 @@ on:
 
 env:
   CHANGE_ID: ${{ inputs.change-id }}
-  SHORT_SHA: ${{ github.sha }}
   REGISTRY: hmctspublic.azurecr.io
 
 jobs:
