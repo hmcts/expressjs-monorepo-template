@@ -4,6 +4,14 @@
 
 Deploys the application to Azure Kubernetes Service (AKS) using Helm. Supports multiple environments (preview and AAT) with environment-specific configuration.
 
+## Helm Global Values
+
+HMCTS-specific global values are automatically set by the `helm-deploy` action. See the [helm-deploy action documentation](https://github.com/hmcts/cnp-githubactions-library/tree/main/helm-deploy) for details.
+
+Key values:
+- **`global.environment`**: Always `aat` for non-production deployments. Used by charts to construct Azure resource names like KeyVault.
+- **`global.tags.*`**: Azure resource tags for billing/reporting (teamName, applicationName, builtFrom, businessArea, environment).
+
 ## Inputs
 
 | Type | Name | Required | Description |
@@ -40,8 +48,6 @@ Deploys the application to Azure Kubernetes Service (AKS) using Helm. Supports m
 | Resource Group | `cft-preview-01-rg` | `cft-aat-00-rg` |
 | Release Name | `{app}-pr-{PR#}` | `{app}-staging` |
 | Values Template | `values.preview.template.yaml` | None (base values) |
-| `global.devMode` | `true` | `false` |
-| `global.tags.environment` | `development` | `staging` |
 
 ## Permissions
 
