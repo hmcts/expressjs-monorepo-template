@@ -57,7 +57,7 @@ GitHub Actions requires all reusable workflows to be at the top level of `.githu
     │   └── deploy-preview.sh
     ├── pr-comment/
     │   ├── README.md
-    │   └── get-preview-urls.sh
+    │   └── get-deployment-urls.sh
     ├── smoke-test/
     │   └── README.md
     └── e2e-test/

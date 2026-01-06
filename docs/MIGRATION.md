@@ -516,7 +516,7 @@ cp -r .github/scripts/ your-repo/.github/
 - `generate-build-metadata.sh` - Generates build tags
 - `set-image-variables.sh` - Sets image variables for deployment
 - `deploy-preview.sh` - Deploys to preview environment
-- `get-preview-urls.sh` - Extracts preview URLs from ingress
+- `get-deployment-urls.sh` - Extracts deployment URLs from ingress
 
 #### 3. Update existing workflows
 

@@ -41,7 +41,7 @@ Adds a comment to the pull request with preview environment URLs and adds cleanu
 
 | Script | Purpose |
 |--------|---------|
-| `get-preview-urls.sh` | Retrieves ingress URLs from Kubernetes (used by helm-deploy job) |
+| `get-deployment-urls.sh` | Retrieves ingress URLs from Kubernetes (used by helm-deploy job) |
 
 ## PR Labels
 

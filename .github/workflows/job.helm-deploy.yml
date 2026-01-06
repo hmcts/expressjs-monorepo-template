@@ -122,6 +122,6 @@ jobs:
         id: urls
         run: |
           # Get URLs and base64 encode to avoid special character issues in GitHub Actions
-          URLS_JSON=$(.github/workflows/jobs/pr-comment/get-preview-urls.sh "${{ env.TEAM_NAME }}" "${{ env.RELEASE_NAME }}")
+          URLS_JSON=$(.github/workflows/jobs/pr-comment/get-deployment-urls.sh "${{ env.TEAM_NAME }}" "${{ env.RELEASE_NAME }}")
           URLS_B64=$(echo -n "${URLS_JSON}" | base64 -w 0)
           echo "urls=${URLS_B64}" >> "$GITHUB_OUTPUT"

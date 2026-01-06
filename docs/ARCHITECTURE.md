@@ -378,7 +378,7 @@ Automated preview environments are created for each pull request, allowing teams
 - Handles "another operation in progress" errors
 - Rolls back or uninstalls stuck releases
 
-**get-preview-urls.sh**:
+**get-deployment-urls.sh**:
 - Waits for ingress resources to be ready
 - Extracts URLs from Kubernetes ingress objects
 - Returns JSON mapping app names to URLs
