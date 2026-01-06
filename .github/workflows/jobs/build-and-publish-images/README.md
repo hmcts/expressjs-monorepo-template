@@ -62,8 +62,10 @@ Builds Docker images for each affected app using a matrix strategy. Each app is 
 
 Each affected app gets two Docker image tags:
 
-1. **Timestamped tag**: `pr-{PR#}-{short-sha}` - Forces pod recreation on Helm upgrade
-2. **Static tag**: `pr-{PR#}` - Used for unchanged apps to avoid unnecessary restarts
+1. **SHA tag**: `pr-{PR#}-{short-sha}` - Forces pod recreation on Helm upgrade
+2. **PR tag**: `pr-{PR#}` - Stable tag for the PR
+
+Unchanged apps use the `latest` tag to avoid unnecessary image builds.
 
 ## Permissions
 
