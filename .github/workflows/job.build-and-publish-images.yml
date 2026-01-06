@@ -85,6 +85,19 @@ jobs:
         id: metadata
         run: .github/workflows/jobs/build-and-publish-images/generate-build-metadata.sh "${{ env.CHANGE_ID }}" "${{ github.sha }}" "${{ matrix.app }}"
 
+      - name: Determine image tags
+        id: tags
+        run: |
+          # If change-id is numeric (PR number), use pr-{id} prefix
+          # Otherwise use the change-id directly (e.g., staging)
+          if [[ "${{ env.CHANGE_ID }}" =~ ^[0-9]+$ ]]; then
+            echo "tag1=pr-${{ env.CHANGE_ID }}-${{ steps.metadata.outputs.short-sha }}" >> $GITHUB_OUTPUT
+            echo "tag2=pr-${{ env.CHANGE_ID }}" >> $GITHUB_OUTPUT
+          else
+            echo "tag1=${{ env.CHANGE_ID }}-${{ steps.metadata.outputs.short-sha }}" >> $GITHUB_OUTPUT
+            echo "tag2=${{ env.CHANGE_ID }}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Build and push Docker image
         uses: hmcts/cnp-githubactions-library/container-build-push@main
         with:
@@ -95,5 +108,5 @@ jobs:
           dockerfile: apps/${{ matrix.app }}/Dockerfile
           context: .
           image-tags: |
-            pr-${{ env.CHANGE_ID }}-${{ steps.metadata.outputs.short-sha }}
-            pr-${{ env.CHANGE_ID }}
+            ${{ steps.tags.outputs.tag1 }}
+            ${{ steps.tags.outputs.tag2 }}

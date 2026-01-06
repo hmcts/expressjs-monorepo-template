@@ -12,9 +12,12 @@ set -euo pipefail
 #   $6: application_name - Application name for release name
 # Outputs:
 #   Environment variables:
-#   - RELEASE_NAME: {application_name}-pr-{change_id}
+#   - RELEASE_NAME:
+#     - PR (numeric change_id): {application_name}-pr-{change_id}
+#     - Non-PR (e.g., staging): {application_name}-{change_id}
 #   - {APP}_IMAGE for each Helm app
-#     - If app was affected: pr-{change_id}-{sha}
+#     - If app was affected (PR): pr-{change_id}-{sha}
+#     - If app was affected (non-PR): {change_id}-{sha}
 #     - If app was not affected: latest
 
 main() {
@@ -36,7 +39,14 @@ main() {
   fi
 
   # Calculate and export release name
-  local release_name="${application_name}-pr-${change_id}"
+  # If change_id is numeric (PR number), use pr-{id} format
+  # Otherwise use the change_id directly (e.g., staging)
+  local release_name
+  if [[ "${change_id}" =~ ^[0-9]+$ ]]; then
+    release_name="${application_name}-pr-${change_id}"
+  else
+    release_name="${application_name}-${change_id}"
+  fi
   if [ -n "${GITHUB_ENV:-}" ]; then
     echo "RELEASE_NAME=${release_name}" >> "$GITHUB_ENV"
   fi
@@ -54,7 +64,14 @@ main() {
     # Check if app was affected (needs rebuild)
     if echo "$affected_apps" | jq -e --arg app "$app" 'index($app)' > /dev/null 2>&1; then
       # App was affected - use SHA tag to force pod recreation
-      local image_tag="pr-${change_id}-${short_sha}"
+      # If change_id is numeric (PR), use pr-{id}-{sha}
+      # Otherwise use {change_id}-{sha} (e.g., staging-abc1234)
+      local image_tag
+      if [[ "${change_id}" =~ ^[0-9]+$ ]]; then
+        image_tag="pr-${change_id}-${short_sha}"
+      else
+        image_tag="${change_id}-${short_sha}"
+      fi
 
       if [ -n "${GITHUB_ENV:-}" ]; then
         echo "${env_var_name}=${image_tag}" >> "$GITHUB_ENV"

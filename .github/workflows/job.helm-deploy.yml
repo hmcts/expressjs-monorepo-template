@@ -23,10 +23,21 @@ on:
         required: true
         type: string
         description: "JSON array of all Helm apps"
+      environment:
+        required: false
+        type: string
+        description: "Deployment environment (preview or aat)"
+        default: "preview"
     outputs:
-      preview-urls:
-        description: "Base64-encoded JSON of preview URLs"
-        value: ${{ jobs.helm-deploy.outputs.preview-urls }}
+      urls:
+        description: "Base64-encoded JSON of deployment URLs"
+        value: ${{ jobs.helm-deploy.outputs.urls }}
+      release-name:
+        description: "Helm release name"
+        value: ${{ jobs.helm-deploy.outputs.release-name }}
+      namespace:
+        description: "Kubernetes namespace"
+        value: ${{ jobs.helm-deploy.outputs.namespace }}
 
 env:
   CHANGE_ID: ${{ inputs.change-id }}
@@ -35,12 +46,14 @@ env:
 
 jobs:
   helm-deploy:
-    name: Deploy to Preview
+    name: Deploy to ${{ inputs.environment }}
     runs-on: ubuntu-latest
     environment:
-      name: preview
+      name: ${{ inputs.environment }}
     outputs:
-      preview-urls: ${{ steps.preview-urls.outputs.urls }}
+      urls: ${{ steps.urls.outputs.urls }}
+      release-name: ${{ env.RELEASE_NAME }}
+      namespace: ${{ env.TEAM_NAME }}
     permissions:
       contents: read
       id-token: write
@@ -73,11 +86,12 @@ jobs:
             '${{ inputs.timestamp }}' \
             "${APPLICATION_NAME}"
 
-      - name: Deploy preview environment
-        id: deploy
+      - name: Deploy to preview
+        if: inputs.environment == 'preview'
+        id: deploy-preview
         uses: hmcts/cnp-githubactions-library/helm-deploy@helm-deploy
         with:
-          environment: cft-preview
+          environment: cft-preview-01
           azure-credentials: ${{ secrets.AZURE_CREDENTIALS_CFT_PREVIEW }}
           release-name: ${{ env.RELEASE_NAME }}
           namespace: ${{ env.TEAM_NAME }}
@@ -99,9 +113,34 @@ jobs:
           oci-username: ${{ secrets.REGISTRY_USERNAME }}
           oci-password: ${{ secrets.REGISTRY_PASSWORD }}
 
-# TODO can this be an output of the deploy
-      - name: Get preview URLs from ingress
-        id: preview-urls
+      - name: Deploy to AAT
+        if: inputs.environment == 'aat'
+        id: deploy-aat
+        uses: hmcts/cnp-githubactions-library/helm-deploy@helm-deploy
+        with:
+          environment: cft-aat-00
+          azure-credentials: ${{ secrets.AZURE_CREDENTIALS_CFT_AAT }}
+          release-name: ${{ env.RELEASE_NAME }}
+          namespace: ${{ env.TEAM_NAME }}
+          chart: helm/${{ env.APPLICATION_NAME }}
+          subchart-paths: apps/*/helm
+          set: |
+            global.tenantId=${{ env.AZURE_TENANT_ID }}
+            global.environment=aat
+            global.enableKeyVaults=true
+            global.devMode=false
+            global.disableTraefikTls=false
+            global.tags.teamName=${{ env.TEAM_NAME }}
+            global.tags.applicationName=${{ env.APPLICATION_NAME }}
+            global.tags.builtFrom=${{ env.GIT_REPO }}
+            global.tags.businessArea=CFT
+            global.tags.environment=staging
+          oci-registry: ${{ env.REGISTRY }}
+          oci-username: ${{ secrets.REGISTRY_USERNAME }}
+          oci-password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Get deployment URLs from ingress
+        id: urls
         run: |
           # Get URLs and base64 encode to avoid special character issues in GitHub Actions
           URLS_JSON=$(.github/workflows/jobs/pr-comment/get-preview-urls.sh "${{ env.TEAM_NAME }}" "${{ env.RELEASE_NAME }}")
