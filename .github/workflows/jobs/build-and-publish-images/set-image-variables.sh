@@ -25,9 +25,14 @@ main() {
   local timestamp="${5:-}"
   local application_name="${6:-}"
 
-  if [ -z "$affected_apps" ] || [ -z "$helm_apps" ] || [ -z "$change_id" ] || [ -z "$short_sha" ] || [ -z "$timestamp" ] || [ -z "$application_name" ]; then
+  if [ -z "$helm_apps" ] || [ -z "$change_id" ] || [ -z "$application_name" ]; then
     echo "Usage: $0 <affected_apps_json> <helm_apps_json> <change_id> <short_sha> <timestamp> <application_name>"
     exit 1
+  fi
+
+  # Default affected_apps to empty array if not provided
+  if [ -z "$affected_apps" ]; then
+    affected_apps="[]"
   fi
 
   # Calculate and export release name
