@@ -77,6 +77,7 @@ jobs:
         id: deploy
         uses: hmcts/cnp-githubactions-library/helm-deploy@helm-deploy
         with:
+          # TODO combine these two
           cluster-name: cft-preview-01-aks
           resource-group: cft-preview-01-rg
           azure-credentials: ${{ secrets.AZURE_CREDENTIALS_CFT_PREVIEW }}
@@ -100,6 +101,7 @@ jobs:
           oci-username: ${{ secrets.REGISTRY_USERNAME }}
           oci-password: ${{ secrets.REGISTRY_PASSWORD }}
 
+# TODO can this be an output of the deploy
       - name: Get preview URLs from ingress
         id: preview-urls
         run: |
