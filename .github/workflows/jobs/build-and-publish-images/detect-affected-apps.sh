@@ -11,10 +11,18 @@ set -euo pipefail
 main() {
   echo "Detecting affected apps using Turborepo..."
 
+  # Debug: show git state
+  echo "DEBUG: HEAD=$(git rev-parse HEAD)"
+  echo "DEBUG: origin/master=$(git rev-parse origin/master)"
+  echo "DEBUG: merge-base=$(git merge-base HEAD origin/master)"
+  echo "DEBUG: Changed files:"
+  git diff --name-only origin/master...HEAD || true
+
   # Get affected packages using Turborepo (comparing against base branch)
   # Note: --affected and --filter cannot be used together
   local affected_json
-  affected_json=$(yarn turbo ls --affected --output=json 2>/dev/null || echo '{"packages":{"items":[]}}')
+  affected_json=$(yarn turbo ls --affected --output=json 2>&1 || echo '{"packages":{"items":[]}}')
+  echo "DEBUG: turbo output: $affected_json"
 
   # Extract paths, filter to apps directory, strip apps/ prefix, and filter to only those with Dockerfiles
   local affected_apps
