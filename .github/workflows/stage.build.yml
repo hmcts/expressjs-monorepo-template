@@ -14,9 +14,6 @@ on:
       helm-apps:
         description: "JSON array of all apps with Helm charts"
         value: ${{ jobs.build-and-publish-images.outputs.helm-apps }}
-      has-changes:
-        description: "Whether any apps were affected by changes"
-        value: ${{ jobs.build-and-publish-images.outputs.has-changes }}
       timestamp:
         description: "Build timestamp"
         value: ${{ jobs.build-and-publish-images.outputs.timestamp }}

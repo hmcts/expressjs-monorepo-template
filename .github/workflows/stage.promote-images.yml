@@ -1,0 +1,27 @@
+name: Promote Images Stage
+
+on:
+  workflow_call:
+    inputs:
+      short-sha:
+        required: true
+        type: string
+        description: "Short git SHA for source image tag"
+      affected-apps:
+        required: true
+        type: string
+        description: "JSON array of affected apps"
+      helm-apps:
+        required: true
+        type: string
+        description: "JSON array of all Helm apps"
+
+jobs:
+  promote-images:
+    name: Promote
+    uses: ./.github/workflows/job.promote-images.yml
+    with:
+      short-sha: ${{ inputs.short-sha }}
+      affected-apps: ${{ inputs.affected-apps }}
+      helm-apps: ${{ inputs.helm-apps }}
+    secrets: inherit

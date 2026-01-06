@@ -12,7 +12,7 @@ Pipeline-specific scripts have been moved to their respective job folders for be
 | `generate-build-metadata.sh` | `.github/workflows/jobs/build-and-publish-images/` |
 | `set-image-variables.sh` | `.github/workflows/jobs/build-and-publish-images/` |
 | `deploy-preview.sh` | `.github/workflows/jobs/helm-deploy/` |
-| `get-preview-urls.sh` | `.github/workflows/jobs/pr-comment/` |
+| `get-deployment-urls.sh` | `.github/workflows/jobs/pr-comment/` |
 
 See the README.md in each job folder for documentation on those scripts.
 

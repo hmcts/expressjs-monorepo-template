@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Script: get-preview-urls.sh
-# Purpose: Get preview environment URLs from Kubernetes ingress resources
+# Script: get-deployment-urls.sh
+# Purpose: Get deployment URLs from Kubernetes ingress resources
 # Arguments:
 #   $1: namespace - Kubernetes namespace
 #   $2: release_name - Helm release name
@@ -18,7 +18,7 @@ main() {
     exit 1
   fi
 
-  echo "Retrieving preview URLs from namespace: ${namespace}, release: ${release_name}" >&2
+  echo "Retrieving deployment URLs from namespace: ${namespace}, release: ${release_name}" >&2
 
   # Wait for ingresses to be ready (max 30 seconds)
   local timeout=30

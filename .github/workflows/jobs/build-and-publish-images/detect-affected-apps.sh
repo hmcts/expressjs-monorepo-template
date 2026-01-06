@@ -11,6 +11,9 @@ set -euo pipefail
 main() {
   echo "Detecting affected apps using Turborepo..."
 
+  # Set SCM base to origin/master - turbo defaults to 'master' which doesn't exist in CI
+  export TURBO_SCM_BASE="origin/master"
+
   # Get affected packages using Turborepo (comparing against base branch)
   # Note: --affected and --filter cannot be used together
   local affected_json
@@ -18,7 +21,7 @@ main() {
 
   # Extract paths, filter to apps directory, strip apps/ prefix, and filter to only those with Dockerfiles
   local affected_apps
-  affected_apps=$(echo "$affected_json" | jq -r '.packages.items[].path' | grep '^apps/' | sed 's|^apps/||' | while read -r app_name; do
+  affected_apps=$(echo "$affected_json" | jq -r '.packages.items[].path // empty' | { grep '^apps/' || true; } | sed 's|^apps/||' | while read -r app_name; do
     if [ -f "apps/${app_name}/Dockerfile" ]; then
       echo "$app_name"
     fi

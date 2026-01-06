@@ -30,17 +30,28 @@ jobs:
 
           if [ -n "${WEB_URL}" ]; then
             echo "Checking web health: ${WEB_URL}"
-            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "${WEB_URL}" || echo "000")
-            echo "HTTP Status: ${HTTP_STATUS}"
+            MAX_RETRIES=10
+            RETRY_DELAY=10
 
-            if [ "${HTTP_STATUS}" -ge 200 ] && [ "${HTTP_STATUS}" -lt 400 ]; then
-              echo "✓ Web service is healthy"
-            else
-              echo "✗ Web service returned status ${HTTP_STATUS}"
-              exit 1
-            fi
+            for i in $(seq 1 $MAX_RETRIES); do
+              HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "${WEB_URL}" || echo "000")
+              echo "Attempt ${i}/${MAX_RETRIES}: HTTP Status ${HTTP_STATUS}"
+
+              if [ "${HTTP_STATUS}" -ge 200 ] && [ "${HTTP_STATUS}" -lt 400 ]; then
+                echo "Web service is healthy"
+                exit 0
+              fi
+
+              if [ "$i" -lt "$MAX_RETRIES" ]; then
+                echo "Retrying in ${RETRY_DELAY}s..."
+                sleep $RETRY_DELAY
+              fi
+            done
+
+            echo "Web service failed after ${MAX_RETRIES} attempts"
+            exit 1
           else
-            echo "⚠ No web URL found, skipping web health check"
+            echo "No web URL found, skipping web health check"
           fi
 
       - name: Health check - API
@@ -50,17 +61,28 @@ jobs:
 
           if [ -n "${API_URL}" ]; then
             echo "Checking API health: ${API_URL}"
-            HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "${API_URL}" || echo "000")
-            echo "HTTP Status: ${HTTP_STATUS}"
+            MAX_RETRIES=10
+            RETRY_DELAY=10
 
-            if [ "${HTTP_STATUS}" -ge 200 ] && [ "${HTTP_STATUS}" -lt 400 ]; then
-              echo "✓ API service is healthy"
-            else
-              echo "✗ API service returned status ${HTTP_STATUS}"
-              exit 1
-            fi
+            for i in $(seq 1 $MAX_RETRIES); do
+              HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "${API_URL}" || echo "000")
+              echo "Attempt ${i}/${MAX_RETRIES}: HTTP Status ${HTTP_STATUS}"
+
+              if [ "${HTTP_STATUS}" -ge 200 ] && [ "${HTTP_STATUS}" -lt 400 ]; then
+                echo "API service is healthy"
+                exit 0
+              fi
+
+              if [ "$i" -lt "$MAX_RETRIES" ]; then
+                echo "Retrying in ${RETRY_DELAY}s..."
+                sleep $RETRY_DELAY
+              fi
+            done
+
+            echo "API service failed after ${MAX_RETRIES} attempts"
+            exit 1
           else
-            echo "⚠ No API URL found, skipping API health check"
+            echo "No API URL found, skipping API health check"
           fi
 
       - name: Smoke test summary

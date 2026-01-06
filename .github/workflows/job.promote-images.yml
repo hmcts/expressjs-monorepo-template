@@ -1,0 +1,98 @@
+name: Promote Images Job
+
+on:
+  workflow_call:
+    inputs:
+      short-sha:
+        required: true
+        type: string
+        description: "Short git SHA for source image tag"
+      affected-apps:
+        required: true
+        type: string
+        description: "JSON array of affected apps"
+      helm-apps:
+        required: true
+        type: string
+        description: "JSON array of all Helm apps"
+
+env:
+  REGISTRY: hmctspublic.azurecr.io
+
+jobs:
+  promote:
+    name: Promote ${{ matrix.app }} to latest
+    runs-on: ubuntu-latest
+    if: fromJson(inputs.affected-apps)[0] != null
+    strategy:
+      matrix:
+        app: ${{ fromJson(inputs.affected-apps) }}
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Generate registry prefix
+        id: metadata
+        run: |
+          # Path to app's Helm chart
+          chart_path="apps/${{ matrix.app }}/helm/Chart.yaml"
+
+          if [ ! -f "$chart_path" ]; then
+            echo "Error: Chart.yaml not found at ${chart_path}"
+            exit 1
+          fi
+
+          # Extract team from Chart.yaml annotations
+          team_name=$(grep -A 1 'annotations:' "$chart_path" | grep 'team:' | awk '{print $2}' | tr -d '"')
+
+          if [ -z "$team_name" ]; then
+            echo "Error: team annotation not found in ${chart_path}"
+            exit 1
+          fi
+
+          # Extract application name from Chart.yaml
+          application_name=$(grep '^name:' "$chart_path" | awk '{print $2}' | tr -d '"')
+
+          # Construct registry prefix
+          registry_prefix="${team_name}/${application_name}"
+          echo "registry-prefix=${registry_prefix}" >> "$GITHUB_OUTPUT"
+          echo "Registry prefix: ${registry_prefix}"
+
+      - name: Login to ACR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Promote image to latest
+        run: |
+          SOURCE_TAG="staging-${{ inputs.short-sha }}"
+          TARGET_TAG="latest"
+          IMAGE="${{ env.REGISTRY }}/${{ steps.metadata.outputs.registry-prefix }}"
+
+          echo "Promoting ${IMAGE}:${SOURCE_TAG} to ${IMAGE}:${TARGET_TAG}"
+
+          # Pull the source image
+          docker pull "${IMAGE}:${SOURCE_TAG}"
+
+          # Tag as latest
+          docker tag "${IMAGE}:${SOURCE_TAG}" "${IMAGE}:${TARGET_TAG}"
+
+          # Push latest
+          docker push "${IMAGE}:${TARGET_TAG}"
+
+          echo "Successfully promoted to latest"
+
+      - name: Output promotion summary
+        run: |
+          echo "### Image Promotion Summary :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**App:** \`${{ matrix.app }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** \`${{ env.REGISTRY }}/${{ steps.metadata.outputs.registry-prefix }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Source Tag:** \`staging-${{ inputs.short-sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Target Tag:** \`latest\`" >> $GITHUB_STEP_SUMMARY

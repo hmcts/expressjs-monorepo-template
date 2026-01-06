@@ -21,7 +21,6 @@ jobs:
   deploy-stage:
     name: Deploy
     needs: [build-stage]
-    if: needs.build-stage.outputs.has-changes == 'true'
     uses: ./.github/workflows/stage.deploy.yml
     with:
       change-id: ${{ github.event.pull_request.number }}
@@ -37,12 +36,12 @@ jobs:
     uses: ./.github/workflows/stage.smoke-test.yml
     with:
       change-id: ${{ github.event.pull_request.number }}
-      preview-urls: ${{ needs.deploy-stage.outputs.preview-urls }}
+      preview-urls: ${{ needs.deploy-stage.outputs.urls }}
 
   e2e-stage:
     name: E2E
     needs: [smoke-test-stage, deploy-stage]
     uses: ./.github/workflows/stage.e2e.yml
     with:
-      preview-urls: ${{ needs.deploy-stage.outputs.preview-urls }}
+      preview-urls: ${{ needs.deploy-stage.outputs.urls }}
     secrets: inherit
