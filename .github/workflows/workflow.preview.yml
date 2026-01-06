@@ -21,7 +21,6 @@ jobs:
   deploy-stage:
     name: Deploy
     needs: [build-stage]
-    if: needs.build-stage.outputs.has-changes == 'true'
     uses: ./.github/workflows/stage.deploy.yml
     with:
       change-id: ${{ github.event.pull_request.number }}
