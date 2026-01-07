@@ -925,13 +925,11 @@ __metadata:
     "@types/config": "npm:3.3.5"
     "@types/cors": "npm:2.8.19"
     "@types/express": "npm:5.0.6"
-    "@types/supertest": "npm:6.0.3"
     compression: "npm:1.8.1"
     config: "npm:4.1.1"
     cors: "npm:2.8.5"
     express: "npm:5.2.1"
     nodemon: "npm:3.1.11"
-    supertest: "npm:7.2.2"
   languageName: unknown
   linkType: soft
 
@@ -965,7 +963,6 @@ __metadata:
     "@hmcts/cloud-native-platform": "workspace:*"
     "@hmcts/postgres-prisma": "workspace:*"
     "@types/config": "npm:3.3.5"
-    "@types/node": "npm:24.10.4"
     config: "npm:4.1.1"
   languageName: unknown
   linkType: soft
@@ -1072,9 +1069,7 @@ __metadata:
     "@types/express-session": "npm:1.18.2"
     "@types/govuk-frontend": "npm:5.11.0"
     "@types/nunjucks": "npm:3.2.6"
-    "@types/supertest": "npm:6.0.3"
     compression: "npm:1.8.1"
-    concurrently: "npm:9.2.1"
     config: "npm:4.1.1"
     connect-redis: "npm:9.0.0"
     cookie-parser: "npm:1.4.7"
@@ -1087,7 +1082,6 @@ __metadata:
     nunjucks: "npm:3.2.4"
     redis: "npm:5.10.0"
     sass: "npm:1.97.2"
-    supertest: "npm:7.2.2"
     vite: "npm:7.3.0"
     vite-plugin-static-copy: "npm:3.1.4"
   languageName: unknown
