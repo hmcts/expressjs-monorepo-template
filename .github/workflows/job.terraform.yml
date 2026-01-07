@@ -1,0 +1,131 @@
+name: Terraform
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+        description: "Target environment (e.g., aat)"
+      subscription:
+        required: true
+        type: string
+        description: "Azure subscription name (nonprod, prod)"
+      plan-only:
+        required: false
+        type: boolean
+        default: false
+        description: "Run plan only, skip apply"
+      working-directory:
+        required: false
+        type: string
+        default: "infrastructure"
+    outputs:
+      plan-exitcode:
+        description: "Terraform plan exit code (0=no changes, 2=changes)"
+        value: ${{ jobs.terraform.outputs.plan-exitcode }}
+
+jobs:
+  terraform:
+    name: Terraform ${{ inputs.plan-only && 'Plan' || 'Apply' }}
+    runs-on: ubuntu-latest
+    outputs:
+      plan-exitcode: ${{ steps.plan.outputs.exitcode }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Check for infrastructure changes
+        id: changes
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BASE_SHA="origin/${{ github.base_ref }}"
+          else
+            BASE_SHA="${{ github.event.before }}"
+          fi
+
+          if git diff --name-only "$BASE_SHA" HEAD | grep -q "^${{ inputs.working-directory }}/"; then
+            echo "has_changes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_changes=false" >> "$GITHUB_OUTPUT"
+            echo "No changes in ${{ inputs.working-directory }}/, skipping terraform"
+          fi
+
+      - name: Extract product name from Chart.yaml
+        if: steps.changes.outputs.has_changes == 'true'
+        id: metadata
+        run: |
+          CHART_FILE="helm/expressjs-monorepo-template/Chart.yaml"
+          if [ -f "$CHART_FILE" ]; then
+            PRODUCT=$(yq -r '.name // "expressjs-template"' "$CHART_FILE")
+          else
+            PRODUCT="expressjs-template"
+          fi
+          echo "product=$PRODUCT" >> "$GITHUB_OUTPUT"
+
+      - name: Setup Terraform
+        if: steps.changes.outputs.has_changes == 'true'
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.14.x
+
+      - name: Azure Login
+        if: steps.changes.outputs.has_changes == 'true'
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_CFT_AAT }}
+
+      - name: Get Storage Account Key
+        if: steps.changes.outputs.has_changes == 'true'
+        id: storage-key
+        run: |
+          STORAGE_ACCOUNT="mgmtstatestore${{ inputs.subscription }}"
+          RESOURCE_GROUP="mgmt-state-store-${{ inputs.subscription }}"
+          KEY=$(az storage account keys list \
+            --account-name "$STORAGE_ACCOUNT" \
+            --resource-group "$RESOURCE_GROUP" \
+            --query '[0].value' -o tsv)
+          echo "::add-mask::$KEY"
+          echo "key=$KEY" >> "$GITHUB_OUTPUT"
+
+      - name: Terraform Init
+        if: steps.changes.outputs.has_changes == 'true'
+        working-directory: ${{ inputs.working-directory }}
+        env:
+          ARM_ACCESS_KEY: ${{ steps.storage-key.outputs.key }}
+          PRODUCT: ${{ steps.metadata.outputs.product }}
+        run: |
+          terraform init -reconfigure \
+            -backend-config="storage_account_name=mgmtstatestore${{ inputs.subscription }}" \
+            -backend-config="container_name=mgmtstatestorecontainer${{ inputs.environment }}" \
+            -backend-config="resource_group_name=mgmt-state-store-${{ inputs.subscription }}" \
+            -backend-config="key=${PRODUCT}/${{ inputs.environment }}/terraform.tfstate"
+
+      - name: Terraform Plan
+        if: steps.changes.outputs.has_changes == 'true'
+        id: plan
+        working-directory: ${{ inputs.working-directory }}
+        env:
+          ARM_ACCESS_KEY: ${{ steps.storage-key.outputs.key }}
+          PRODUCT: ${{ steps.metadata.outputs.product }}
+        run: |
+          set +e
+          terraform plan -detailed-exitcode -out=tfplan \
+            -var "env=${{ inputs.environment }}" \
+            -var "product=${PRODUCT}" \
+            -var "subscription=${{ inputs.subscription }}"
+          EXITCODE=$?
+          echo "exitcode=$EXITCODE" >> "$GITHUB_OUTPUT"
+          if [ $EXITCODE -eq 1 ]; then
+            exit 1
+          fi
+
+      - name: Terraform Apply
+        if: steps.changes.outputs.has_changes == 'true' && !inputs.plan-only && steps.plan.outputs.exitcode == '2'
+        working-directory: ${{ inputs.working-directory }}
+        env:
+          ARM_ACCESS_KEY: ${{ steps.storage-key.outputs.key }}
+        run: terraform apply -auto-approve tfplan

@@ -18,9 +18,17 @@ jobs:
       change-id: ${{ github.event.pull_request.number }}
     secrets: inherit
 
+  infrastructure-stage:
+    name: Infrastructure
+    needs: [build-stage]
+    uses: ./.github/workflows/stage.infrastructure.yml
+    with:
+      plan-only: true
+    secrets: inherit
+
   deploy-stage:
     name: Deploy
-    needs: [build-stage]
+    needs: [build-stage, infrastructure-stage]
     uses: ./.github/workflows/stage.deploy.yml
     with:
       change-id: ${{ github.event.pull_request.number }}

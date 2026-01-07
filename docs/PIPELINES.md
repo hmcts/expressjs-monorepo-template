@@ -29,13 +29,16 @@ GitHub Actions requires all reusable workflows to be at the top level of `.githu
 ├── workflow.main.yml              # Master branch pipeline
 ├── workflow.claude.yml            # AI assistant
 ├── stage.build.yml                # Build stage workflow
+├── stage.infrastructure.yml       # Infrastructure stage workflow
 ├── stage.deploy.yml               # Deploy stage workflow
 ├── stage.smoke-test.yml           # Smoke test stage workflow
 ├── stage.e2e.yml                  # E2E stage workflow
 ├── job.lint.yml                   # Lint job
+├── job.terraform-fmt.yml          # Terraform format check job
 ├── job.test.yml                   # Test job
 ├── job.osv-scanner.yml            # Security scanning job
 ├── job.build-and-publish-images.yml  # Build images job
+├── job.terraform.yml              # Terraform plan/apply job
 ├── job.helm-deploy.yml            # Helm deploy job
 ├── job.pr-comment.yml             # PR comment job
 ├── job.smoke-test.yml             # Smoke test job
@@ -60,7 +63,9 @@ GitHub Actions requires all reusable workflows to be at the top level of `.githu
     │   └── get-deployment-urls.sh
     ├── smoke-test/
     │   └── README.md
-    └── e2e-test/
+    ├── e2e-test/
+    │   └── README.md
+    └── infrastructure/
         └── README.md
 ```
 
@@ -82,13 +87,20 @@ GitHub Actions requires all reusable workflows to be at the top level of `.githu
 │                    Preview Pipeline                          │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ BUILD STAGE                                          │   │
-│  │  ┌──────┐ ┌──────┐ ┌────────────┐ ┌───────────────┐ │   │
-│  │  │ Lint │ │ Test │ │ OSV Scan   │ │ Build Images  │ │   │
-│  │  └──────┘ └──────┘ └────────────┘ └───────────────┘ │   │
-│  └─────────────────────────┬───────────────────────────┘   │
-│                            ↓                                │
+│  ┌───────────────────────────────────────────────────────────────┐   │
+│  │ BUILD STAGE                                                    │   │
+│  │  ┌──────┐ ┌────────┐ ┌──────┐ ┌──────────┐ ┌───────────────┐  │   │
+│  │  │ Lint │ │ TF Fmt │ │ Test │ │ OSV Scan │ │ Build Images  │  │   │
+│  │  └──────┘ └────────┘ └──────┘ └──────────┘ └───────────────┘  │   │
+│  └───────────────────────────────┬───────────────────────────────┘   │
+│                                  ↓                                    │
+│  ┌───────────────────────────────────────────────────────────────┐   │
+│  │ INFRASTRUCTURE STAGE                                           │   │
+│  │  ┌─────────────────────────────────────────────────────────┐  │   │
+│  │  │ Terraform Plan (skipped if no infrastructure/ changes)  │  │   │
+│  │  └─────────────────────────────────────────────────────────┘  │   │
+│  └───────────────────────────────┬───────────────────────────────┘   │
+│                                  ↓                                    │
 │  ┌─────────────────────────────────────────────────────┐   │
 │  │ DEPLOY STAGE                                         │   │
 │  │  ┌────────────────────────────────────────────────┐ │   │
@@ -125,17 +137,28 @@ GitHub Actions requires all reusable workflows to be at the top level of `.githu
 │                    Main Pipeline                             │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ BUILD STAGE                                          │   │
-│  │  ┌──────┐ ┌──────┐ ┌────────────┐ ┌───────────────┐ │   │
-│  │  │ Lint │ │ Test │ │ OSV Scan   │ │ Build Images  │ │   │
-│  │  └──────┘ └──────┘ └────────────┘ └───────────────┘ │   │
-│  └─────────────────────────────────────────────────────┘   │
+│  ┌───────────────────────────────────────────────────────────────┐   │
+│  │ BUILD STAGE                                                    │   │
+│  │  ┌──────┐ ┌────────┐ ┌──────┐ ┌──────────┐ ┌───────────────┐  │   │
+│  │  │ Lint │ │ TF Fmt │ │ Test │ │ OSV Scan │ │ Build Images  │  │   │
+│  │  └──────┘ └────────┘ └──────┘ └──────────┘ └───────────────┘  │   │
+│  └───────────────────────────────┬───────────────────────────────┘   │
+│                                  ↓                                    │
+│  ┌───────────────────────────────────────────────────────────────┐   │
+│  │ INFRASTRUCTURE STAGE                                           │   │
+│  │  ┌──────────────────────────────────────────────────────────┐ │   │
+│  │  │ Terraform Plan + Apply (skipped if no infra/ changes)    │ │   │
+│  │  └──────────────────────────────────────────────────────────┘ │   │
+│  └───────────────────────────────┬───────────────────────────────┘   │
+│                                  ↓                                    │
+│  ┌───────────────────────────────────────────────────────────────┐   │
+│  │ DEPLOY STAGE → SMOKE TEST → E2E → PROMOTE                      │   │
+│  └───────────────────────────────────────────────────────────────┘   │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**Purpose:** Validate code on merge, run full test suite for coverage reporting
+**Purpose:** Validate code on merge, run full test suite for coverage reporting, apply infrastructure changes
 
 ## Stages
 
@@ -147,6 +170,7 @@ GitHub Actions requires all reusable workflows to be at the top level of `.githu
 | Job | Purpose |
 |-----|---------|
 | Lint | Biome linting + Prisma schema validation |
+| Terraform Format | Terraform code formatting check (skipped if no infra changes) |
 | Test | Unit tests with coverage + SonarCloud analysis |
 | OSV Scanner | Dependency vulnerability scanning |
 | Build Images | Docker image build and push to ACR |
@@ -156,6 +180,23 @@ GitHub Actions requires all reusable workflows to be at the top level of `.githu
 - `has-changes`: Whether deployment is needed
 - `timestamp`: Build timestamp
 - `short-sha`: Git SHA for tagging
+
+### Infrastructure Stage
+
+**Purpose:** Apply infrastructure changes via Terraform
+
+**Jobs:**
+| Job | Purpose |
+|-----|---------|
+| Terraform | Terraform plan (PRs) or plan+apply (main branch) |
+
+**Inputs:** None (uses hardcoded `aat` environment and `nonprod` subscription)
+**Outputs:** `plan-exitcode` (0=no changes, 2=changes detected)
+
+**Behavior:**
+- Skipped automatically if no files changed in `infrastructure/`
+- PRs: Plan only (no infrastructure changes applied)
+- Main branch: Plan + Apply
 
 ### Deploy Stage
 
