@@ -181,7 +181,7 @@ terraform plan -var "env=aat" -var "product=expressjs-monorepo-template" -var "s
 | Tool | Version | Notes |
 |------|---------|-------|
 | Terraform CLI | 1.14.x | Pinned in `.terraform-version` |
-| AzureRM Provider | ~> 4.14 | Allows patch updates within 4.14.x |
+| AzureRM Provider | ~> 4.57 | Allows patch updates within 4.57.x |
 | actions/checkout | v6 | Latest major version |
 | hashicorp/setup-terraform | v3 | Latest major version |
 | azure/login | v2 | Latest major version |

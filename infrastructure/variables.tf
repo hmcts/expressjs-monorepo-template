@@ -16,7 +16,7 @@ variable "subscription" {
 variable "location" {
   description = "Azure region"
   type        = string
-  default     = "UK South"
+  default     = "uksouth"
 }
 
 variable "common_tags" {
