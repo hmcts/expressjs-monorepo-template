@@ -24,3 +24,24 @@ variable "common_tags" {
   type        = map(string)
   default     = {}
 }
+
+# Optional variables - auto-derived from Azure credentials in CI
+# Only needed if creating resources (e.g., Key Vault)
+
+variable "tenant_id" {
+  description = "Azure AD tenant ID (auto-derived from CI credentials)"
+  type        = string
+  default     = null
+}
+
+variable "ci_service_principal_object_id" {
+  description = "Azure AD object ID for CI/CD service principal (auto-derived from CI credentials)"
+  type        = string
+  default     = null
+}
+
+variable "builtFrom" {
+  description = "GitHub repository URL for tagging (auto-set in CI)"
+  type        = string
+  default     = null
+}

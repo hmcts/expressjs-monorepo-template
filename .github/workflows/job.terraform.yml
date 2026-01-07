@@ -54,17 +54,18 @@ jobs:
             echo "No changes in ${{ inputs.working-directory }}/, skipping terraform"
           fi
 
-      - name: Extract product name from Chart.yaml
+      - name: Extract team name from Chart.yaml
         if: steps.changes.outputs.has_changes == 'true'
         id: metadata
         run: |
           CHART_FILE="helm/expressjs-monorepo-template/Chart.yaml"
-          if [ -f "$CHART_FILE" ]; then
-            PRODUCT=$(yq -r '.name // "expressjs-template"' "$CHART_FILE")
-          else
-            PRODUCT="expressjs-template"
+          # Extract team from annotations (same pattern as helm-deploy)
+          TEAM=$(grep -A 1 'annotations:' "$CHART_FILE" | grep 'team:' | awk '{print $2}' | tr -d '"')
+          if [ -z "$TEAM" ]; then
+            echo "::error::No team annotation found in $CHART_FILE"
+            exit 1
           fi
-          echo "product=$PRODUCT" >> "$GITHUB_OUTPUT"
+          echo "product=$TEAM" >> "$GITHUB_OUTPUT"
 
       - name: Setup Terraform
         if: steps.changes.outputs.has_changes == 'true'
@@ -77,6 +78,18 @@ jobs:
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS_CFT_AAT }}
+
+      - name: Get Azure context
+        if: steps.changes.outputs.has_changes == 'true'
+        id: azure-context
+        run: |
+          # Extract tenant ID and service principal object ID from logged-in context
+          TENANT_ID=$(az account show --query tenantId -o tsv)
+          CLIENT_ID=$(az account show --query user.name -o tsv)
+          SP_OBJECT_ID=$(az ad sp show --id "$CLIENT_ID" --query id -o tsv)
+
+          echo "tenant_id=$TENANT_ID" >> "$GITHUB_OUTPUT"
+          echo "sp_object_id=$SP_OBJECT_ID" >> "$GITHUB_OUTPUT"
 
       - name: Get Storage Account Key
         if: steps.changes.outputs.has_changes == 'true'
@@ -111,12 +124,27 @@ jobs:
         env:
           ARM_ACCESS_KEY: ${{ steps.storage-key.outputs.key }}
           PRODUCT: ${{ steps.metadata.outputs.product }}
+          TENANT_ID: ${{ steps.azure-context.outputs.tenant_id }}
+          SP_OBJECT_ID: ${{ steps.azure-context.outputs.sp_object_id }}
         run: |
+          # Construct common_tags as JSON
+          COMMON_TAGS=$(jq -n \
+            --arg env "${{ inputs.environment }}" \
+            --arg managedBy "$PRODUCT" \
+            --arg builtFrom "$GITHUB_REPOSITORY" \
+            --arg application "$PRODUCT" \
+            --arg businessArea "CFT" \
+            '{environment: $env, managedBy: $managedBy, builtFrom: $builtFrom, application: $application, businessArea: $businessArea}')
+
           set +e
           terraform plan -detailed-exitcode -out=tfplan \
             -var "env=${{ inputs.environment }}" \
             -var "product=${PRODUCT}" \
-            -var "subscription=${{ inputs.subscription }}"
+            -var "subscription=${{ inputs.subscription }}" \
+            -var "tenant_id=${TENANT_ID}" \
+            -var "builtFrom=${GITHUB_REPOSITORY}" \
+            -var "ci_service_principal_object_id=${SP_OBJECT_ID}" \
+            -var "common_tags=${COMMON_TAGS}"
           EXITCODE=$?
           echo "exitcode=$EXITCODE" >> "$GITHUB_OUTPUT"
           if [ $EXITCODE -eq 1 ]; then

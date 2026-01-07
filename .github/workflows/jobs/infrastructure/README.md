@@ -83,9 +83,9 @@ The Service Principal requires:
 | Storage Account | `mgmtstatestore{subscription}` |
 | Resource Group | `mgmt-state-store-{subscription}` |
 | Container | `mgmtstatestorecontainer{environment}` |
-| State Key | `{product}/{environment}/terraform.tfstate` |
+| State Key | `{team}/{environment}/terraform.tfstate` |
 
-The product name is extracted from `helm/expressjs-monorepo-template/Chart.yaml`.
+The team name is extracted from the `annotations.team` field in `helm/expressjs-monorepo-template/Chart.yaml` (e.g., `dtsse`). This matches the pattern used by the helm-deploy job.
 
 ### Usage
 
@@ -171,9 +171,9 @@ terraform init \
   -backend-config="storage_account_name=mgmtstatestorenonprod" \
   -backend-config="container_name=mgmtstatestorecontaineraat" \
   -backend-config="resource_group_name=mgmt-state-store-nonprod" \
-  -backend-config="key=expressjs-monorepo-template/aat/terraform.tfstate"
+  -backend-config="key=dtsse/aat/terraform.tfstate"
 
-terraform plan -var "env=aat" -var "product=expressjs-monorepo-template" -var "subscription=nonprod"
+terraform plan -var "env=aat" -var "product=dtsse" -var "subscription=nonprod"
 ```
 
 ## Version Requirements
