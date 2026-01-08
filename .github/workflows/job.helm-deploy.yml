@@ -86,7 +86,7 @@ jobs:
       - name: Deploy to preview
         if: inputs.environment == 'preview'
         id: deploy-preview
-        uses: hmcts/cnp-githubactions-library/helm-deploy@helm-deploy
+        uses: hmcts/cnp-githubactions-library/helm-deploy@main
         with:
           environment: cft-preview-01
           team-name: ${{ env.TEAM_NAME }}
