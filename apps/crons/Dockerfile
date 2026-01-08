@@ -18,7 +18,6 @@ COPY --from=build /opt/app/apps/crons/dist ./apps/crons/dist
 COPY --from=build /opt/app/libs ./libs
 
 RUN yarn workspaces focus @hmcts/crons --production
-COPY --from=build /opt/app/node_modules/.prisma ./node_modules/.prisma
 ENV NODE_ENV=production
 ENV NODE_OPTIONS='--conditions=production'
 
