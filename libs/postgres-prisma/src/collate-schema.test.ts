@@ -30,11 +30,11 @@ describe("collate-schema", () => {
   it("should successfully collate schemas with models and enums", async () => {
     const baseSchema = `datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../../../libs/postgres-prisma/generated/prisma"
 }`;
 
     const libSchema1 = `model User {
@@ -97,6 +97,7 @@ enum Status {
   it("should handle duplicate models and enums by only including them once", async () => {
     const baseSchema = `generator client {
   provider = "prisma-client-js"
+  output   = "../../../libs/postgres-prisma/generated/prisma"
 }`;
 
     const libSchema1 = `model User {
@@ -144,6 +145,7 @@ enum Role {
   it("should handle schemas with no models or enums", async () => {
     const baseSchema = `generator client {
   provider = "prisma-client-js"
+  output   = "../../../libs/postgres-prisma/generated/prisma"
 }`;
 
     const emptySchema = "";
@@ -166,6 +168,7 @@ enum Role {
   it("should handle multiline model definitions correctly", async () => {
     const baseSchema = `generator client {
   provider = "prisma-client-js"
+  output   = "../../../libs/postgres-prisma/generated/prisma"
 }`;
 
     const complexSchema = `model ComplexModel {
@@ -211,6 +214,7 @@ enum Role {
   it("should handle directory creation errors", async () => {
     const baseSchema = `generator client {
   provider = "prisma-client-js"
+  output   = "../../../libs/postgres-prisma/generated/prisma"
 }`;
 
     const mockDeps = {
@@ -226,6 +230,7 @@ enum Role {
   it("should handle file write errors", async () => {
     const baseSchema = `generator client {
   provider = "prisma-client-js"
+  output   = "../../../libs/postgres-prisma/generated/prisma"
 }`;
 
     const mockDeps = {
@@ -241,11 +246,11 @@ enum Role {
   it("should handle when no lib schemas are found", async () => {
     const baseSchema = `datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 generator client {
   provider = "prisma-client-js"
+  output   = "../../../libs/postgres-prisma/generated/prisma"
 }`;
 
     const mockDeps = {
