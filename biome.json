@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "includes": ["**", "!**/*.js", ".claude/hooks/**/*.js", "!**/coverage/**", "!**/dist/**", "!**/build/**", "!**/node_modules/**", "!**/.turbo/**"]
+    "includes": ["**", "!**/*.js", ".claude/hooks/**/*.js", "!**/coverage/**", "!**/dist/**", "!**/build/**", "!**/node_modules/**", "!**/.turbo/**", "!**/generated/**"]
   },
   "formatter": {
     "enabled": true,
