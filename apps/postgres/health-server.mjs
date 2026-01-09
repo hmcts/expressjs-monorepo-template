@@ -13,5 +13,5 @@ const server = http.createServer((req, res) => {
 });
 
 server.listen(5555, "0.0.0.0", () => {
-  console.log("Health proxy listening on port 5555, forwarding to Prisma Studio on 5556");
+  console.log("Health proxy listening on port 5555, forwarding to Prisma Studio on 5556.");
 });
