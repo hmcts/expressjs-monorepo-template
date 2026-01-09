@@ -113,6 +113,7 @@ jobs:
           release-name: ${{ env.RELEASE_NAME }}
           namespace: ${{ env.TEAM_NAME }}
           chart: helm/${{ env.APPLICATION_NAME }}
+          values-template: helm/${{ env.APPLICATION_NAME }}/values.preview.template.yaml
           subchart-paths: apps/*/helm
           oci-registry: ${{ env.REGISTRY }}
           oci-username: ${{ secrets.REGISTRY_USERNAME }}
