@@ -11,7 +11,7 @@ export const main = async () => {
   const scriptName = process.env.SCRIPT_NAME;
 
   if (!scriptName) {
-    throw new Error("SCRIPT_NAME environment variable is required");
+    throw new Error("SCRIPT_NAME environment variable is required.");
   }
 
   const script = await import(`./${scriptName}.js`);

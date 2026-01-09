@@ -73,6 +73,7 @@ jobs:
           echo "APPLICATION_NAME=${APPLICATION_NAME}" >> $GITHUB_ENV
           echo "TIMESTAMP=${{ inputs.timestamp }}" >> $GITHUB_ENV
           echo "SHORT_SHA=${{ inputs.short-sha }}" >> $GITHUB_ENV
+          echo "ENVIRONMENT=${{ inputs.environment }}" >> $GITHUB_ENV
 
           # Set dynamic image variables and release name
           .github/workflows/jobs/build-and-publish-images/set-image-variables.sh \
@@ -86,7 +87,7 @@ jobs:
       - name: Deploy to preview
         if: inputs.environment == 'preview'
         id: deploy-preview
-        uses: hmcts/cnp-githubactions-library/helm-deploy@helm-deploy
+        uses: hmcts/cnp-githubactions-library/helm-deploy@main
         with:
           environment: cft-preview-01
           team-name: ${{ env.TEAM_NAME }}
@@ -113,6 +114,7 @@ jobs:
           release-name: ${{ env.RELEASE_NAME }}
           namespace: ${{ env.TEAM_NAME }}
           chart: helm/${{ env.APPLICATION_NAME }}
+          values-template: helm/${{ env.APPLICATION_NAME }}/values.template.yaml
           subchart-paths: apps/*/helm
           oci-registry: ${{ env.REGISTRY }}
           oci-username: ${{ secrets.REGISTRY_USERNAME }}

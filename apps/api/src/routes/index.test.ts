@@ -12,7 +12,6 @@ describe("GET /", () => {
 
     expect(mockRes.json).toHaveBeenCalledWith({
       message: "Welcome to HMCTS API",
-      version: "1.0.0",
       endpoints: {
         health: "/health",
         liveness: "/health/liveness",

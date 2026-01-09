@@ -1,5 +1,5 @@
 import path from "node:path";
-import { defineConfig } from "prisma/config";
+import { defineConfig, env } from "prisma/config";
 
 // Construct DATABASE_URL from individual env vars if available
 if (process.env.POSTGRES_HOST && process.env.POSTGRES_USER && process.env.POSTGRES_PASSWORD && process.env.POSTGRES_PORT && process.env.POSTGRES_DATABASE) {
@@ -16,5 +16,8 @@ export default defineConfig({
   schema: path.join("dist", "schema.prisma"),
   migrations: {
     path: path.join("prisma", "migrations")
+  },
+  datasource: {
+    url: env("DATABASE_URL")
   }
 });

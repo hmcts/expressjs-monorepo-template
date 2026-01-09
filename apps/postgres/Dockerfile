@@ -19,7 +19,6 @@ COPY --chmod=755 apps/postgres/start.sh ./apps/postgres/start.sh
 COPY apps/postgres/health-server.mjs ./apps/postgres/health-server.mjs
 
 RUN yarn workspaces focus @hmcts/postgres
-COPY --from=build /opt/app/node_modules/.prisma ./node_modules/.prisma
 ENV NODE_ENV=production
 
 WORKDIR /opt/app/apps/postgres

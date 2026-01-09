@@ -45,6 +45,10 @@ yarn workspace @hmcts/postgres-prisma generate
 yarn workspace @hmcts/postgres-prisma collate
 ```
 
+### Generated Client
+
+The Prisma client is generated to `generated/prisma/` (gitignored). This uses the Prisma 7 driver adapter pattern with `@prisma/adapter-pg` for PostgreSQL connections.
+
 ### Migration Commands
 
 Migrations are managed by the `apps/postgres` application. See `apps/postgres` for migration workflows.

@@ -25,3 +25,18 @@ jobs:
       affected-apps: ${{ inputs.affected-apps }}
       helm-apps: ${{ inputs.helm-apps }}
     secrets: inherit
+
+  save-successful-sha:
+    name: Save Successful Build SHA
+    needs: promote-images
+    if: success()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Write SHA to file
+        run: echo "${{ github.sha }}" > .last-successful-sha
+
+      - name: Save SHA to cache
+        uses: actions/cache/save@v4
+        with:
+          path: .last-successful-sha
+          key: last-successful-docker-build-sha-${{ github.sha }}

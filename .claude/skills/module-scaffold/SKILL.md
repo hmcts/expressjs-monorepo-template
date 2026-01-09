@@ -75,6 +75,11 @@ Use the templates in `assets/` to create:
 4. **libs/{name}/src/index.ts** - from `index.ts.template`
    - Add business logic exports as they're created
 
+5. **libs/{name}/prisma/schema.prisma** - from `schema.prisma.template` (if database needed)
+   - Replace `{{MODULE_NAME}}` with module name
+   - Replace `{{ModelName}}` with PascalCase model name (e.g., `PaymentTransaction`)
+   - Replace `{{table_name}}` with snake_case table name (e.g., `payment_transaction`)
+
 ### Step 4: Register Module
 
 #### 4a. Root tsconfig.json
@@ -160,6 +165,7 @@ Templates are located in `.claude/skills/module-scaffold/assets/`:
 - `tsconfig.json.template` - TypeScript configuration
 - `config.ts.template` - Module config exports
 - `index.ts.template` - Business logic exports
+- `schema.prisma.template` - Database model template (for modules with database)
 
 ## Example: Full Module Creation
 
@@ -179,17 +185,29 @@ Creating a `payment-gateway` module:
 
 5. **Create src/index.ts** placeholder
 
-6. **Register in tsconfig.json:**
+6. **Create prisma/schema.prisma** with model:
+   ```prisma
+   model PaymentTransaction {
+     id        String   @id @default(cuid())
+     amount    Int
+     status    String
+     createdAt DateTime @default(now()) @map("created_at")
+
+     @@map("payment_transaction")
+   }
+   ```
+
+7. **Register in tsconfig.json:**
    ```json
    "@hmcts/payment-gateway": ["libs/payment-gateway/src"]
    ```
 
-7. **Register in apps/web/src/app.ts:**
+8. **Register in apps/web/src/app.ts:**
    ```typescript
    import { pageRoutes as paymentGatewayPages } from "@hmcts/payment-gateway/config";
    ```
 
-8. **Run verification:**
+9. **Run verification:**
    ```bash
    yarn && yarn build && yarn lint
    ```
