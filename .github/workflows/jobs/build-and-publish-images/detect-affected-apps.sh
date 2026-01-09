@@ -3,16 +3,27 @@ set -euo pipefail
 
 # Script: detect-affected-apps.sh
 # Purpose: Detect which apps have been affected by changes using Turborepo
+# Usage: detect-affected-apps.sh [base-sha]
+#   base-sha: Optional. SHA to compare against (defaults to origin/master)
 # Outputs:
 #   - affected_apps: JSON array of apps with Dockerfiles that were affected
 #   - helm_apps: JSON array of all apps with Helm charts
 #   - has_changes: boolean indicating if any apps were affected
 
+# Accept optional base SHA as first argument
+BASE_SHA="${1:-}"
+
 main() {
   echo "Detecting affected apps using Turborepo..."
 
-  # Set SCM base to origin/master - turbo defaults to 'master' which doesn't exist in CI
-  export TURBO_SCM_BASE="origin/master"
+  # Use provided base SHA, or default to origin/master
+  if [ -n "$BASE_SHA" ]; then
+    export TURBO_SCM_BASE="$BASE_SHA"
+    echo "Using custom base: $BASE_SHA"
+  else
+    export TURBO_SCM_BASE="origin/master"
+    echo "Using default base: origin/master"
+  fi
 
   # Get affected packages using Turborepo (comparing against base branch)
   # Note: --affected and --filter cannot be used together
