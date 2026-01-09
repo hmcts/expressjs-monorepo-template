@@ -17,9 +17,17 @@ jobs:
       change-id: staging
     secrets: inherit
 
+  infrastructure-stage:
+    name: Infrastructure
+    needs: [build-stage]
+    uses: ./.github/workflows/stage.infrastructure.yml
+    with:
+      plan-only: false
+    secrets: inherit
+
   deploy-stage:
     name: Deploy to AAT
-    needs: [build-stage]
+    needs: [build-stage, infrastructure-stage]
     uses: ./.github/workflows/stage.deploy.yml
     with:
       change-id: staging
