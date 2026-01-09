@@ -1,0 +1,77 @@
+# Base values template for production-like environments (AAT, Prod)
+# Database and cache infrastructure is managed by Terraform, not Helm
+global:
+  environment: ${ENVIRONMENT:-aat}
+
+# Enable/disable subcharts
+postgres:
+  enabled: true
+web:
+  enabled: true
+api:
+  enabled: true
+crons:
+  enabled: true
+
+# Web application configuration
+expressjs-monorepo-template-web:
+  nodejs:
+    image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-web:${WEB_IMAGE}"
+    ingressHost: "${TEAM_NAME}-expressjs-monorepo-template-web.${ENVIRONMENT}.platform.hmcts.net"
+    environment:
+      POSTGRES_DATABASE: "expressjs-monorepo-template"
+    secrets:
+      POSTGRES_HOST:
+        secretRef: postgres
+        key: HOST
+      POSTGRES_USER:
+        secretRef: postgres
+        key: USER
+      POSTGRES_PASSWORD:
+        secretRef: postgres
+        key: PASSWORD
+      POSTGRES_PORT:
+        secretRef: postgres
+        key: PORT
+
+# API application configuration
+expressjs-monorepo-template-api:
+  nodejs:
+    image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-api:${API_IMAGE}"
+    ingressHost: "${TEAM_NAME}-expressjs-monorepo-template-api.${ENVIRONMENT}.platform.hmcts.net"
+
+# Crons application configuration
+expressjs-monorepo-template-crons:
+  job:
+    image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-crons:${CRONS_IMAGE}"
+    schedule: "*/5 * * * *"
+    suspend: false
+    kind: CronJob
+
+# Postgres Prisma Studio service configuration
+expressjs-monorepo-template-postgres:
+  nodejs:
+    image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-postgres:${POSTGRES_IMAGE}"
+    ingressHost: "${TEAM_NAME}-expressjs-monorepo-template-postgres.${ENVIRONMENT}.platform.hmcts.net"
+    environment:
+      POSTGRES_DATABASE: "expressjs-monorepo-template"
+    secrets:
+      POSTGRES_HOST:
+        secretRef: postgres
+        key: HOST
+      POSTGRES_USER:
+        secretRef: postgres
+        key: USER
+      POSTGRES_PASSWORD:
+        secretRef: postgres
+        key: PASSWORD
+      POSTGRES_PORT:
+        secretRef: postgres
+        key: PORT
+
+# Dev dependencies - DISABLED for AAT/Prod (managed by Terraform)
+postgresql:
+  enabled: false
+
+redis:
+  enabled: false
