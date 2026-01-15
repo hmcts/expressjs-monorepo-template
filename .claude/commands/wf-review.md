@@ -62,7 +62,7 @@ PROMPT FOR AGENT:
 5. Create a review report with:
    - Issues that MUST be fixed (blocking)
    - Suggestions for improvement (non-blocking)
-OUTPUT: Save review to docs/tickets/$ARGUMENT/review.md"
+OUTPUT: Save review to docs/tickets/$ARGUMENT/review.md
 
 VERIFY: Review document created
 ```

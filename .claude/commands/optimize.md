@@ -109,8 +109,7 @@ To quickly analyze code for performance issues, provide the specific file or mod
   ```typescript
   datasource db {
     provider = "postgresql"
-    url      = env("DATABASE_URL")
-    connectionLimit = 10 // Adjust based on load
+    url      = env("DATABASE_URL") // Add ?connection_limit=10 to URL
   }
   ```
 - [ ] **Enable query logging in development** only
