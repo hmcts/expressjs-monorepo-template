@@ -19,6 +19,6 @@ jobs:
     uses: ./.github/workflows/job.terraform.yml
     with:
       environment: aat
-      subscription: nonprod
+      subscription: nonprod # TODO, makes no sense.
       plan-only: ${{ inputs.plan-only }}
     secrets: inherit

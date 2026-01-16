@@ -92,8 +92,8 @@ jobs:
           echo "tenant_id=$TENANT_ID" >> "$GITHUB_OUTPUT"
           echo "sp_object_id=$SP_OBJECT_ID" >> "$GITHUB_OUTPUT"
 
-      - name: Set subscription
-        run: az account list
+      # - name: Set subscription
+      #   run: az account list
 
       - name: Set subscription
         run: az account set --subscription DCD-CNP-DEV 
@@ -110,6 +110,8 @@ jobs:
             --query '[0].value' -o tsv)
           echo "::add-mask::$KEY"
           echo "key=$KEY" >> "$GITHUB_OUTPUT"
+
+      # TODO: Use terraform actions rather than DIY
 
       - name: Terraform Init
         if: steps.changes.outputs.has_changes == 'true'
@@ -129,6 +131,7 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
         run: terraform validate
 
+      # TODO: change hardcoded subscription
       - name: Terraform Plan
         if: steps.changes.outputs.has_changes == 'true'
         id: plan
@@ -152,7 +155,7 @@ jobs:
           terraform plan -detailed-exitcode -out=tfplan \
             -var "env=${{ inputs.environment }}" \
             -var "product=${PRODUCT}" \
-            -var "subscription=${{ inputs.subscription }}" \
+            -var "subscription=1c4f0704-a29e-403d-b719-b90c34ef14c9" \
             -var "tenant_id=${TENANT_ID}" \
             -var "builtFrom=${GITHUB_REPOSITORY}" \
             -var "ci_service_principal_object_id=${SP_OBJECT_ID}" \

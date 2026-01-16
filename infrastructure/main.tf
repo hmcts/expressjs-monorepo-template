@@ -1,5 +1,7 @@
 provider "azurerm" {
-  features {}
+  features {
+    subscription_id = ${var.subscription}
+  }
 }
 
 # Reference existing resource group (created by another process)
