@@ -91,24 +91,27 @@ jobs:
           echo "tenant_id=$TENANT_ID" >> "$GITHUB_OUTPUT"
           echo "sp_object_id=$SP_OBJECT_ID" >> "$GITHUB_OUTPUT"
 
-      - name: Get Storage Account Key
-        if: steps.changes.outputs.has_changes == 'true'
-        id: storage-key
-        run: |
-          STORAGE_ACCOUNT="mgmtstatestore${{ inputs.subscription }}"
-          RESOURCE_GROUP="mgmt-state-store-${{ inputs.subscription }}"
-          KEY=$(az storage account keys list \
-            --account-name "$STORAGE_ACCOUNT" \
-            --resource-group "$RESOURCE_GROUP" \
-            --query '[0].value' -o tsv)
-          echo "::add-mask::$KEY"
-          echo "key=$KEY" >> "$GITHUB_OUTPUT"
+      - name: Set subscription
+        run: az account set --subscription DCD-CNP-DEV 
+
+      # - name: Get Storage Account Key
+      #   if: steps.changes.outputs.has_changes == 'true'
+      #   id: storage-key
+      #   run: |
+      #     STORAGE_ACCOUNT="mgmtstatestore${{ inputs.subscription }}"
+      #     RESOURCE_GROUP="mgmt-state-store-${{ inputs.subscription }}"
+      #     KEY=$(az storage account keys list \
+      #       --account-name "$STORAGE_ACCOUNT" \
+      #       --resource-group "$RESOURCE_GROUP" \
+      #       --query '[0].value' -o tsv)
+      #     echo "::add-mask::$KEY"
+      #     echo "key=$KEY" >> "$GITHUB_OUTPUT"
 
       - name: Terraform Init
         if: steps.changes.outputs.has_changes == 'true'
         working-directory: ${{ inputs.working-directory }}
         env:
-          ARM_ACCESS_KEY: ${{ steps.storage-key.outputs.key }}
+          # ARM_ACCESS_KEY: ${{ steps.storage-key.outputs.key }}
           PRODUCT: ${{ steps.metadata.outputs.product }}
         run: |
           terraform init -reconfigure \
@@ -127,7 +130,7 @@ jobs:
         id: plan
         working-directory: ${{ inputs.working-directory }}
         env:
-          ARM_ACCESS_KEY: ${{ steps.storage-key.outputs.key }}
+          # ARM_ACCESS_KEY: ${{ steps.storage-key.outputs.key }}
           PRODUCT: ${{ steps.metadata.outputs.product }}
           TENANT_ID: ${{ steps.azure-context.outputs.tenant_id }}
           SP_OBJECT_ID: ${{ steps.azure-context.outputs.sp_object_id }}
@@ -220,6 +223,7 @@ ${truncatedPlan}
       - name: Terraform Apply
         if: steps.changes.outputs.has_changes == 'true' && !inputs.plan-only && steps.plan.outputs.exitcode == '2'
         working-directory: ${{ inputs.working-directory }}
-        env:
-          ARM_ACCESS_KEY: ${{ steps.storage-key.outputs.key }}
         run: terraform apply -auto-approve tfplan
+        # env:
+          # ARM_ACCESS_KEY: ${{ steps.storage-key.outputs.key }}
+
