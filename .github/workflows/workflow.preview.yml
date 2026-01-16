@@ -10,20 +10,32 @@ concurrency:
   group: preview-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
-# TODO only sonar if there are code changes
-
 jobs:
+  detect-code-changes:
+    name: Detect Code Changes
+    uses: ./.github/workflows/job.detect-changes.yml
+    with:
+      paths: "^(yarn\\.lock|apps/|libs/)"
+
+  detect-infra-changes:
+    name: Detect Infrastructure Changes
+    uses: ./.github/workflows/job.detect-changes.yml
+    with:
+      paths: "^infrastructure/"
+
   build-stage:
     name: Build
+    needs: [detect-code-changes]
+    if: needs.detect-code-changes.outputs.has-changes == 'true'
     uses: ./.github/workflows/stage.build.yml
     with:
       change-id: ${{ github.event.pull_request.number }}
     secrets: inherit
 
-  # TODO: what happens if no docker images built? We should still do the infra step
   infrastructure-stage:
     name: Infrastructure
-    needs: [build-stage]
+    needs: [detect-infra-changes]
+    if: needs.detect-infra-changes.outputs.has-changes == 'true'
     uses: ./.github/workflows/stage.infrastructure.yml
     with:
       plan-only: true
@@ -32,6 +44,7 @@ jobs:
   deploy-stage:
     name: Deploy
     needs: [build-stage, infrastructure-stage]
+    if: needs.build-stage.result == 'success'
     uses: ./.github/workflows/stage.deploy.yml
     with:
       change-id: ${{ github.event.pull_request.number }}
@@ -44,6 +57,7 @@ jobs:
   smoke-test-stage:
     name: Smoke Test
     needs: [deploy-stage]
+    if: needs.deploy-stage.result == 'success'
     uses: ./.github/workflows/stage.smoke-test.yml
     with:
       change-id: ${{ github.event.pull_request.number }}
@@ -52,6 +66,7 @@ jobs:
   e2e-stage:
     name: E2E
     needs: [smoke-test-stage, deploy-stage]
+    if: needs.deploy-stage.result == 'success'
     uses: ./.github/workflows/stage.e2e.yml
     with:
       preview-urls: ${{ needs.deploy-stage.outputs.urls }}

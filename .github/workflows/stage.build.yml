@@ -27,10 +27,6 @@ jobs:
     uses: ./.github/workflows/job.lint.yml
     secrets: inherit
 
-  terraform-fmt:
-    name: Terraform Format
-    uses: ./.github/workflows/job.terraform-fmt.yml
-
   test:
     name: Test
     uses: ./.github/workflows/job.test.yml

@@ -14,8 +14,13 @@ on:
         value: ${{ jobs.terraform.outputs.plan-exitcode }}
 
 jobs:
+  terraform-fmt:
+    name: Terraform Format
+    uses: ./.github/workflows/job.terraform-fmt.yml
+
   terraform:
     name: Terraform
+    needs: [terraform-fmt]
     uses: ./.github/workflows/job.terraform.yml
     with:
       environment: aat

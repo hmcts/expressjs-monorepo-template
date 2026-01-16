@@ -10,8 +10,22 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  detect-code-changes:
+    name: Detect Code Changes
+    uses: ./.github/workflows/job.detect-changes.yml
+    with:
+      paths: "^(yarn\\.lock|apps/|libs/)"
+
+  detect-infra-changes:
+    name: Detect Infrastructure Changes
+    uses: ./.github/workflows/job.detect-changes.yml
+    with:
+      paths: "^infrastructure/"
+
   build-stage:
     name: Build
+    needs: [detect-code-changes]
+    if: needs.detect-code-changes.outputs.has-changes == 'true'
     uses: ./.github/workflows/stage.build.yml
     with:
       change-id: staging
@@ -19,7 +33,8 @@ jobs:
 
   infrastructure-stage:
     name: Infrastructure
-    needs: [build-stage]
+    needs: [detect-infra-changes]
+    if: needs.detect-infra-changes.outputs.has-changes == 'true'
     uses: ./.github/workflows/stage.infrastructure.yml
     with:
       plan-only: false
@@ -28,6 +43,7 @@ jobs:
   deploy-stage:
     name: Deploy to AAT
     needs: [build-stage, infrastructure-stage]
+    if: needs.build-stage.result == 'success'
     uses: ./.github/workflows/stage.deploy.yml
     with:
       change-id: staging
@@ -41,6 +57,7 @@ jobs:
   smoke-test-stage:
     name: Smoke Test
     needs: [deploy-stage]
+    if: needs.deploy-stage.result == 'success'
     uses: ./.github/workflows/stage.smoke-test.yml
     with:
       change-id: staging
@@ -49,6 +66,7 @@ jobs:
   e2e-stage:
     name: E2E
     needs: [smoke-test-stage, deploy-stage]
+    if: needs.deploy-stage.result == 'success'
     uses: ./.github/workflows/stage.e2e.yml
     with:
       preview-urls: ${{ needs.deploy-stage.outputs.urls }}
@@ -57,7 +75,7 @@ jobs:
   cleanup-stage:
     name: Cleanup
     needs: [e2e-stage, deploy-stage]
-    if: always()
+    if: always() && needs.deploy-stage.result == 'success'
     uses: ./.github/workflows/stage.cleanup.yml
     with:
       release-name: ${{ needs.deploy-stage.outputs.release-name }}
