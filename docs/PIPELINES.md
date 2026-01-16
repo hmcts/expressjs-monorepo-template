@@ -33,6 +33,7 @@ GitHub Actions requires all reusable workflows to be at the top level of `.githu
 ├── stage.deploy.yml               # Deploy stage workflow
 ├── stage.smoke-test.yml           # Smoke test stage workflow
 ├── stage.e2e.yml                  # E2E stage workflow
+├── job.detect-changes.yml         # Change detection job
 ├── job.lint.yml                   # Lint job
 ├── job.terraform-fmt.yml          # Terraform format check job
 ├── job.test.yml                   # Test job
@@ -44,6 +45,8 @@ GitHub Actions requires all reusable workflows to be at the top level of `.githu
 ├── job.smoke-test.yml             # Smoke test job
 ├── job.e2e-test.yml               # E2E test job
 └── jobs/                          # Documentation and scripts
+    ├── detect-changes/
+    │   └── README.md
     ├── lint/
     │   └── README.md
     ├── test/
@@ -55,6 +58,10 @@ GitHub Actions requires all reusable workflows to be at the top level of `.githu
     │   ├── detect-affected-apps.sh
     │   ├── generate-build-metadata.sh
     │   └── set-image-variables.sh
+    ├── terraform-fmt/
+    │   └── README.md
+    ├── terraform/
+    │   └── README.md
     ├── helm-deploy/
     │   ├── README.md
     │   └── deploy-preview.sh
@@ -63,9 +70,7 @@ GitHub Actions requires all reusable workflows to be at the top level of `.githu
     │   └── get-deployment-urls.sh
     ├── smoke-test/
     │   └── README.md
-    ├── e2e-test/
-    │   └── README.md
-    └── infrastructure/
+    └── e2e-test/
         └── README.md
 ```
 
@@ -83,47 +88,58 @@ GitHub Actions requires all reusable workflows to be at the top level of `.githu
 
 **Flow:**
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Preview Pipeline                          │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌───────────────────────────────────────────────────────────────┐   │
-│  │ BUILD STAGE                                                    │   │
-│  │  ┌──────┐ ┌────────┐ ┌──────┐ ┌──────────┐ ┌───────────────┐  │   │
-│  │  │ Lint │ │ TF Fmt │ │ Test │ │ OSV Scan │ │ Build Images  │  │   │
-│  │  └──────┘ └────────┘ └──────┘ └──────────┘ └───────────────┘  │   │
-│  └───────────────────────────────┬───────────────────────────────┘   │
-│                                  ↓                                    │
-│  ┌───────────────────────────────────────────────────────────────┐   │
-│  │ INFRASTRUCTURE STAGE                                           │   │
-│  │  ┌─────────────────────────────────────────────────────────┐  │   │
-│  │  │ Terraform Plan (skipped if no infrastructure/ changes)  │  │   │
-│  │  └─────────────────────────────────────────────────────────┘  │   │
-│  └───────────────────────────────┬───────────────────────────────┘   │
-│                                  ↓                                    │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ DEPLOY STAGE                                         │   │
-│  │  ┌────────────────────────────────────────────────┐ │   │
-│  │  │ Helm Deploy                                     │ │   │
-│  │  └────────────────────────────────────────────────┘ │   │
-│  └─────────────────────────┬───────────────────────────┘   │
-│                            ↓                                │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ SMOKE TEST STAGE                                     │   │
-│  │  ┌──────────────┐ ┌─────────────────────────────┐   │   │
-│  │  │ PR Comment   │ │ Smoke Test (health checks)  │   │   │
-│  │  └──────────────┘ └─────────────────────────────┘   │   │
-│  └─────────────────────────┬───────────────────────────┘   │
-│                            ↓                                │
-│  ┌─────────────────────────────────────────────────────┐   │
-│  │ E2E STAGE                                            │   │
-│  │  ┌────────────────────────────────────────────────┐ │   │
-│  │  │ Playwright E2E Tests                            │ │   │
-│  │  └────────────────────────────────────────────────┘ │   │
-│  └─────────────────────────────────────────────────────┘   │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                         Preview Pipeline                             │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  ┌────────────────────────┐    ┌─────────────────────────┐          │
+│  │ detect-code-changes    │    │ detect-infra-changes    │          │
+│  └───────────┬────────────┘    └────────────┬────────────┘          │
+│              │                              │                        │
+│              ▼                              ▼                        │
+│  ┌────────────────────────┐    ┌─────────────────────────┐          │
+│  │ BUILD STAGE            │    │ INFRASTRUCTURE STAGE    │          │
+│  │ (if code changes)      │    │ (if infra changes)      │          │
+│  │  ┌──────┐ ┌──────┐     │    │  ┌────────┐             │          │
+│  │  │ Lint │ │ Test │     │    │  │ TF Fmt │             │          │
+│  │  └──────┘ └──────┘     │    │  └───┬────┘             │          │
+│  │  ┌──────────┐          │    │      ▼                  │          │
+│  │  │ OSV Scan │          │    │  ┌────────────────────┐ │          │
+│  │  └──────────┘          │    │  │ Terraform Plan     │ │          │
+│  │  ┌───────────────┐     │    │  └────────────────────┘ │          │
+│  │  │ Build Images  │     │    └─────────────────────────┘          │
+│  │  └───────────────┘     │                                         │
+│  └───────────┬────────────┘                                         │
+│              │                                                       │
+│              ▼                                                       │
+│  ┌─────────────────────────────────────────────────────┐            │
+│  │ DEPLOY STAGE (if build succeeded)                    │            │
+│  │  ┌────────────────────────────────────────────────┐ │            │
+│  │  │ Helm Deploy                                     │ │            │
+│  │  └────────────────────────────────────────────────┘ │            │
+│  └─────────────────────────┬───────────────────────────┘            │
+│                            ▼                                         │
+│  ┌─────────────────────────────────────────────────────┐            │
+│  │ SMOKE TEST STAGE                                     │            │
+│  │  ┌──────────────┐ ┌─────────────────────────────┐   │            │
+│  │  │ PR Comment   │ │ Smoke Test (health checks)  │   │            │
+│  │  └──────────────┘ └─────────────────────────────┘   │            │
+│  └─────────────────────────┬───────────────────────────┘            │
+│                            ▼                                         │
+│  ┌─────────────────────────────────────────────────────┐            │
+│  │ E2E STAGE                                            │            │
+│  │  ┌────────────────────────────────────────────────┐ │            │
+│  │  │ Playwright E2E Tests                            │ │            │
+│  │  └────────────────────────────────────────────────┘ │            │
+│  └─────────────────────────────────────────────────────┘            │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
 ```
+
+**Change Detection:**
+- Code changes (`yarn.lock`, `apps/`, `libs/`) → Build Stage
+- Infrastructure changes (`infrastructure/`) → Infrastructure Stage
+- Both run in parallel; stages are skipped if no relevant changes detected
 
 **Concurrency:** One deployment per PR (new pushes cancel in-progress runs)
 
@@ -133,30 +149,42 @@ GitHub Actions requires all reusable workflows to be at the top level of `.githu
 
 **Flow:**
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    Main Pipeline                             │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌───────────────────────────────────────────────────────────────┐   │
-│  │ BUILD STAGE                                                    │   │
-│  │  ┌──────┐ ┌────────┐ ┌──────┐ ┌──────────┐ ┌───────────────┐  │   │
-│  │  │ Lint │ │ TF Fmt │ │ Test │ │ OSV Scan │ │ Build Images  │  │   │
-│  │  └──────┘ └────────┘ └──────┘ └──────────┘ └───────────────┘  │   │
-│  └───────────────────────────────┬───────────────────────────────┘   │
-│                                  ↓                                    │
-│  ┌───────────────────────────────────────────────────────────────┐   │
-│  │ INFRASTRUCTURE STAGE                                           │   │
-│  │  ┌──────────────────────────────────────────────────────────┐ │   │
-│  │  │ Terraform Plan + Apply (skipped if no infra/ changes)    │ │   │
-│  │  └──────────────────────────────────────────────────────────┘ │   │
-│  └───────────────────────────────┬───────────────────────────────┘   │
-│                                  ↓                                    │
-│  ┌───────────────────────────────────────────────────────────────┐   │
-│  │ DEPLOY STAGE → SMOKE TEST → E2E → PROMOTE                      │   │
-│  └───────────────────────────────────────────────────────────────┘   │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                           Main Pipeline                              │
+├─────────────────────────────────────────────────────────────────────┤
+│                                                                      │
+│  ┌────────────────────────┐    ┌─────────────────────────┐          │
+│  │ detect-code-changes    │    │ detect-infra-changes    │          │
+│  └───────────┬────────────┘    └────────────┬────────────┘          │
+│              │                              │                        │
+│              ▼                              ▼                        │
+│  ┌────────────────────────┐    ┌─────────────────────────┐          │
+│  │ BUILD STAGE            │    │ INFRASTRUCTURE STAGE    │          │
+│  │ (if code changes)      │    │ (if infra changes)      │          │
+│  │  ┌──────┐ ┌──────┐     │    │  ┌────────┐             │          │
+│  │  │ Lint │ │ Test │     │    │  │ TF Fmt │             │          │
+│  │  └──────┘ └──────┘     │    │  └───┬────┘             │          │
+│  │  ┌──────────┐          │    │      ▼                  │          │
+│  │  │ OSV Scan │          │    │  ┌────────────────────┐ │          │
+│  │  └──────────┘          │    │  │ Terraform Apply    │ │          │
+│  │  ┌───────────────┐     │    │  └────────────────────┘ │          │
+│  │  │ Build Images  │     │    └─────────────────────────┘          │
+│  │  └───────────────┘     │                                         │
+│  └───────────┬────────────┘                                         │
+│              │                                                       │
+│              ▼                                                       │
+│  ┌───────────────────────────────────────────────────────────────┐  │
+│  │ DEPLOY STAGE → SMOKE TEST → E2E → CLEANUP → PROMOTE           │  │
+│  │ (if build succeeded)                                           │  │
+│  └───────────────────────────────────────────────────────────────┘  │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
 ```
+
+**Change Detection:**
+- Code changes (`yarn.lock`, `apps/`, `libs/`) → Build Stage
+- Infrastructure changes (`infrastructure/`) → Infrastructure Stage (with Apply)
+- Both run in parallel; stages are skipped if no relevant changes detected
 
 **Purpose:** Validate code on merge, run full test suite for coverage reporting, apply infrastructure changes
 
@@ -166,11 +194,12 @@ GitHub Actions requires all reusable workflows to be at the top level of `.githu
 
 **Purpose:** Code quality, testing, security scanning, and image building
 
+**Condition:** Only runs if code changes detected (`yarn.lock`, `apps/`, `libs/`)
+
 **Jobs (parallel):**
 | Job | Purpose |
 |-----|---------|
 | Lint | Biome linting + Prisma schema validation |
-| Terraform Format | Terraform code formatting check (skipped if no infra changes) |
 | Test | Unit tests with coverage + SonarCloud analysis |
 | OSV Scanner | Dependency vulnerability scanning |
 | Build Images | Docker image build and push to ACR |
@@ -183,18 +212,21 @@ GitHub Actions requires all reusable workflows to be at the top level of `.githu
 
 ### Infrastructure Stage
 
-**Purpose:** Apply infrastructure changes via Terraform
+**Purpose:** Validate and apply infrastructure changes via Terraform
 
-**Jobs:**
+**Condition:** Only runs if infrastructure changes detected (`infrastructure/`)
+
+**Jobs (sequential):**
 | Job | Purpose |
 |-----|---------|
+| Terraform Format | Terraform code formatting check |
 | Terraform | Terraform plan (PRs) or plan+apply (main branch) |
 
 **Inputs:** None (uses hardcoded `aat` environment and `nonprod` subscription)
 **Outputs:** `plan-exitcode` (0=no changes, 2=changes detected)
 
 **Behavior:**
-- Skipped automatically if no files changed in `infrastructure/`
+- Runs in parallel with Build Stage (independent change detection)
 - PRs: Plan only (no infrastructure changes applied)
 - Main branch: Plan + Apply
 
