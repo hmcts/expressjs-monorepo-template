@@ -9,7 +9,7 @@ variable "product" {
 }
 
 variable "subscription" {
-  description = "Azure subscription name (nonprod, prod)"
+  description = "Azure subscription name"
   type        = string
 }
 
