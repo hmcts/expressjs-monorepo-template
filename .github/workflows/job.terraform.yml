@@ -50,6 +50,9 @@ jobs:
   terraform:
     name: Terraform ${{ inputs.plan-only && 'Plan' || 'Apply' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     outputs:
       plan-exitcode: ${{ steps.plan.outputs.exitcode }}
 
@@ -161,12 +164,12 @@ jobs:
           fi
 
       - name: Save Plan Output
-        if: github.event_name == 'pull_request' && steps.plan.outputs.exitcode == '2'
+        if: github.event.pull_request && steps.plan.outputs.exitcode == '2'
         working-directory: ${{ inputs.working-directory }}
         run: terraform show -no-color tfplan > plan.txt
 
       - name: Post Plan to PR
-        if: github.event_name == 'pull_request' && steps.plan.outputs.exitcode == '2'
+        if: github.event.pull_request && steps.plan.outputs.exitcode == '2'
         uses: actions/github-script@v7
         with:
           script: |
@@ -183,18 +186,20 @@ jobs:
 
             const body = `### Terraform Plan for \`${{ inputs.environment }}\`
 
-            <details>
-            <summary>Show Plan</summary>
+<details>
+<summary>Show Plan</summary>
 
-            \`\`\`terraform
-            ${truncatedPlan}
-            \`\`\`
+\`\`\`terraform
+${truncatedPlan}
+\`\`\`
 
-            </details>`;
+</details>`;
+
+            const prNumber = context.payload.pull_request?.number || ${{ github.event.pull_request.number }};
 
             // Find existing comment
             const comments = await github.rest.issues.listComments({
-              issue_number: context.issue.number,
+              issue_number: prNumber,
               owner: context.repo.owner,
               repo: context.repo.repo,
             });
@@ -214,7 +219,7 @@ jobs:
               });
             } else {
               await github.rest.issues.createComment({
-                issue_number: context.issue.number,
+                issue_number: prNumber,
                 owner: context.repo.owner,
                 repo: context.repo.repo,
                 body: body
