@@ -54,6 +54,7 @@ jobs:
             echo "No changes in ${{ inputs.working-directory }}/, skipping terraform"
           fi
 
+      # TODO: This will need to be different for the expressjs-monorepo-template because dtsse is already set up.
       - name: Extract team name from Chart.yaml
         if: steps.changes.outputs.has_changes == 'true'
         id: metadata
@@ -65,7 +66,7 @@ jobs:
             echo "::error::No team annotation found in $CHART_FILE"
             exit 1
           fi
-          echo "product=$TEAM" >> "$GITHUB_OUTPUT"
+          echo "product=expressjs-monorepo" >> "$GITHUB_OUTPUT"
 
       - name: Setup Terraform
         if: steps.changes.outputs.has_changes == 'true'
