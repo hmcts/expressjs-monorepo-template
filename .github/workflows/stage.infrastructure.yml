@@ -19,6 +19,7 @@ jobs:
     uses: ./.github/workflows/job.terraform.yml
     with:
       environment: aat
-      subscription: nonprod # TODO, makes no sense.
+      subscription: DCD-CNP-DEV
+      storage-account: nonprod
       plan-only: ${{ inputs.plan-only }}
     secrets: inherit

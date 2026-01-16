@@ -3,7 +3,7 @@
 
 data "azurerm_application_insights" "ai" {
   name                = "${var.product}-appinsights-${var.env}"
-  resource_group_name = data.azurerm_resource_group.rg.name
+  resource_group_name = azurerm_resource_group.rg.name
 }
 
 # Store App Insights connection string in Key Vault

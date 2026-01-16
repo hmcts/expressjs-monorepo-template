@@ -4,8 +4,9 @@ provider "azurerm" {
   subscription_id = "${var.subscription}"
 }
 
-# Reference existing resource group (created by another process)
-# Product name (team) is extracted from Chart.yaml annotations
-data "azurerm_resource_group" "rg" {
-  name = "${var.product}-${var.env}"
+resource "azurerm_resource_group" "rg" {
+  name     = "${var.product}-${var.env}"
+  location = var.location
+
+  tags = var.common_tags
 }
