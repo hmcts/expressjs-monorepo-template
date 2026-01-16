@@ -158,9 +158,20 @@ jobs:
             -var "ci_service_principal_object_id=${SP_OBJECT_ID}" \
             -var "common_tags=${COMMON_TAGS}"
           EXITCODE=$?
+          echo "Raw terraform exit code: $EXITCODE"
+
+          # Handle terraform plan exit codes:
+          # 0 = no changes
+          # 1 = error
+          # 2 = changes detected
           echo "exitcode=$EXITCODE" >> "$GITHUB_OUTPUT"
           if [ $EXITCODE -eq 1 ]; then
+            echo "Terraform plan failed with error"
             exit 1
+          elif [ $EXITCODE -eq 2 ]; then
+            echo "Changes detected (exit code 2)"
+          else
+            echo "No changes detected (exit code 0)"
           fi
 
       - name: Debug PR context
