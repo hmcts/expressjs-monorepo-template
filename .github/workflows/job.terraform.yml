@@ -163,13 +163,19 @@ jobs:
             exit 1
           fi
 
+      - name: Debug PR context
+        run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "Has PR number: ${{ github.event.pull_request.number || 'none' }}"
+          echo "Plan exitcode: ${{ steps.plan.outputs.exitcode }}"
+
       - name: Save Plan Output
-        if: github.event.pull_request && steps.plan.outputs.exitcode == '2'
+        if: ${{ github.event.pull_request.number && steps.plan.outputs.exitcode == '2' }}
         working-directory: ${{ inputs.working-directory }}
         run: terraform show -no-color tfplan > plan.txt
 
       - name: Post Plan to PR
-        if: github.event.pull_request && steps.plan.outputs.exitcode == '2'
+        if: ${{ github.event.pull_request.number && steps.plan.outputs.exitcode == '2' }}
         uses: actions/github-script@v7
         with:
           script: |

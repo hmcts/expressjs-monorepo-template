@@ -48,18 +48,28 @@ jobs:
 
       - name: Check for changes
         id: changes
+        env:
+          PATTERN: ${{ inputs.paths }}
         run: |
+          echo "Event name: ${{ github.event_name }}"
+          echo "Base ref: ${{ github.base_ref }}"
+          echo "PR base ref: ${{ github.event.pull_request.base.ref }}"
+          echo "Event before: ${{ github.event.before }}"
+
           # For PRs (including when called via workflow_call from a PR)
           if [ -n "${{ github.event.pull_request.base.ref }}" ]; then
             BASE_SHA="origin/${{ github.event.pull_request.base.ref }}"
           elif [ -n "${{ github.base_ref }}" ]; then
             BASE_SHA="origin/${{ github.base_ref }}"
-          else
+          elif [ -n "${{ github.event.before }}" ] && [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
             BASE_SHA="${{ github.event.before }}"
+          else
+            # Fallback to comparing with origin/master
+            BASE_SHA="origin/master"
           fi
 
           echo "Using BASE_SHA: $BASE_SHA"
-          PATTERN='${{ inputs.paths }}'
+          echo "Pattern: $PATTERN"
 
           echo "Changed files:"
           git diff --name-only "$BASE_SHA" HEAD || true
