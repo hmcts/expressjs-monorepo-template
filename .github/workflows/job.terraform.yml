@@ -92,6 +92,9 @@ jobs:
           echo "sp_object_id=$SP_OBJECT_ID" >> "$GITHUB_OUTPUT"
 
       - name: Set subscription
+        run: az account list
+
+      - name: Set subscription
         run: az account set --subscription DCD-CNP-DEV 
 
       - name: Get Storage Account Key

@@ -18,6 +18,7 @@ jobs:
       change-id: ${{ github.event.pull_request.number }}
     secrets: inherit
 
+  # TODO: what happens if no docker images built? We should still do the infra step
   infrastructure-stage:
     name: Infrastructure
     needs: [build-stage]
