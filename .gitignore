@@ -48,3 +48,6 @@ values.preview.yaml
 
 # Prisma generated client
 libs/postgres-prisma/generated/
+
+# Auto Claude data directory
+.auto-claude/
