@@ -94,24 +94,24 @@ jobs:
       - name: Set subscription
         run: az account set --subscription DCD-CNP-DEV 
 
-      # - name: Get Storage Account Key
-      #   if: steps.changes.outputs.has_changes == 'true'
-      #   id: storage-key
-      #   run: |
-      #     STORAGE_ACCOUNT="mgmtstatestore${{ inputs.subscription }}"
-      #     RESOURCE_GROUP="mgmt-state-store-${{ inputs.subscription }}"
-      #     KEY=$(az storage account keys list \
-      #       --account-name "$STORAGE_ACCOUNT" \
-      #       --resource-group "$RESOURCE_GROUP" \
-      #       --query '[0].value' -o tsv)
-      #     echo "::add-mask::$KEY"
-      #     echo "key=$KEY" >> "$GITHUB_OUTPUT"
+      - name: Get Storage Account Key
+        if: steps.changes.outputs.has_changes == 'true'
+        id: storage-key
+        run: |
+          STORAGE_ACCOUNT="mgmtstatestore${{ inputs.subscription }}"
+          RESOURCE_GROUP="mgmt-state-store-${{ inputs.subscription }}"
+          KEY=$(az storage account keys list \
+            --account-name "$STORAGE_ACCOUNT" \
+            --resource-group "$RESOURCE_GROUP" \
+            --query '[0].value' -o tsv)
+          echo "::add-mask::$KEY"
+          echo "key=$KEY" >> "$GITHUB_OUTPUT"
 
       - name: Terraform Init
         if: steps.changes.outputs.has_changes == 'true'
         working-directory: ${{ inputs.working-directory }}
         env:
-          # ARM_ACCESS_KEY: ${{ steps.storage-key.outputs.key }}
+          ARM_ACCESS_KEY: ${{ steps.storage-key.outputs.key }}
           PRODUCT: ${{ steps.metadata.outputs.product }}
         run: |
           terraform init -reconfigure \
@@ -130,7 +130,7 @@ jobs:
         id: plan
         working-directory: ${{ inputs.working-directory }}
         env:
-          # ARM_ACCESS_KEY: ${{ steps.storage-key.outputs.key }}
+          ARM_ACCESS_KEY: ${{ steps.storage-key.outputs.key }}
           PRODUCT: ${{ steps.metadata.outputs.product }}
           TENANT_ID: ${{ steps.azure-context.outputs.tenant_id }}
           SP_OBJECT_ID: ${{ steps.azure-context.outputs.sp_object_id }}
@@ -164,66 +164,66 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
         run: terraform show -no-color tfplan > plan.txt
 
-      - name: Post Plan to PR
-        if: steps.changes.outputs.has_changes == 'true' && github.event_name == 'pull_request' && steps.plan.outputs.exitcode == '2'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const path = require('path');
-            const planPath = path.join('${{ inputs.working-directory }}', 'plan.txt');
-            const plan = fs.readFileSync(planPath, 'utf8');
+#       - name: Post Plan to PR
+#         if: steps.changes.outputs.has_changes == 'true' && github.event_name == 'pull_request' && steps.plan.outputs.exitcode == '2'
+#         uses: actions/github-script@v7
+#         with:
+#           script: |
+#             const fs = require('fs');
+#             const path = require('path');
+#             const planPath = path.join('${{ inputs.working-directory }}', 'plan.txt');
+#             const plan = fs.readFileSync(planPath, 'utf8');
 
-            // Truncate if too long (GitHub comment limit is 65536 characters)
-            const maxLength = 60000;
-            const truncatedPlan = plan.length > maxLength
-              ? plan.substring(0, maxLength) + '\n\n... (truncated)'
-              : plan;
+#             // Truncate if too long (GitHub comment limit is 65536 characters)
+#             const maxLength = 60000;
+#             const truncatedPlan = plan.length > maxLength
+#               ? plan.substring(0, maxLength) + '\n\n... (truncated)'
+#               : plan;
 
-            const body = `### Terraform Plan for \`${{ inputs.environment }}\`
+#             const body = `### Terraform Plan for \`${{ inputs.environment }}\`
 
-<details>
-<summary>Show Plan</summary>
+# <details>
+# <summary>Show Plan</summary>
 
-\`\`\`terraform
-${truncatedPlan}
-\`\`\`
+# \`\`\`terraform
+# ${truncatedPlan}
+# \`\`\`
 
-</details>`;
+# </details>`;
 
-            // Find existing comment
-            const comments = await github.rest.issues.listComments({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-            });
+#             // Find existing comment
+#             const comments = await github.rest.issues.listComments({
+#               issue_number: context.issue.number,
+#               owner: context.repo.owner,
+#               repo: context.repo.repo,
+#             });
 
-            const botComment = comments.data.find(comment =>
-              comment.user.type === 'Bot' &&
-              comment.body.includes('Terraform Plan for `${{ inputs.environment }}`')
-            );
+#             const botComment = comments.data.find(comment =>
+#               comment.user.type === 'Bot' &&
+#               comment.body.includes('Terraform Plan for `${{ inputs.environment }}`')
+#             );
 
-            // Update existing comment or create new one
-            if (botComment) {
-              await github.rest.issues.updateComment({
-                comment_id: botComment.id,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: body
-              });
-            } else {
-              await github.rest.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: body
-              });
-            }
+#             // Update existing comment or create new one
+#             if (botComment) {
+#               await github.rest.issues.updateComment({
+#                 comment_id: botComment.id,
+#                 owner: context.repo.owner,
+#                 repo: context.repo.repo,
+#                 body: body
+#               });
+#             } else {
+#               await github.rest.issues.createComment({
+#                 issue_number: context.issue.number,
+#                 owner: context.repo.owner,
+#                 repo: context.repo.repo,
+#                 body: body
+#               });
+#             }
 
       - name: Terraform Apply
         if: steps.changes.outputs.has_changes == 'true' && !inputs.plan-only && steps.plan.outputs.exitcode == '2'
         working-directory: ${{ inputs.working-directory }}
         run: terraform apply -auto-approve tfplan
-        # env:
-          # ARM_ACCESS_KEY: ${{ steps.storage-key.outputs.key }}
+        env:
+          ARM_ACCESS_KEY: ${{ steps.storage-key.outputs.key }}
 
