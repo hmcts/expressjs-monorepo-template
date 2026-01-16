@@ -178,38 +178,41 @@ jobs:
             const planPath = path.join('${{ inputs.working-directory }}', 'plan.txt');
             const plan = fs.readFileSync(planPath, 'utf8');
 
-            // Truncate if too long (GitHub comment limit is 65536 characters)
             const maxLength = 60000;
             const truncatedPlan = plan.length > maxLength
               ? plan.substring(0, maxLength) + '\n\n... (truncated)'
               : plan;
 
-            const body = `### Terraform Plan for \`${{ inputs.environment }}\`
+            const body = [
+              '### Terraform Plan for `${{ inputs.environment }}`',
+              '',
+              '<details>',
+              '<summary>Show Plan</summary>',
+              '',
+              '```terraform',
+              truncatedPlan,
+              '```',
+              '',
+              '</details>'
+            ].join('\n');
 
-<details>
-<summary>Show Plan</summary>
+            const prNumber = context.payload.pull_request?.number;
+            if (!prNumber) {
+              console.log('No PR number found, skipping comment');
+              return;
+            }
 
-\`\`\`terraform
-${truncatedPlan}
-\`\`\`
-
-</details>`;
-
-            const prNumber = context.payload.pull_request?.number || ${{ github.event.pull_request.number }};
-
-            // Find existing comment
-            const comments = await github.rest.issues.listComments({
+            const { data: comments } = await github.rest.issues.listComments({
               issue_number: prNumber,
               owner: context.repo.owner,
               repo: context.repo.repo,
             });
 
-            const botComment = comments.data.find(comment =>
+            const botComment = comments.find(comment =>
               comment.user.type === 'Bot' &&
               comment.body.includes('Terraform Plan for `${{ inputs.environment }}`')
             );
 
-            // Update existing comment or create new one
             if (botComment) {
               await github.rest.issues.updateComment({
                 comment_id: botComment.id,
