@@ -2,7 +2,15 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { addIssueToProject, checkGitHubAuth, createGitHubIssue, findExistingIssue, updateGitHubIssue } from "./github-client.js";
+import {
+  addIssueToProject,
+  checkGitHubAuth,
+  createGitHubIssue,
+  findExistingIssue,
+  linkSubIssue,
+  setIssueSize,
+  updateGitHubIssue
+} from "./github-client.js";
 import { downloadIssueAttachments, getAllIssues } from "./jira-client.js";
 import { closeBrowser, ensureGitHubLogin, initBrowser, uploadAttachmentsToIssue } from "./playwright-uploader.js";
 import type { GitHubIssue, JiraIssue, MigrationReport, MigrationResult } from "./types.js";
@@ -87,13 +95,31 @@ Examples:
   return options;
 }
 
+interface MigrateIssueContext {
+  options: MigrationOptions;
+  browserPage: unknown;
+  epicMapping: Map<string, number>; // JIRA key → GitHub issue number
+}
+
+/**
+ * Check if an issue is an Epic
+ */
+function isEpicIssue(issue: JiraIssue): boolean {
+  return issue.fields.issuetype?.name?.toLowerCase() === "epic";
+}
+
 /**
  * Migrate a single JIRA issue
  */
-async function migrateIssue(issue: JiraIssue, options: MigrationOptions, browserPage: any): Promise<MigrationResult> {
+async function migrateIssue(issue: JiraIssue, context: MigrateIssueContext): Promise<MigrationResult> {
+  const { options, browserPage, epicMapping } = context;
   const jiraUrl = `${JIRA_BASE_URL}/browse/${issue.key}`;
+  const isEpic = isEpicIssue(issue);
+  const epicLinkKey = issue.fields.customfield_10008;
+  const storyPoints = issue.fields.customfield_10004;
 
-  console.log(`\nMigrating ${issue.key}: ${issue.fields.summary.substring(0, 60)}...`);
+  const typeLabel = isEpic ? "Epic" : issue.fields.issuetype?.name || "Issue";
+  console.log(`\nMigrating ${issue.key} (${typeLabel}): ${issue.fields.summary.substring(0, 50)}...`);
 
   const result: MigrationResult = {
     jiraKey: issue.key,
@@ -101,7 +127,10 @@ async function migrateIssue(issue: JiraIssue, options: MigrationOptions, browser
     githubIssue: null,
     success: false,
     attachmentsUploaded: 0,
-    updated: false
+    updated: false,
+    isEpic,
+    linkedToEpic: undefined,
+    sizeSet: undefined
   };
 
   try {
@@ -129,10 +158,37 @@ async function migrateIssue(issue: JiraIssue, options: MigrationOptions, browser
 
     result.githubIssue = githubIssue;
 
+    // Store epic mapping for later child linking
+    if (isEpic) {
+      epicMapping.set(issue.key, githubIssue.number);
+    }
+
     // Add to project board if specified
     if (options.project) {
       const jiraStatus = issue.fields.status?.name || "new";
-      await addIssueToProject(githubIssue.htmlUrl, jiraStatus, options.project, options.dryRun);
+
+      // Add to project and set status column (returns item ID)
+      const projectItemId = await addIssueToProject(githubIssue.htmlUrl, jiraStatus, options.project, options.dryRun);
+
+      // Set Size field if story points exist (and not an epic)
+      if (projectItemId && !isEpic && storyPoints) {
+        const sizeLabel = await setIssueSize(projectItemId, storyPoints, options.dryRun);
+        result.sizeSet = sizeLabel || undefined;
+      }
+    }
+
+    // Link to parent epic if this is a child issue
+    if (!isEpic && epicLinkKey && epicMapping.has(epicLinkKey)) {
+      const parentGitHubNumber = epicMapping.get(epicLinkKey);
+      // Check for undefined/null explicitly since 0 is valid in dry-run mode
+      if (parentGitHubNumber !== undefined && parentGitHubNumber !== null) {
+        const linked = await linkSubIssue(parentGitHubNumber, githubIssue.number, options.dryRun);
+        if (linked) {
+          result.linkedToEpic = epicLinkKey;
+        }
+      }
+    } else if (!isEpic && epicLinkKey && !epicMapping.has(epicLinkKey)) {
+      console.log(`  ⚠ Epic ${epicLinkKey} not found in mapping (may not be in migration scope)`);
     }
 
     // Handle attachments
@@ -147,7 +203,7 @@ async function migrateIssue(issue: JiraIssue, options: MigrationOptions, browser
 
       if (downloadedFiles.length > 0 && browserPage) {
         // Upload to GitHub
-        await uploadAttachmentsToIssue(browserPage, githubIssue.htmlUrl, downloadedFiles);
+        await uploadAttachmentsToIssue(browserPage as any, githubIssue.htmlUrl, downloadedFiles);
         result.attachmentsUploaded = downloadedFiles.length;
       }
 
@@ -209,8 +265,9 @@ async function main() {
   }
 
   // Fetch JIRA issues
+  // Order by issuetype ASC to get Epics first (alphabetically: Epic < Story < Task), then by key ASC
   console.log(`\nFetching JIRA issues from project "${JIRA_PROJECT}" with label "${JIRA_LABEL}"...`);
-  const jql = `project = "${JIRA_PROJECT}" AND labels = "${JIRA_LABEL}"`;
+  const jql = `project = "${JIRA_PROJECT}" AND labels = "${JIRA_LABEL}" ORDER BY issuetype ASC, key ASC`;
   const allIssues = await getAllIssues(jql);
 
   let issuesToMigrate = allIssues;
@@ -219,7 +276,13 @@ async function main() {
     console.log(`Limiting to first ${options.limit} issues`);
   }
 
+  // Separate Epics from other issues
+  const epics = issuesToMigrate.filter((issue) => isEpicIssue(issue));
+  const nonEpics = issuesToMigrate.filter((issue) => !isEpicIssue(issue));
+
   console.log(`Found ${allIssues.length} issues, will migrate ${issuesToMigrate.length}`);
+  console.log(`  - Epics: ${epics.length}`);
+  console.log(`  - Stories/Tasks/Bugs: ${nonEpics.length}`);
 
   if (issuesToMigrate.length === 0) {
     console.log("No issues to migrate.");
@@ -233,6 +296,16 @@ async function main() {
     await ensureGitHubLogin(browserPage);
   }
 
+  // Epic mapping: JIRA key → GitHub issue number
+  const epicMapping = new Map<string, number>();
+
+  // Migration context
+  const context: MigrateIssueContext = {
+    options,
+    browserPage,
+    epicMapping
+  };
+
   // Migrate issues
   const report: MigrationReport = {
     startedAt: new Date().toISOString(),
@@ -242,27 +315,71 @@ async function main() {
     failedMigrations: 0,
     createdCount: 0,
     updatedCount: 0,
+    epicsCreated: 0,
+    childrenLinked: 0,
+    orphansCreated: 0,
     results: []
   };
 
-  for (const issue of issuesToMigrate) {
-    const result = await migrateIssue(issue, options, browserPage);
-    report.results.push(result);
+  // PASS 1: Create Epics first (so we have their GitHub issue numbers for linking)
+  if (epics.length > 0) {
+    console.log(`\n${"=".repeat(60)}`);
+    console.log("Pass 1: Creating Epics...");
+    console.log("=".repeat(60));
 
-    if (result.success) {
-      report.successfulMigrations++;
-      if (result.updated) {
-        report.updatedCount++;
+    for (const issue of epics) {
+      const result = await migrateIssue(issue, context);
+      report.results.push(result);
+
+      if (result.success) {
+        report.successfulMigrations++;
+        report.epicsCreated++;
+        if (result.updated) {
+          report.updatedCount++;
+        } else {
+          report.createdCount++;
+        }
       } else {
-        report.createdCount++;
+        report.failedMigrations++;
       }
-    } else {
-      report.failedMigrations++;
-    }
 
-    // Add a small delay between issues to avoid rate limiting
-    if (!options.dryRun) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Add a small delay between issues to avoid rate limiting
+      if (!options.dryRun) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
+    }
+  }
+
+  // PASS 2: Create child issues (Stories, Tasks, Bugs) and link to parent Epics
+  if (nonEpics.length > 0) {
+    console.log(`\n${"=".repeat(60)}`);
+    console.log("Pass 2: Creating Child Issues...");
+    console.log("=".repeat(60));
+
+    for (const issue of nonEpics) {
+      const result = await migrateIssue(issue, context);
+      report.results.push(result);
+
+      if (result.success) {
+        report.successfulMigrations++;
+        if (result.linkedToEpic) {
+          report.childrenLinked++;
+        } else {
+          report.orphansCreated++;
+        }
+        if (result.updated) {
+          report.updatedCount++;
+        } else {
+          report.createdCount++;
+        }
+      } else {
+        report.failedMigrations++;
+      }
+
+      // Add a small delay between issues to avoid rate limiting
+      if (!options.dryRun) {
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      }
     }
   }
 
@@ -278,6 +395,9 @@ async function main() {
   console.log("Migration Summary");
   console.log("=".repeat(60));
   console.log(`Total Issues: ${report.totalIssues}`);
+  console.log(`  Epics Created: ${report.epicsCreated}`);
+  console.log(`  Children Linked: ${report.childrenLinked}`);
+  console.log(`  Orphans (no Epic): ${report.orphansCreated}`);
   console.log(`Created: ${report.createdCount}`);
   console.log(`Updated: ${report.updatedCount}`);
   console.log(`Failed: ${report.failedMigrations}`);

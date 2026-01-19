@@ -50,9 +50,24 @@ function getAuthHeader(): string {
 /**
  * Search for JIRA issues using JQL
  */
+const DEFAULT_FIELDS = [
+  "summary",
+  "status",
+  "description",
+  "assignee",
+  "created",
+  "updated",
+  "labels",
+  "issuetype",
+  "priority",
+  "attachment",
+  "customfield_10004", // Story Points
+  "customfield_10008" // Epic Link
+];
+
 export async function searchIssues(
   jql: string,
-  fields: string[] = ["summary", "status", "description", "assignee", "created", "updated", "labels", "issuetype", "priority", "attachment"],
+  fields: string[] = DEFAULT_FIELDS,
   maxResults = 100,
   startAt = 0
 ): Promise<{ issues: JiraIssue[]; total: number }> {

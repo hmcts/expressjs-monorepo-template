@@ -10,6 +10,17 @@ const JIRA_BASE_URL = process.env.JIRA_BASE_URL || "https://tools.hmcts.net/jira
 // GitHub Project configuration
 const PROJECT_ID = "PVT_kwDOAVwpV84BMvy3";
 const STATUS_FIELD_ID = "PVTSSF_lADOAVwpV84BMvy3zg78TBM";
+const SIZE_FIELD_ID = "PVTSSF_lADOAVwpV84BMvy3zg78TFE";
+
+// Story points to Size field mapping
+const STORY_POINTS_TO_SIZE: Record<number, { optionId: string; label: string }> = {
+  1: { optionId: "6c6483d2", label: "XS" },
+  2: { optionId: "f784b110", label: "S" },
+  3: { optionId: "7515a9f1", label: "M" },
+  5: { optionId: "7515a9f1", label: "M" },
+  8: { optionId: "817d0097", label: "L" },
+  13: { optionId: "db339eb2", label: "XL" }
+};
 
 // JIRA status to GitHub Project column mapping
 const STATUS_TO_COLUMN: Record<string, string> = {
@@ -55,7 +66,7 @@ function createIssueBody(issue: JiraIssue): string {
 
   const status = issue.fields.status?.name || "Unknown";
   const priority = getPriorityName(issue.fields.priority) || "Unknown";
-  const issueType = issue.fields.issueType?.name || "Unknown";
+  const issueType = issue.fields.issuetype?.name || "Unknown";
   const assignee = issue.fields.assignee?.displayName || "Unassigned";
   const created = issue.fields.created ? new Date(issue.fields.created).toLocaleDateString() : "Unknown";
   const updated = issue.fields.updated ? new Date(issue.fields.updated).toLocaleDateString() : "Unknown";
@@ -105,6 +116,11 @@ export async function createGitHubIssue(issue: JiraIssue, dryRun = false): Promi
   const priorityName = getPriorityName(issue.fields.priority);
   if (priorityName) {
     labels.push(`priority:${normalizeLabel(priorityName)}`);
+  }
+
+  // Add issue type label
+  if (issue.fields.issuetype?.name) {
+    labels.push(`type:${normalizeLabel(issue.fields.issuetype.name)}`);
   }
 
   if (dryRun) {
@@ -195,10 +211,11 @@ export async function updateGitHubIssue(issueNumber: number, issue: JiraIssue, d
   const title = `[${issue.key}] ${issue.fields.summary}`;
   const body = createIssueBody(issue);
 
-  // Build labels for status and priority
+  // Build labels for status, priority, and type
   const statusLabel = issue.fields.status?.name ? `status:${normalizeLabel(issue.fields.status.name)}` : null;
   const priorityName = getPriorityName(issue.fields.priority);
   const priorityLabel = priorityName ? `priority:${normalizeLabel(priorityName)}` : null;
+  const typeLabel = issue.fields.issuetype?.name ? `type:${normalizeLabel(issue.fields.issuetype.name)}` : null;
 
   if (dryRun) {
     console.log(`  [DRY RUN] Would update issue #${issueNumber}`);
@@ -227,10 +244,10 @@ export async function updateGitHubIssue(issueNumber: number, issue: JiraIssue, d
     const { stdout: labelOutput } = await execAsync(`gh issue view ${issueNumber} --json labels`);
     const { labels: currentLabels } = JSON.parse(labelOutput);
 
-    // Find labels to remove (old status/priority labels)
+    // Find labels to remove (old status/priority/type labels)
     const labelsToRemove: string[] = [];
     for (const label of currentLabels) {
-      if (label.name.startsWith("status:") || label.name.startsWith("priority:")) {
+      if (label.name.startsWith("status:") || label.name.startsWith("priority:") || label.name.startsWith("type:")) {
         labelsToRemove.push(label.name);
       }
     }
@@ -241,10 +258,11 @@ export async function updateGitHubIssue(issueNumber: number, issue: JiraIssue, d
       await execAsync(`gh issue edit ${issueNumber} ${removeArgs}`);
     }
 
-    // Add new status/priority labels
+    // Add new status/priority/type labels
     const labelsToAdd: string[] = [];
     if (statusLabel) labelsToAdd.push(statusLabel);
     if (priorityLabel) labelsToAdd.push(priorityLabel);
+    if (typeLabel) labelsToAdd.push(typeLabel);
 
     if (labelsToAdd.length > 0) {
       const addArgs = labelsToAdd.map((l) => `--add-label "${l}"`).join(" ");
@@ -269,15 +287,16 @@ export async function updateGitHubIssue(issueNumber: number, issue: JiraIssue, d
 
 /**
  * Add an issue to a GitHub Project board and set its column based on JIRA status
+ * Returns the project item ID on success, null on failure
  */
-export async function addIssueToProject(issueUrl: string, jiraStatus: string, projectNumber: number, dryRun = false): Promise<boolean> {
+export async function addIssueToProject(issueUrl: string, jiraStatus: string, projectNumber: number, dryRun = false): Promise<string | null> {
   const normalizedStatus = normalizeLabel(jiraStatus);
   const columnOptionId = STATUS_TO_COLUMN[normalizedStatus] || STATUS_TO_COLUMN.new;
 
   if (dryRun) {
     console.log(`  [DRY RUN] Would add to project ${projectNumber}`);
     console.log(`    JIRA Status: ${jiraStatus} -> Column: ${normalizedStatus}`);
-    return true;
+    return "dry-run-item-id";
   }
 
   try {
@@ -292,7 +311,7 @@ export async function addIssueToProject(issueUrl: string, jiraStatus: string, pr
 
     if (!itemId) {
       console.error("  ✗ Failed to get project item ID from response");
-      return false;
+      return null;
     }
 
     // Set the status column
@@ -302,10 +321,144 @@ export async function addIssueToProject(issueUrl: string, jiraStatus: string, pr
     });
 
     console.log(`  ✓ Added to project board (${normalizedStatus})`);
-    return true;
+    return itemId;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     console.error(`  ✗ Failed to add to project: ${message}`);
+    return null;
+  }
+}
+
+/**
+ * Get Size label from story points
+ */
+export function getSizeFromStoryPoints(storyPoints: number | undefined): { optionId: string; label: string } | null {
+  if (storyPoints === undefined || storyPoints === null) {
+    return null;
+  }
+  // For story points > 13, use XL
+  if (storyPoints >= 13) {
+    return STORY_POINTS_TO_SIZE[13];
+  }
+  return STORY_POINTS_TO_SIZE[storyPoints] || null;
+}
+
+/**
+ * Set the Size field for an issue in the project board
+ */
+export async function setIssueSize(
+  itemId: string,
+  storyPoints: number | undefined,
+  dryRun = false
+): Promise<string | null> {
+  const size = getSizeFromStoryPoints(storyPoints);
+  if (!size) {
+    return null;
+  }
+
+  if (dryRun) {
+    console.log(`  [DRY RUN] Would set Size: ${size.label} (${storyPoints} points)`);
+    return size.label;
+  }
+
+  try {
+    const editCommand = `gh project item-edit --id "${itemId}" --project-id "${PROJECT_ID}" --field-id "${SIZE_FIELD_ID}" --single-select-option-id "${size.optionId}"`;
+    await execAsync(editCommand, { maxBuffer: 1024 * 1024 });
+    console.log(`  ✓ Set Size: ${size.label} (${storyPoints} points)`);
+    return size.label;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`  ✗ Failed to set Size: ${message}`);
+    return null;
+  }
+}
+
+/**
+ * Get the GitHub node ID for an issue
+ */
+export async function getIssueNodeId(issueNumber: number): Promise<string | null> {
+  try {
+    const { stdout } = await execAsync(`gh issue view ${issueNumber} --json id`);
+    const result = JSON.parse(stdout);
+    return result.id || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Link a child issue as a sub-issue of a parent issue using GraphQL
+ */
+export async function linkSubIssue(
+  parentIssueNumber: number,
+  childIssueNumber: number,
+  dryRun = false
+): Promise<boolean> {
+  if (dryRun) {
+    console.log(`  [DRY RUN] Would link #${childIssueNumber} as sub-issue of #${parentIssueNumber}`);
+    return true;
+  }
+
+  try {
+    // Get node IDs for both issues
+    const parentNodeId = await getIssueNodeId(parentIssueNumber);
+    const childNodeId = await getIssueNodeId(childIssueNumber);
+
+    if (!parentNodeId || !childNodeId) {
+      console.error(`  ✗ Failed to get node IDs for linking (parent: ${parentNodeId}, child: ${childNodeId})`);
+      return false;
+    }
+
+    // Use GraphQL to link the sub-issue
+    const mutation = `
+      mutation {
+        addSubIssue(input: { issueId: "${parentNodeId}", subIssueId: "${childNodeId}" }) {
+          issue { number }
+          subIssue { number }
+        }
+      }
+    `;
+
+    const { stdout } = await execAsync(`gh api graphql -f query='${mutation}'`, {
+      maxBuffer: 1024 * 1024
+    });
+
+    const result = JSON.parse(stdout);
+    if (result.errors) {
+      console.error(`  ✗ GraphQL error linking sub-issue: ${JSON.stringify(result.errors)}`);
+      return false;
+    }
+
+    console.log(`  ✓ Linked as sub-issue of #${parentIssueNumber}`);
+    return true;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`  ✗ Failed to link sub-issue: ${message}`);
     return false;
+  }
+}
+
+/**
+ * Add an issue to a project and return the project item ID
+ */
+export async function addIssueToProjectAndGetItemId(
+  issueUrl: string,
+  projectNumber: number,
+  dryRun = false
+): Promise<string | null> {
+  if (dryRun) {
+    console.log(`  [DRY RUN] Would add to project ${projectNumber}`);
+    return "dry-run-item-id";
+  }
+
+  try {
+    const addCommand = `gh project item-add ${projectNumber} --owner hmcts --url "${issueUrl}" --format json`;
+    const { stdout } = await execAsync(addCommand, { maxBuffer: 1024 * 1024 });
+    const result = JSON.parse(stdout);
+    return result.id || null;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`  ✗ Failed to add to project: ${message}`);
+    return null;
   }
 }

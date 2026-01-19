@@ -21,7 +21,7 @@ export interface JiraIssue {
     assignee: {
       displayName: string;
     } | null;
-    issueType: {
+    issuetype: {
       name: string;
       subtask: boolean;
     };
@@ -30,6 +30,8 @@ export interface JiraIssue {
     updated: string;
     labels: string[];
     attachment: JiraAttachment[];
+    customfield_10004?: number; // Story Points
+    customfield_10008?: string; // Epic Link (key like "VIBE-338")
   };
 }
 
@@ -47,6 +49,9 @@ export interface MigrationResult {
   error?: string;
   attachmentsUploaded: number;
   updated: boolean; // true if updated existing issue, false if created new
+  isEpic: boolean;
+  linkedToEpic?: string; // Parent epic JIRA key if linked
+  sizeSet?: string; // Size value if set (XS, S, M, L, XL)
 }
 
 export interface MigrationReport {
@@ -57,5 +62,8 @@ export interface MigrationReport {
   failedMigrations: number;
   createdCount: number;
   updatedCount: number;
+  epicsCreated: number;
+  childrenLinked: number;
+  orphansCreated: number;
   results: MigrationResult[];
 }
