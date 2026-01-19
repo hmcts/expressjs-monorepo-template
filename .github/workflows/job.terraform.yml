@@ -119,13 +119,12 @@ jobs:
         working-directory: ${{ inputs.working-directory }}
         env:
           ARM_ACCESS_KEY: ${{ steps.storage-key.outputs.key }}
-          STORAGE_KEY: expressjs-monorepo # TODO repo name
         run: |
           terraform init -reconfigure \
             -backend-config="storage_account_name=mgmtstatestore${{ inputs.storage-account }}" \
             -backend-config="container_name=mgmtstatestorecontainer${{ inputs.environment }}" \
             -backend-config="resource_group_name=mgmt-state-store-${{ inputs.storage-account }}" \
-            -backend-config="key=${STORAGE_KEY}/${{ inputs.environment }}/terraform.tfstate"
+            -backend-config="key=${{ github.event.repository.name }}/${{ inputs.environment }}/terraform.tfstate"
 
       - name: Terraform Validate
         working-directory: ${{ inputs.working-directory }}
