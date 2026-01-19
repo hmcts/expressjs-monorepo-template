@@ -1,0 +1,42 @@
+# Terraform Format Check Job
+#
+# Checks that all Terraform files are properly formatted.
+# Call this job only when infrastructure changes are detected.
+#
+# Usage:
+#   terraform-fmt:
+#     needs: [detect-infra-changes]
+#     if: needs.detect-infra-changes.outputs.has-changes == 'true'
+#     uses: ./.github/workflows/job.terraform-fmt.yml
+
+name: Terraform Format Check
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        required: false
+        type: string
+        default: "infrastructure"
+
+jobs:
+  terraform-fmt:
+    name: Terraform Format
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version_file: ${{ inputs.working-directory }}/.terraform-version
+
+      - name: Terraform Format Check
+        working-directory: ${{ inputs.working-directory }}
+        run: |
+          if ! terraform fmt -check -recursive -diff; then
+            echo "::error::Terraform files are not formatted. Run 'terraform fmt -recursive' in the infrastructure directory to fix."
+            exit 1
+          fi
