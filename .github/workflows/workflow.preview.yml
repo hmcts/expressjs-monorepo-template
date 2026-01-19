@@ -44,7 +44,7 @@ jobs:
   deploy-stage:
     name: Deploy
     needs: [build-stage, infrastructure-stage]
-    if: needs.build-stage.result == 'success'
+    if: always() && needs.build-stage.result == 'success' && needs.infrastructure-stage.result != 'failure'
     uses: ./.github/workflows/stage.deploy.yml
     with:
       change-id: ${{ github.event.pull_request.number }}
