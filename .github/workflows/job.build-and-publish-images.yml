@@ -19,10 +19,10 @@ on:
         value: ${{ jobs.detect-affected.outputs.has-changes }}
       timestamp:
         description: "Build timestamp"
-        value: ${{ jobs.build-and-publish.outputs.timestamp }}
+        value: ${{ jobs.generate-metadata.outputs.timestamp }}
       short-sha:
         description: "Short git SHA"
-        value: ${{ jobs.build-and-publish.outputs.short-sha }}
+        value: ${{ jobs.generate-metadata.outputs.short-sha }}
 
 env:
   CHANGE_ID: ${{ inputs.change-id }}
@@ -87,6 +87,19 @@ jobs:
         id: detect
         run: .github/workflows/jobs/build-and-publish-images/detect-affected-apps.sh "${{ needs.get-last-successful-sha.outputs.sha }}"
 
+  generate-metadata:
+    name: Generate Metadata
+    runs-on: ubuntu-latest
+    outputs:
+      timestamp: ${{ steps.metadata.outputs.timestamp }}
+      short-sha: ${{ steps.metadata.outputs.short-sha }}
+    steps:
+      - name: Generate metadata
+        id: metadata
+        run: |
+          echo "timestamp=$(date +%Y%m%d%H%M%S)" >> "$GITHUB_OUTPUT"
+          echo "short-sha=$(echo '${{ github.sha }}' | cut -c1-7)" >> "$GITHUB_OUTPUT"
+
   build-and-publish:
     name: Build & Publish ${{ matrix.app }}
     runs-on: ubuntu-latest
@@ -98,9 +111,6 @@ jobs:
     permissions:
       contents: read
       id-token: write
-    outputs:
-      timestamp: ${{ steps.metadata.outputs.timestamp }}
-      short-sha: ${{ steps.metadata.outputs.short-sha }}
 
     steps:
       - name: Checkout code

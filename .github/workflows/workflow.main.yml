@@ -14,7 +14,7 @@ jobs:
     name: Detect Code Changes
     uses: ./.github/workflows/job.detect-changes.yml
     with:
-      paths: "^(yarn\\.lock|apps/|libs/)"
+      paths: "^(yarn\\.lock|apps/|libs/|helm/)"
 
   detect-infra-changes:
     name: Detect Infrastructure Changes
