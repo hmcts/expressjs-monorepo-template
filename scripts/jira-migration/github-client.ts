@@ -22,18 +22,36 @@ const STORY_POINTS_TO_SIZE: Record<number, { optionId: string; label: string }> 
   13: { optionId: "db339eb2", label: "XL" }
 };
 
-// JIRA status to GitHub Project column mapping
-const STATUS_TO_COLUMN: Record<string, string> = {
-  new: "f75ad846", // Backlog
-  "prioritised-backlog": "f75ad846", // Backlog
-  "ready-for-progress": "61e4505c", // Ready
-  "in-progress": "47fc9ee4", // In progress
-  "code-review": "df73e18b", // In review
-  "ready-for-test": "df73e18b", // In review
-  "ready-for-sign-off": "df73e18b", // In review
-  closed: "98236657", // Done
-  withdrawn: "98236657" // Done
+// Required status columns for the project board
+const REQUIRED_STATUS_OPTIONS = [
+  { name: "Backlog", color: "GRAY", description: "" },
+  { name: "Prioritised Backlog", color: "BLUE", description: "" },
+  { name: "Refined Tickets", color: "PURPLE", description: "" },
+  { name: "In Progress", color: "YELLOW", description: "" },
+  { name: "Code Review", color: "ORANGE", description: "" },
+  { name: "Ready For Test", color: "PINK", description: "" },
+  { name: "In Test", color: "RED", description: "" },
+  { name: "Ready For Sign Off", color: "GREEN", description: "" },
+  { name: "Done", color: "GREEN", description: "" }
+];
+
+// JIRA status to GitHub Project column name mapping
+const JIRA_STATUS_TO_COLUMN_NAME: Record<string, string> = {
+  new: "Backlog",
+  "prioritised-backlog": "Prioritised Backlog",
+  "ready-for-progress": "Refined Tickets",
+  "in-progress": "In Progress",
+  "code-review": "Code Review",
+  "ready-for-test": "Ready For Test",
+  "in-test": "In Test",
+  "ready-for-sign-off": "Ready For Sign Off",
+  closed: "Done",
+  done: "Done",
+  withdrawn: "Done"
 };
+
+// Dynamic mapping populated after project setup
+let STATUS_TO_COLUMN: Record<string, string> = {};
 
 /**
  * Normalize text to be a valid GitHub label
@@ -95,6 +113,162 @@ ${issue.fields.attachment && issue.fields.attachment.length > 0 ? "\n_Attachment
 }
 
 /**
+ * Ensure a label exists in the repository, creating it if necessary
+ */
+async function ensureLabelExists(label: string): Promise<void> {
+  try {
+    const { stdout } = await execAsync(`gh label list --search "${label}" --limit 1 --json name`);
+    const labels = JSON.parse(stdout);
+
+    if (labels.some((l: { name: string }) => l.name === label)) {
+      return;
+    }
+
+    let color = "ededed";
+    if (label.startsWith("jira:")) color = "0052CC";
+    else if (label.startsWith("status:")) color = "0E8A16";
+    else if (label.startsWith("priority:1")) color = "B60205";
+    else if (label.startsWith("priority:2")) color = "D93F0B";
+    else if (label.startsWith("priority:3")) color = "FBCA04";
+    else if (label.startsWith("priority:4")) color = "0E8A16";
+    else if (label.startsWith("priority:5")) color = "C2E0C6";
+    else if (label.startsWith("type:")) color = "1D76DB";
+    else if (label === "migrated-from-jira") color = "5319E7";
+
+    await execAsync(`gh label create "${label}" --color "${color}" --force`);
+  } catch {
+    try {
+      await execAsync(`gh label create "${label}" --color "ededed" --force`);
+    } catch {
+      // Label might already exist
+    }
+  }
+}
+
+/**
+ * Ensure all labels exist before creating an issue
+ */
+async function ensureLabelsExist(labels: string[]): Promise<void> {
+  for (const label of labels) {
+    await ensureLabelExists(label);
+  }
+}
+
+/**
+ * Get project node ID from project number
+ */
+async function getProjectNodeId(projectNumber: number): Promise<string | null> {
+  try {
+    const { stdout } = await execAsync(`gh project view ${projectNumber} --owner hmcts --format json`);
+    const project = JSON.parse(stdout);
+    return project.id || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Get the Status field ID for a project
+ */
+async function getStatusFieldId(projectNumber: number): Promise<string | null> {
+  try {
+    const { stdout } = await execAsync(`gh project field-list ${projectNumber} --owner hmcts --format json`);
+    const data = JSON.parse(stdout);
+    const statusField = data.fields?.find((f: { name: string }) => f.name === "Status");
+    return statusField?.id || null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Set up the project board with required status columns
+ * This ensures all JIRA statuses can be mapped to GitHub project columns
+ */
+export async function setupProjectBoard(projectNumber: number, dryRun = false): Promise<boolean> {
+  console.log("\nSetting up project board status columns...");
+
+  if (dryRun) {
+    console.log("  [DRY RUN] Would set up status columns:");
+    for (const opt of REQUIRED_STATUS_OPTIONS) {
+      console.log(`    - ${opt.name}`);
+    }
+    // Set up a dummy mapping for dry run
+    for (const [jiraStatus, columnName] of Object.entries(JIRA_STATUS_TO_COLUMN_NAME)) {
+      STATUS_TO_COLUMN[jiraStatus] = "dry-run-id";
+    }
+    return true;
+  }
+
+  try {
+    // Get the Status field ID
+    const fieldId = await getStatusFieldId(projectNumber);
+    if (!fieldId) {
+      console.error("  ✗ Could not find Status field in project");
+      return false;
+    }
+
+    // Build the GraphQL mutation to update status options
+    const optionsJson = REQUIRED_STATUS_OPTIONS.map(
+      (opt) => `{ name: "${opt.name}", color: ${opt.color}, description: "${opt.description}" }`
+    ).join(", ");
+
+    const mutation = `
+      mutation {
+        updateProjectV2Field(input: {
+          fieldId: "${fieldId}"
+          singleSelectOptions: [${optionsJson}]
+        }) {
+          projectV2Field {
+            ... on ProjectV2SingleSelectField {
+              id
+              name
+              options { id name }
+            }
+          }
+        }
+      }
+    `;
+
+    const { stdout } = await execAsync(`gh api graphql -f query='${mutation}'`, {
+      maxBuffer: 1024 * 1024
+    });
+
+    const result = JSON.parse(stdout);
+    if (result.errors) {
+      console.error("  ✗ Failed to update status columns:", result.errors);
+      return false;
+    }
+
+    // Build the STATUS_TO_COLUMN mapping from the response
+    const options = result.data?.updateProjectV2Field?.projectV2Field?.options || [];
+    const nameToId: Record<string, string> = {};
+    for (const opt of options) {
+      nameToId[opt.name] = opt.id;
+    }
+
+    // Map JIRA statuses to column IDs
+    for (const [jiraStatus, columnName] of Object.entries(JIRA_STATUS_TO_COLUMN_NAME)) {
+      const columnId = nameToId[columnName];
+      if (columnId) {
+        STATUS_TO_COLUMN[jiraStatus] = columnId;
+      }
+    }
+
+    console.log("  ✓ Status columns configured:");
+    for (const opt of options) {
+      console.log(`    - ${opt.name} (${opt.id})`);
+    }
+
+    return true;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.error(`  ✗ Failed to set up project board: ${message}`);
+    return false;
+  }
+}
+
+/**
  * Create a GitHub issue from a JIRA issue
  */
 export async function createGitHubIssue(issue: JiraIssue, dryRun = false): Promise<GitHubIssue> {
@@ -134,6 +308,9 @@ export async function createGitHubIssue(issue: JiraIssue, dryRun = false): Promi
       htmlUrl: "https://github.com/hmcts/expressjs-monorepo-template/issues/0"
     };
   }
+
+  // Ensure all labels exist before creating the issue
+  await ensureLabelsExist(labels);
 
   // Create issue using gh CLI
   const labelArgs = labels.map((label) => `--label "${label}"`).join(" ");
@@ -265,6 +442,7 @@ export async function updateGitHubIssue(issueNumber: number, issue: JiraIssue, d
     if (typeLabel) labelsToAdd.push(typeLabel);
 
     if (labelsToAdd.length > 0) {
+      await ensureLabelsExist(labelsToAdd);
       const addArgs = labelsToAdd.map((l) => `--add-label "${l}"`).join(" ");
       await execAsync(`gh issue edit ${issueNumber} ${addArgs}`);
     }

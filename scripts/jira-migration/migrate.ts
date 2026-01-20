@@ -9,6 +9,7 @@ import {
   findExistingIssue,
   linkSubIssue,
   setIssueSize,
+  setupProjectBoard,
   updateGitHubIssue
 } from "./github-client.js";
 import { downloadIssueAttachments, getAllIssues } from "./jira-client.js";
@@ -262,6 +263,15 @@ async function main() {
       process.exit(1);
     }
     console.log("✓ GitHub CLI is authenticated");
+  }
+
+  // Set up project board status columns if project is specified
+  if (options.project) {
+    const setupSuccess = await setupProjectBoard(options.project, options.dryRun);
+    if (!setupSuccess && !options.dryRun) {
+      console.error("Error: Failed to set up project board. Aborting migration.");
+      process.exit(1);
+    }
   }
 
   // Fetch JIRA issues
