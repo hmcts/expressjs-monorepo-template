@@ -68,11 +68,13 @@ jobs:
         env:
           PATTERN: ${{ inputs.paths }}
           CACHE_KEY: ${{ inputs.cache-key }}
+          CACHE_HIT: ${{ steps.last-success.outputs.cache-hit }}
         run: |
           # Determine base SHA for comparison
-          # Priority: 1. Cached SHA (when cache-key provided), 2. PR base ref, 3. event.before, 4. origin/master
+          # When cache-key is provided: use cached SHA or fall back to origin/master (not event.before)
+          # When cache-key is NOT provided: use PR base ref, event.before, or origin/master
 
-          # If cache-key provided and cache exists, use it (works for both PRs and pushes)
+          # If cache-key provided and cache exists, use it
           if [ -n "$CACHE_KEY" ] && [ -f ".last-successful-sha" ]; then
             BASE_SHA=$(cat .last-successful-sha)
             echo "Using cached SHA from last successful run: $BASE_SHA"
@@ -88,13 +90,25 @@ jobs:
                 echo "Falling back to origin/master"
               fi
             fi
-          # For PRs without cache, compare against base branch
+          # If cache-key provided but NO cache exists, force run (we don't have a reliable baseline)
+          # This ensures first run always executes the stage, which will then cache the SHA
+          elif [ -n "$CACHE_KEY" ]; then
+            if [ -n "${{ github.event.pull_request.base.ref }}" ]; then
+              BASE_SHA="origin/${{ github.event.pull_request.base.ref }}"
+              echo "No cache found for PR - comparing against base branch: $BASE_SHA"
+            else
+              echo "No cache found - forcing has-changes=true to establish baseline"
+              echo "has-changes=true" >> "$GITHUB_OUTPUT"
+              exit 0
+            fi
+          # For PRs without cache-key, compare against base branch
           elif [ -n "${{ github.event.pull_request.base.ref }}" ]; then
             BASE_SHA="origin/${{ github.event.pull_request.base.ref }}"
             echo "PR detected - comparing against base branch: $BASE_SHA"
           elif [ -n "${{ github.base_ref }}" ]; then
             BASE_SHA="origin/${{ github.base_ref }}"
             echo "PR detected - comparing against base branch: $BASE_SHA"
+          # No cache-key provided, use event.before for incremental detection
           elif [ -n "${{ github.event.before }}" ] && [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
             BASE_SHA="${{ github.event.before }}"
             echo "Using event.before: $BASE_SHA"
