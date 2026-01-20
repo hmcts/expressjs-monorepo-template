@@ -138,16 +138,8 @@ jobs:
           PRODUCT: ${{ steps.metadata.outputs.product }}
           TENANT_ID: ${{ steps.azure-context.outputs.tenant_id }}
           SP_OBJECT_ID: ${{ steps.azure-context.outputs.sp_object_id }}
+          TF_VAR_common_tags: '{"environment":"${{ inputs.environment }}","managedBy":"${{ steps.metadata.outputs.product }}","builtFrom":"${{ github.repository }}","application":"${{ steps.metadata.outputs.product }}","businessArea":"CFT"}'
         run: |
-          # Construct common_tags as JSON
-          COMMON_TAGS=$(jq -n \
-            --arg env "${{ inputs.environment }}" \
-            --arg managedBy "$PRODUCT" \
-            --arg builtFrom "$GITHUB_REPOSITORY" \
-            --arg application "$PRODUCT" \
-            --arg businessArea "CFT" \
-            '{environment: $env, managedBy: $managedBy, builtFrom: $builtFrom, application: $application, businessArea: $businessArea}')
-
           set +e
           terraform plan -detailed-exitcode -out=tfplan \
             -var "env=${{ inputs.environment }}" \
@@ -155,8 +147,7 @@ jobs:
             -var "subscription=${{ steps.subscription.outputs.id }}" \
             -var "tenant_id=${TENANT_ID}" \
             -var "builtFrom=${GITHUB_REPOSITORY}" \
-            -var "ci_service_principal_object_id=${SP_OBJECT_ID}" \
-            -var "common_tags=${COMMON_TAGS}"
+            -var "ci_service_principal_object_id=${SP_OBJECT_ID}"
           EXITCODE=$?
           echo "exitcode=$EXITCODE" >> "$GITHUB_OUTPUT"
           if [ $EXITCODE -eq 1 ]; then
