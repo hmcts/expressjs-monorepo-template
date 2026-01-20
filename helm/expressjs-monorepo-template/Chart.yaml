@@ -24,7 +24,7 @@ dependencies:
     repository: "file://../../apps/crons/helm"
     condition: crons.enabled
   - name: redis
-    version: 24.1.0
+    version: 24.1.2
     repository: https://charts.bitnami.com/bitnami
     condition: redis.enabled
   - name: postgresql
