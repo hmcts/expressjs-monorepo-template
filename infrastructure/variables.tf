@@ -8,6 +8,12 @@ variable "product" {
   type        = string
 }
 
+variable "component" {
+  description = "Component name for resource group naming"
+  type        = string
+  default     = "expressjs"
+}
+
 variable "subscription" {
   description = "Azure subscription name"
   type        = string

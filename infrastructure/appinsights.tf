@@ -2,12 +2,11 @@
 # Creates App Insights and stores connection string in Key Vault
 
 resource "azurerm_application_insights" "ai" {
-  name                = "expressjs-appinsights-${var.env}"
-  location            = var.location
-  resource_group_name = data.azurerm_resource_group.rg.name
+  name                = "${var.product}-${var.component}-appinsights-${var.env}"
+  location            = azurerm_resource_group.rg.location
+  resource_group_name = azurerm_resource_group.rg.name
   application_type    = "web"
-
-  tags = var.common_tags
+  tags                = var.common_tags
 }
 
 # Store App Insights connection string in Key Vault
