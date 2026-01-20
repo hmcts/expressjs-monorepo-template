@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { JiraIssue } from "./types.js";
+import type { JiraComment, JiraIssue } from "./types.js";
 
 /**
  * Load environment variables from .claude/.mcp.env
@@ -181,4 +181,42 @@ export async function downloadIssueAttachments(issue: JiraIssue, targetDir: stri
   }
 
   return downloadedFiles;
+}
+
+/**
+ * Get all comments for a JIRA issue (handles pagination)
+ */
+export async function getIssueComments(issueKey: string): Promise<JiraComment[]> {
+  const allComments: JiraComment[] = [];
+  let startAt = 0;
+  const maxResults = 100;
+
+  while (true) {
+    const url = new URL(`${JIRA_BASE_URL}/rest/api/2/issue/${issueKey}/comment`);
+    url.searchParams.set("startAt", startAt.toString());
+    url.searchParams.set("maxResults", maxResults.toString());
+
+    const response = await fetch(url.toString(), {
+      headers: {
+        Authorization: getAuthHeader(),
+        Accept: "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch comments for ${issueKey}: ${response.status} ${response.statusText}`);
+    }
+
+    const data = (await response.json()) as { comments: JiraComment[]; total: number };
+    const comments: JiraComment[] = data.comments || [];
+    allComments.push(...comments);
+
+    if (allComments.length >= data.total) {
+      break;
+    }
+
+    startAt += maxResults;
+  }
+
+  return allComments;
 }

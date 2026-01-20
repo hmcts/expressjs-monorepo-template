@@ -1,26 +1,34 @@
 import { exec } from "node:child_process";
 import { promisify } from "node:util";
 import { convertJiraToMarkdown } from "./markdown-converter.js";
-import type { GitHubIssue, JiraIssue } from "./types.js";
+import type { GitHubIssue, JiraComment, JiraIssue } from "./types.js";
 
 const execAsync = promisify(exec);
 
 const JIRA_BASE_URL = process.env.JIRA_BASE_URL || "https://tools.hmcts.net/jira";
 
-// GitHub Project configuration
-const PROJECT_ID = "PVT_kwDOAVwpV84BMvy3";
-const STATUS_FIELD_ID = "PVTSSF_lADOAVwpV84BMvy3zg78TBM";
-const SIZE_FIELD_ID = "PVTSSF_lADOAVwpV84BMvy3zg78TFE";
+// GitHub configuration - set via setGitHubRepo()
+let GITHUB_OWNER = "";
+let GITHUB_REPO = "";
+let GITHUB_REPO_URL = "";
 
-// Story points to Size field mapping
-const STORY_POINTS_TO_SIZE: Record<number, { optionId: string; label: string }> = {
-  1: { optionId: "6c6483d2", label: "XS" },
-  2: { optionId: "f784b110", label: "S" },
-  3: { optionId: "7515a9f1", label: "M" },
-  5: { optionId: "7515a9f1", label: "M" },
-  8: { optionId: "817d0097", label: "L" },
-  13: { optionId: "db339eb2", label: "XL" }
-};
+/**
+ * Set the target GitHub repository for migration
+ */
+export function setGitHubRepo(repo: string): void {
+  const parts = repo.split("/");
+  if (parts.length !== 2) {
+    throw new Error(`Invalid repository format: ${repo}. Expected format: owner/repo`);
+  }
+  GITHUB_OWNER = parts[0];
+  GITHUB_REPO = parts[1];
+  GITHUB_REPO_URL = `https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}`;
+}
+
+// GitHub Project configuration - these will be populated dynamically
+let PROJECT_ID = "";
+let STATUS_FIELD_ID = "";
+let ESTIMATE_FIELD_ID = "";
 
 // Required status columns for the project board
 const REQUIRED_STATUS_OPTIONS = [
@@ -117,7 +125,7 @@ ${issue.fields.attachment && issue.fields.attachment.length > 0 ? "\n_Attachment
  */
 async function ensureLabelExists(label: string): Promise<void> {
   try {
-    const { stdout } = await execAsync(`gh label list --search "${label}" --limit 1 --json name`);
+    const { stdout } = await execAsync(`gh label list -R ${GITHUB_OWNER}/${GITHUB_REPO} --search "${label}" --limit 1 --json name`);
     const labels = JSON.parse(stdout);
 
     if (labels.some((l: { name: string }) => l.name === label)) {
@@ -135,10 +143,10 @@ async function ensureLabelExists(label: string): Promise<void> {
     else if (label.startsWith("type:")) color = "1D76DB";
     else if (label === "migrated-from-jira") color = "5319E7";
 
-    await execAsync(`gh label create "${label}" --color "${color}" --force`);
+    await execAsync(`gh label create -R ${GITHUB_OWNER}/${GITHUB_REPO} "${label}" --color "${color}" --force`);
   } catch {
     try {
-      await execAsync(`gh label create "${label}" --color "ededed" --force`);
+      await execAsync(`gh label create -R ${GITHUB_OWNER}/${GITHUB_REPO} "${label}" --color "ededed" --force`);
     } catch {
       // Label might already exist
     }
@@ -168,16 +176,26 @@ async function getProjectNodeId(projectNumber: number): Promise<string | null> {
 }
 
 /**
- * Get the Status field ID for a project
+ * Get the Status and Estimate field IDs for a project
  */
-async function getStatusFieldId(projectNumber: number): Promise<string | null> {
+async function getProjectFieldIds(projectNumber: number): Promise<{ statusId: string | null; estimateId: string | null; projectId: string | null }> {
   try {
-    const { stdout } = await execAsync(`gh project field-list ${projectNumber} --owner hmcts --format json`);
+    const { stdout } = await execAsync(`gh project field-list ${projectNumber} --owner ${GITHUB_OWNER} --format json`);
     const data = JSON.parse(stdout);
     const statusField = data.fields?.find((f: { name: string }) => f.name === "Status");
-    return statusField?.id || null;
+    const estimateField = data.fields?.find((f: { name: string }) => f.name === "Estimate");
+
+    // Get project node ID
+    const { stdout: projectStdout } = await execAsync(`gh project view ${projectNumber} --owner ${GITHUB_OWNER} --format json`);
+    const projectData = JSON.parse(projectStdout);
+
+    return {
+      statusId: statusField?.id || null,
+      estimateId: estimateField?.id || null,
+      projectId: projectData?.id || null
+    };
   } catch {
-    return null;
+    return { statusId: null, estimateId: null, projectId: null };
   }
 }
 
@@ -186,37 +204,54 @@ async function getStatusFieldId(projectNumber: number): Promise<string | null> {
  * This ensures all JIRA statuses can be mapped to GitHub project columns
  */
 export async function setupProjectBoard(projectNumber: number, dryRun = false): Promise<boolean> {
-  console.log("\nSetting up project board status columns...");
+  console.log("\nSetting up project board...");
 
   if (dryRun) {
     console.log("  [DRY RUN] Would set up status columns:");
     for (const opt of REQUIRED_STATUS_OPTIONS) {
       console.log(`    - ${opt.name}`);
     }
-    // Set up a dummy mapping for dry run
-    for (const [jiraStatus, columnName] of Object.entries(JIRA_STATUS_TO_COLUMN_NAME)) {
+    console.log("  [DRY RUN] Would use Estimate field for story points");
+    // Set up dummy mappings for dry run
+    PROJECT_ID = "dry-run-project-id";
+    STATUS_FIELD_ID = "dry-run-status-field-id";
+    ESTIMATE_FIELD_ID = "dry-run-estimate-field-id";
+    for (const [jiraStatus] of Object.entries(JIRA_STATUS_TO_COLUMN_NAME)) {
       STATUS_TO_COLUMN[jiraStatus] = "dry-run-id";
     }
     return true;
   }
 
   try {
-    // Get the Status field ID
-    const fieldId = await getStatusFieldId(projectNumber);
-    if (!fieldId) {
+    // Get the field IDs
+    const fieldIds = await getProjectFieldIds(projectNumber);
+    if (!fieldIds.statusId) {
       console.error("  ✗ Could not find Status field in project");
       return false;
     }
+    if (!fieldIds.projectId) {
+      console.error("  ✗ Could not find project ID");
+      return false;
+    }
+
+    // Store the field IDs
+    PROJECT_ID = fieldIds.projectId;
+    STATUS_FIELD_ID = fieldIds.statusId;
+    ESTIMATE_FIELD_ID = fieldIds.estimateId || "";
+
+    if (!ESTIMATE_FIELD_ID) {
+      console.warn("  ⚠ Estimate field not found in project - story points will not be set");
+    } else {
+      console.log("  ✓ Estimate field found for story points");
+    }
 
     // Build the GraphQL mutation to update status options
-    const optionsJson = REQUIRED_STATUS_OPTIONS.map(
-      (opt) => `{ name: "${opt.name}", color: ${opt.color}, description: "${opt.description}" }`
-    ).join(", ");
+    const optionsJson = REQUIRED_STATUS_OPTIONS.map((opt) => `{ name: "${opt.name}", color: ${opt.color}, description: "${opt.description}" }`).join(", ");
 
     const mutation = `
       mutation {
         updateProjectV2Field(input: {
-          fieldId: "${fieldId}"
+          fieldId: "${STATUS_FIELD_ID}"
           singleSelectOptions: [${optionsJson}]
         }) {
           projectV2Field {
@@ -304,8 +339,8 @@ export async function createGitHubIssue(issue: JiraIssue, dryRun = false): Promi
     console.log(`    Body length: ${body.length} chars`);
     return {
       number: 0,
-      url: "https://github.com/hmcts/expressjs-monorepo-template/issues/0",
-      htmlUrl: "https://github.com/hmcts/expressjs-monorepo-template/issues/0"
+      url: `${GITHUB_REPO_URL}/issues/0`,
+      htmlUrl: `${GITHUB_REPO_URL}/issues/0`
     };
   }
 
@@ -320,7 +355,7 @@ export async function createGitHubIssue(issue: JiraIssue, dryRun = false): Promi
   await import("node:fs/promises").then((fs) => fs.writeFile(bodyFile, body));
 
   try {
-    const command = `gh issue create --title "${title.replace(/"/g, '\\"')}" --body-file "${bodyFile}" ${labelArgs}`;
+    const command = `gh issue create -R ${GITHUB_OWNER}/${GITHUB_REPO} --title "${title.replace(/"/g, '\\"')}" --body-file "${bodyFile}" ${labelArgs}`;
 
     const { stdout, stderr } = await execAsync(command, {
       maxBuffer: 1024 * 1024 * 10 // 10MB buffer
@@ -366,7 +401,7 @@ export async function checkGitHubAuth(): Promise<boolean> {
  */
 export async function findExistingIssue(jiraKey: string): Promise<GitHubIssue | null> {
   try {
-    const { stdout } = await execAsync(`gh issue list --label "jira:${jiraKey}" --json number,url --limit 1`);
+    const { stdout } = await execAsync(`gh issue list -R ${GITHUB_OWNER}/${GITHUB_REPO} --label "jira:${jiraKey}" --json number,url --limit 1`);
     const issues = JSON.parse(stdout);
     if (issues.length > 0) {
       return {
@@ -400,8 +435,8 @@ export async function updateGitHubIssue(issueNumber: number, issue: JiraIssue, d
     console.log(`    Body length: ${body.length} chars`);
     return {
       number: issueNumber,
-      url: `https://github.com/hmcts/expressjs-monorepo-template/issues/${issueNumber}`,
-      htmlUrl: `https://github.com/hmcts/expressjs-monorepo-template/issues/${issueNumber}`
+      url: `${GITHUB_REPO_URL}/issues/${issueNumber}`,
+      htmlUrl: `${GITHUB_REPO_URL}/issues/${issueNumber}`
     };
   }
 
@@ -411,14 +446,14 @@ export async function updateGitHubIssue(issueNumber: number, issue: JiraIssue, d
 
   try {
     // Update issue title and body
-    const editCommand = `gh issue edit ${issueNumber} --title "${title.replace(/"/g, '\\"')}" --body-file "${bodyFile}"`;
+    const editCommand = `gh issue edit -R ${GITHUB_OWNER}/${GITHUB_REPO} ${issueNumber} --title "${title.replace(/"/g, '\\"')}" --body-file "${bodyFile}"`;
     await execAsync(editCommand, {
       maxBuffer: 1024 * 1024 * 10
     });
 
     // Update labels - remove old status/priority and add new ones
     // First get current labels
-    const { stdout: labelOutput } = await execAsync(`gh issue view ${issueNumber} --json labels`);
+    const { stdout: labelOutput } = await execAsync(`gh issue view -R ${GITHUB_OWNER}/${GITHUB_REPO} ${issueNumber} --json labels`);
     const { labels: currentLabels } = JSON.parse(labelOutput);
 
     // Find labels to remove (old status/priority/type labels)
@@ -432,7 +467,7 @@ export async function updateGitHubIssue(issueNumber: number, issue: JiraIssue, d
     // Remove old labels if any
     if (labelsToRemove.length > 0) {
       const removeArgs = labelsToRemove.map((l) => `--remove-label "${l}"`).join(" ");
-      await execAsync(`gh issue edit ${issueNumber} ${removeArgs}`);
+      await execAsync(`gh issue edit -R ${GITHUB_OWNER}/${GITHUB_REPO} ${issueNumber} ${removeArgs}`);
     }
 
     // Add new status/priority/type labels
@@ -444,10 +479,10 @@ export async function updateGitHubIssue(issueNumber: number, issue: JiraIssue, d
     if (labelsToAdd.length > 0) {
       await ensureLabelsExist(labelsToAdd);
       const addArgs = labelsToAdd.map((l) => `--add-label "${l}"`).join(" ");
-      await execAsync(`gh issue edit ${issueNumber} ${addArgs}`);
+      await execAsync(`gh issue edit -R ${GITHUB_OWNER}/${GITHUB_REPO} ${issueNumber} ${addArgs}`);
     }
 
-    const issueUrl = `https://github.com/hmcts/expressjs-monorepo-template/issues/${issueNumber}`;
+    const issueUrl = `${GITHUB_REPO_URL}/issues/${issueNumber}`;
     return {
       number: issueNumber,
       url: issueUrl,
@@ -508,45 +543,30 @@ export async function addIssueToProject(issueUrl: string, jiraStatus: string, pr
 }
 
 /**
- * Get Size label from story points
+ * Set the Estimate field for an issue in the project board using story points directly
  */
-export function getSizeFromStoryPoints(storyPoints: number | undefined): { optionId: string; label: string } | null {
+export async function setIssueEstimate(itemId: string, storyPoints: number | undefined, dryRun = false): Promise<number | null> {
   if (storyPoints === undefined || storyPoints === null) {
     return null;
   }
-  // For story points > 13, use XL
-  if (storyPoints >= 13) {
-    return STORY_POINTS_TO_SIZE[13];
-  }
-  return STORY_POINTS_TO_SIZE[storyPoints] || null;
-}
 
-/**
- * Set the Size field for an issue in the project board
- */
-export async function setIssueSize(
-  itemId: string,
-  storyPoints: number | undefined,
-  dryRun = false
-): Promise<string | null> {
-  const size = getSizeFromStoryPoints(storyPoints);
-  if (!size) {
+  if (!ESTIMATE_FIELD_ID) {
     return null;
   }
 
   if (dryRun) {
-    console.log(`  [DRY RUN] Would set Size: ${size.label} (${storyPoints} points)`);
-    return size.label;
+    console.log(`  [DRY RUN] Would set Estimate: ${storyPoints} points`);
+    return storyPoints;
   }
 
   try {
-    const editCommand = `gh project item-edit --id "${itemId}" --project-id "${PROJECT_ID}" --field-id "${SIZE_FIELD_ID}" --single-select-option-id "${size.optionId}"`;
+    const editCommand = `gh project item-edit --id "${itemId}" --project-id "${PROJECT_ID}" --field-id "${ESTIMATE_FIELD_ID}" --number ${storyPoints}`;
     await execAsync(editCommand, { maxBuffer: 1024 * 1024 });
-    console.log(`  ✓ Set Size: ${size.label} (${storyPoints} points)`);
-    return size.label;
+    console.log(`  ✓ Set Estimate: ${storyPoints} points`);
+    return storyPoints;
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`  ✗ Failed to set Size: ${message}`);
+    console.error(`  ✗ Failed to set Estimate: ${message}`);
     return null;
   }
 }
@@ -556,7 +576,7 @@ export async function setIssueSize(
  */
 export async function getIssueNodeId(issueNumber: number): Promise<string | null> {
   try {
-    const { stdout } = await execAsync(`gh issue view ${issueNumber} --json id`);
+    const { stdout } = await execAsync(`gh issue view -R ${GITHUB_OWNER}/${GITHUB_REPO} ${issueNumber} --json id`);
     const result = JSON.parse(stdout);
     return result.id || null;
   } catch {
@@ -567,11 +587,7 @@ export async function getIssueNodeId(issueNumber: number): Promise<string | null
 /**
  * Link a child issue as a sub-issue of a parent issue using GraphQL
  */
-export async function linkSubIssue(
-  parentIssueNumber: number,
-  childIssueNumber: number,
-  dryRun = false
-): Promise<boolean> {
+export async function linkSubIssue(parentIssueNumber: number, childIssueNumber: number, dryRun = false): Promise<boolean> {
   if (dryRun) {
     console.log(`  [DRY RUN] Would link #${childIssueNumber} as sub-issue of #${parentIssueNumber}`);
     return true;
@@ -619,11 +635,7 @@ export async function linkSubIssue(
 /**
  * Add an issue to a project and return the project item ID
  */
-export async function addIssueToProjectAndGetItemId(
-  issueUrl: string,
-  projectNumber: number,
-  dryRun = false
-): Promise<string | null> {
+export async function addIssueToProjectAndGetItemId(issueUrl: string, projectNumber: number, dryRun = false): Promise<string | null> {
   if (dryRun) {
     console.log(`  [DRY RUN] Would add to project ${projectNumber}`);
     return "dry-run-item-id";
@@ -639,4 +651,97 @@ export async function addIssueToProjectAndGetItemId(
     console.error(`  ✗ Failed to add to project: ${message}`);
     return null;
   }
+}
+
+/**
+ * Format a JIRA comment for GitHub
+ */
+function formatJiraCommentForGitHub(comment: JiraComment): string {
+  const createdDate = new Date(comment.created);
+  const updatedDate = new Date(comment.updated);
+
+  const formatDate = (date: Date) =>
+    date.toLocaleDateString("en-GB", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    });
+
+  const authorName = comment.author?.displayName || "Unknown";
+  const createdStr = formatDate(createdDate);
+
+  // Check if comment was edited (updated != created)
+  const wasEdited = Math.abs(updatedDate.getTime() - createdDate.getTime()) > 60000; // > 1 minute difference
+  const editedStr = wasEdited ? ` (edited ${formatDate(updatedDate)})` : "";
+
+  const convertedBody = convertJiraToMarkdown(comment.body || "");
+
+  return `> **${authorName}** commented on ${createdStr}${editedStr}
+
+${convertedBody}`;
+}
+
+/**
+ * Add a comment to a GitHub issue
+ */
+export async function addCommentToIssue(issueNumber: number, body: string, dryRun = false): Promise<boolean> {
+  if (dryRun) {
+    return true;
+  }
+
+  // Write body to temporary file to avoid shell escaping issues
+  const bodyFile = `/tmp/gh-comment-body-${issueNumber}-${Date.now()}.txt`;
+  await import("node:fs/promises").then((fs) => fs.writeFile(bodyFile, body));
+
+  try {
+    const command = `gh issue comment -R ${GITHUB_OWNER}/${GITHUB_REPO} ${issueNumber} --body-file "${bodyFile}"`;
+    await execAsync(command, { maxBuffer: 1024 * 1024 * 10 });
+    return true;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    console.warn(`    ⚠ Failed to add comment: ${message}`);
+    return false;
+  } finally {
+    await import("node:fs/promises")
+      .then((fs) => fs.unlink(bodyFile))
+      .catch(() => {
+        /* ignore */
+      });
+  }
+}
+
+/**
+ * Migrate all comments from a JIRA issue to a GitHub issue
+ */
+export async function migrateCommentsToIssue(issueNumber: number, comments: JiraComment[], dryRun = false): Promise<number> {
+  if (comments.length === 0) {
+    return 0;
+  }
+
+  if (dryRun) {
+    console.log(`  [DRY RUN] Would migrate ${comments.length} comment(s)`);
+    return comments.length;
+  }
+
+  let successCount = 0;
+
+  for (const comment of comments) {
+    const formattedBody = formatJiraCommentForGitHub(comment);
+    const success = await addCommentToIssue(issueNumber, formattedBody, dryRun);
+
+    if (success) {
+      successCount++;
+    }
+
+    // Add delay between comments to avoid rate limiting
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
+
+  if (successCount > 0) {
+    console.log(`  ✓ Migrated ${successCount}/${comments.length} comment(s)`);
+  }
+
+  return successCount;
 }

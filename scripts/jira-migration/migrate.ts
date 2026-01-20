@@ -8,11 +8,13 @@ import {
   createGitHubIssue,
   findExistingIssue,
   linkSubIssue,
-  setIssueSize,
+  migrateCommentsToIssue,
+  setGitHubRepo,
+  setIssueEstimate,
   setupProjectBoard,
   updateGitHubIssue
 } from "./github-client.js";
-import { downloadIssueAttachments, getAllIssues } from "./jira-client.js";
+import { downloadIssueAttachments, getAllIssues, getIssueComments } from "./jira-client.js";
 import { closeBrowser, ensureGitHubLogin, initBrowser, uploadAttachmentsToIssue } from "./playwright-uploader.js";
 import type { GitHubIssue, JiraIssue, MigrationReport, MigrationResult } from "./types.js";
 
@@ -24,7 +26,9 @@ interface MigrationOptions {
   dryRun: boolean;
   limit?: number;
   skipAttachments: boolean;
+  skipComments: boolean;
   project?: number;
+  repo: string;
 }
 
 /**
@@ -34,7 +38,9 @@ function parseArgs(): MigrationOptions {
   const args = process.argv.slice(2);
   const options: MigrationOptions = {
     dryRun: false,
-    skipAttachments: false
+    skipAttachments: false,
+    skipComments: false,
+    repo: ""
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -45,6 +51,9 @@ function parseArgs(): MigrationOptions {
         break;
       case "--skip-attachments":
         options.skipAttachments = true;
+        break;
+      case "--skip-comments":
+        options.skipComments = true;
         break;
       case "--limit": {
         const limit = Number.parseInt(args[++i], 10);
@@ -60,17 +69,22 @@ function parseArgs(): MigrationOptions {
         }
         break;
       }
+      case "--repo":
+        options.repo = args[++i];
+        break;
       case "--help":
       // biome-ignore lint/suspicious/noFallthroughSwitchClause: Intentional fallthrough for alias
       case "-h":
         console.log(`
 JIRA to GitHub Issues Migration Script
 
-Usage: yarn migrate:jira [options]
+Usage: yarn migrate:jira --repo <owner/repo> [options]
 
 Options:
+  --repo <owner/repo>    Target GitHub repository (required, e.g., hmcts/cath-service)
   --dry-run              List issues without creating GitHub issues
   --skip-attachments     Create issues but skip attachment uploads
+  --skip-comments        Create issues but skip comment migration
   --limit N              Migrate only the first N issues (for testing)
   --project N            Add issues to GitHub Project board N (e.g., 42)
   --help, -h             Show this help message
@@ -80,17 +94,22 @@ Credentials:
   GitHub credentials use the gh CLI (run 'gh auth login' if needed)
 
 Examples:
-  yarn migrate:jira --dry-run                 # Preview migration
-  yarn migrate:jira --limit 5                 # Migrate first 5 issues
-  yarn migrate:jira --skip-attachments        # Migrate without attachments
-  yarn migrate:jira --project 42              # Migrate and add to project board
-  yarn migrate:jira                           # Full migration
+  yarn migrate:jira --repo hmcts/cath-service --dry-run
+  yarn migrate:jira --repo hmcts/cath-service --limit 5
+  yarn migrate:jira --repo hmcts/cath-service --project 42
+  yarn migrate:jira --repo hmcts/cath-service --skip-attachments --skip-comments
         `);
         process.exit(0);
       default:
         console.error(`Unknown option: ${arg}`);
         process.exit(1);
     }
+  }
+
+  // Validate required options
+  if (!options.repo) {
+    console.error("Error: --repo is required. Example: --repo hmcts/cath-service");
+    process.exit(1);
   }
 
   return options;
@@ -128,10 +147,11 @@ async function migrateIssue(issue: JiraIssue, context: MigrateIssueContext): Pro
     githubIssue: null,
     success: false,
     attachmentsUploaded: 0,
+    commentsAdded: 0,
     updated: false,
     isEpic,
     linkedToEpic: undefined,
-    sizeSet: undefined
+    estimateSet: undefined
   };
 
   try {
@@ -171,10 +191,10 @@ async function migrateIssue(issue: JiraIssue, context: MigrateIssueContext): Pro
       // Add to project and set status column (returns item ID)
       const projectItemId = await addIssueToProject(githubIssue.htmlUrl, jiraStatus, options.project, options.dryRun);
 
-      // Set Size field if story points exist (and not an epic)
+      // Set Estimate field if story points exist (and not an epic)
       if (projectItemId && !isEpic && storyPoints) {
-        const sizeLabel = await setIssueSize(projectItemId, storyPoints, options.dryRun);
-        result.sizeSet = sizeLabel || undefined;
+        const estimate = await setIssueEstimate(projectItemId, storyPoints, options.dryRun);
+        result.estimateSet = estimate || undefined;
       }
     }
 
@@ -212,6 +232,16 @@ async function migrateIssue(issue: JiraIssue, context: MigrateIssueContext): Pro
       await fs.promises.rm(tempDir, { recursive: true, force: true });
     }
 
+    // Handle comments
+    if (!options.skipComments) {
+      const comments = await getIssueComments(issue.key);
+      if (comments.length > 0) {
+        console.log(`  Migrating ${comments.length} comment(s)...`);
+        const commentsAdded = await migrateCommentsToIssue(githubIssue.number, comments, options.dryRun);
+        result.commentsAdded = commentsAdded;
+      }
+    }
+
     result.success = true;
   } catch (error) {
     console.error(`  ✗ Failed to migrate ${issue.key}:`, error);
@@ -238,14 +268,19 @@ async function saveMigrationReport(report: MigrationReport): Promise<void> {
 async function main() {
   const options = parseArgs();
 
+  // Set the target GitHub repository
+  setGitHubRepo(options.repo);
+
   console.log("=".repeat(60));
   console.log("JIRA to GitHub Issues Migration");
   console.log("=".repeat(60));
+  console.log(`GitHub Repo: ${options.repo}`);
   console.log(`JIRA Project: ${JIRA_PROJECT}`);
   console.log(`JIRA Label: ${JIRA_LABEL}`);
   console.log(`JIRA Base URL: ${JIRA_BASE_URL}`);
   console.log(`Dry Run: ${options.dryRun ? "Yes" : "No"}`);
   console.log(`Skip Attachments: ${options.skipAttachments ? "Yes" : "No"}`);
+  console.log(`Skip Comments: ${options.skipComments ? "Yes" : "No"}`);
   if (options.limit) {
     console.log(`Limit: ${options.limit} issues`);
   }
@@ -328,6 +363,7 @@ async function main() {
     epicsCreated: 0,
     childrenLinked: 0,
     orphansCreated: 0,
+    totalCommentsAdded: 0,
     results: []
   };
 
@@ -400,6 +436,9 @@ async function main() {
     await closeBrowser();
   }
 
+  // Calculate totals for summary
+  report.totalCommentsAdded = report.results.reduce((sum, r) => sum + r.commentsAdded, 0);
+
   // Print summary
   console.log(`\n${"=".repeat(60)}`);
   console.log("Migration Summary");
@@ -412,6 +451,7 @@ async function main() {
   console.log(`Updated: ${report.updatedCount}`);
   console.log(`Failed: ${report.failedMigrations}`);
   console.log(`Attachments Uploaded: ${report.results.reduce((sum, r) => sum + r.attachmentsUploaded, 0)}`);
+  console.log(`Comments Added: ${report.totalCommentsAdded}`);
   console.log("=".repeat(60));
 
   // Save report

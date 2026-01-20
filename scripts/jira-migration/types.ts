@@ -7,6 +7,14 @@ export interface JiraAttachment {
   created: string;
 }
 
+export interface JiraComment {
+  id: string;
+  author: { displayName: string };
+  body: string;
+  created: string;
+  updated: string;
+}
+
 export interface JiraIssue {
   key: string;
   id: string;
@@ -48,10 +56,11 @@ export interface MigrationResult {
   success: boolean;
   error?: string;
   attachmentsUploaded: number;
+  commentsAdded: number;
   updated: boolean; // true if updated existing issue, false if created new
   isEpic: boolean;
   linkedToEpic?: string; // Parent epic JIRA key if linked
-  sizeSet?: string; // Size value if set (XS, S, M, L, XL)
+  estimateSet?: number; // Story points value if set
 }
 
 export interface MigrationReport {
@@ -65,5 +74,6 @@ export interface MigrationReport {
   epicsCreated: number;
   childrenLinked: number;
   orphansCreated: number;
+  totalCommentsAdded: number;
   results: MigrationResult[];
 }
