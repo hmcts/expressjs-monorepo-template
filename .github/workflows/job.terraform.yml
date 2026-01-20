@@ -138,8 +138,20 @@ jobs:
           PRODUCT: ${{ steps.metadata.outputs.product }}
           TENANT_ID: ${{ steps.azure-context.outputs.tenant_id }}
           SP_OBJECT_ID: ${{ steps.azure-context.outputs.sp_object_id }}
-          TF_VAR_common_tags: '{"environment":"${{ inputs.environment }}","managedBy":"${{ steps.metadata.outputs.product }}","builtFrom":"${{ github.repository }}","application":"${{ steps.metadata.outputs.product }}","businessArea":"CFT"}'
         run: |
+          # Construct common_tags as compact JSON and write to tfvars file
+          # This avoids shell quoting issues with the -var flag
+          jq -c -n \
+            --arg env "${{ inputs.environment }}" \
+            --arg managedBy "$PRODUCT" \
+            --arg builtFrom "$GITHUB_REPOSITORY" \
+            --arg application "$PRODUCT" \
+            --arg businessArea "CFT" \
+            '{environment: $env, managedBy: $managedBy, builtFrom: $builtFrom, application: $application, businessArea: $businessArea}' \
+            > common_tags.json
+
+          echo "common_tags = $(cat common_tags.json)" > terraform.auto.tfvars
+
           set +e
           terraform plan -detailed-exitcode -out=tfplan \
             -var "env=${{ inputs.environment }}" \
