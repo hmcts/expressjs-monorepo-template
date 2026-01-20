@@ -139,10 +139,23 @@ jobs:
           TENANT_ID: ${{ steps.azure-context.outputs.tenant_id }}
           SP_OBJECT_ID: ${{ steps.azure-context.outputs.sp_object_id }}
         run: |
+          # Map environment names to Azure policy-compliant values
+          # See: https://github.com/hmcts/azure-policy/blob/master/policies/tagging/README.md
+          case "${{ inputs.environment }}" in
+            prod|production) ENV_TAG="production" ;;
+            aat|stg|staging) ENV_TAG="staging" ;;
+            dev|development) ENV_TAG="development" ;;
+            test|testing) ENV_TAG="testing" ;;
+            demo) ENV_TAG="demo" ;;
+            ithc) ENV_TAG="ithc" ;;
+            sbox|sandbox) ENV_TAG="sandbox" ;;
+            *) ENV_TAG="${{ inputs.environment }}" ;;
+          esac
+
           # Construct common_tags as compact JSON and write to tfvars file
           # This avoids shell quoting issues with the -var flag
           jq -c -n \
-            --arg env "${{ inputs.environment }}" \
+            --arg env "$ENV_TAG" \
             --arg managedBy "$PRODUCT" \
             --arg builtFrom "$GITHUB_REPOSITORY" \
             --arg application "$PRODUCT" \
