@@ -3,7 +3,7 @@
 
 data "azurerm_key_vault" "key_vault" {
   name                = "${var.product}-${var.env}"
-  resource_group_name = data.azurerm_resource_group.rg.name
+  resource_group_name = data.azurerm_resource_group.shared.name
 }
 
 # =============================================================================
@@ -19,7 +19,7 @@ data "azurerm_key_vault" "key_vault" {
 #   env                 = var.env
 #   tenant_id           = var.tenant_id
 #   object_id           = var.ci_service_principal_object_id
-#   resource_group_name = data.azurerm_resource_group.rg.name
+#   resource_group_name = azurerm_resource_group.rg.name
 #
 #   # Set to your team's AAD group name for access
 #   product_group_name      = "dcd_${var.product}"
