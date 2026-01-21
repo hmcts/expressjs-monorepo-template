@@ -1,6 +1,6 @@
-# GDS Principles
+The following guidance outlines the GDS design principles and standards. When generating user stories, acceptance criteria, or technical designs, use these as your primary evaluation framework.
 
-The following guidance outlines the design principles and standards required for building UK Government Digital Services (GDS). When generating user stories, acceptance criteria, or technical designs, use these as your primary evaluation framework.
+# GDS Principles
 
 ## 1. Start with user needs
 * **The Goal:** Do not build based on business "wants." Identify the underlying user need first.
