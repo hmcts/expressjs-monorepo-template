@@ -58,7 +58,7 @@ jobs:
       - name: Get last successful SHA
         id: last-success
         if: inputs.cache-key != ''
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: .last-successful-sha
           key: last-successful-${{ inputs.cache-key }}-${{ github.ref_name }}

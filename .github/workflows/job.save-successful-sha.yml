@@ -31,7 +31,7 @@ jobs:
         run: echo "${{ github.sha }}" > .last-successful-sha
 
       - name: Cache the SHA
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: .last-successful-sha
           key: last-successful-${{ inputs.cache-key }}-${{ github.ref_name }}

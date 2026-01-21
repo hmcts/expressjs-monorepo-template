@@ -36,7 +36,7 @@ jobs:
         run: echo "${{ github.sha }}" > .last-successful-sha
 
       - name: Save SHA to cache
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v5
         with:
           path: .last-successful-sha
           key: last-successful-docker-build-sha-${{ github.sha }}
