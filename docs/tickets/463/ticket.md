@@ -159,3 +159,95 @@ Civil and digital routes for seeking justice often overlook non-physical trauma.
 
 ## 15. Technical guidance from developers
 * Save the submissions into a new table in the database, make sure the table constraints match the form validations.
+
+## Comments
+
+**SarahLittlejohn** commented on 2026-01-21T10:16:26Z:
+@plan
+
+---
+
+**linusnorton** commented on 2026-01-21T10:19:13Z:
+@plan
+
+---
+
+**hmctsclaudecode** commented on 2026-01-21T10:23:53Z:
+## 📋 Technical Plan Created
+
+A comprehensive technical implementation plan has been created for this issue.
+
+### Branch
+`feature/463-civil-claim-submission`
+
+### Plan Files
+- [Technical Plan](https://github.com/hmcts/expressjs-monorepo-template/blob/feature/463-civil-claim-submission/docs/tickets/463/plan.md) - Architecture, implementation details, error handling, and acceptance criteria mapping
+- [Implementation Tasks](https://github.com/hmcts/expressjs-monorepo-template/blob/feature/463-civil-claim-submission/docs/tickets/463/tasks.md) - Step-by-step checklist with 70+ tasks
+- [Issue Details](https://github.com/hmcts/expressjs-monorepo-template/blob/feature/463-civil-claim-submission/docs/tickets/463/ticket.md) - Copy of the original issue for reference
+
+### CLARIFICATIONS NEEDED
+
+Before implementation, please clarify the following:
+
+1. **User Authentication**
+   - Q: Should users be authenticated before submitting claims, or can they submit anonymously?
+   - Impact: Determines if we need authentication middleware on routes
+   - Assumption: Proceeding with anonymous submission (no auth required) based on ticket mention of "proceeds anonymously if policy permits"
+
+2. **Multiple Victims**
+   - Q: Ticket mentions "offended party/parties" (plural) - should users be able to add multiple victims?
+   - Impact: Form design (add another victim button) and database schema (JSON array vs single record)
+   - Assumption: Single victim for MVP, can extend to multiple later
+
+3. **File Storage**
+   - Q: Where should uploaded evidence files be stored? (local filesystem, S3, Azure Blob, etc.)
+   - Impact: File upload implementation and infrastructure requirements
+   - Assumption: Storing only file metadata in DB for MVP, actual file storage deferred
+
+4. **Claim Processing Workflow**
+   - Q: What happens after submission? Is there an admin dashboard, email notifications, case management?
+   - Impact: Whether we need additional API endpoints, notification service integration
+   - Assumption: Just store in database, no post-submission workflow for this ticket
+
+5. **Data Retention**
+   - Q: How long should claim data be retained? GDPR considerations?
+   - Impact: Database cleanup jobs, data retention policies
+   - Assumption: No automatic cleanup, admin handles via separate process
+
+6. **Contact Information Format**
+   - Q: Should contact info be split into separate email/phone fields or combined?
+   - Impact: Form design and validation complexity
+   - Assumption: Single text field accepting either email or phone number (flexible input)
+
+7. **Welsh Translation**
+   - Q: Are Welsh translations required for all pages?
+   - Impact: Bilingual content objects needed for all pages
+   - Assumption: Yes, following established pattern in other modules (en/cy objects)
+
+8. **Next Steps Content**
+   - Q: What specific text should appear in "next steps" on confirmation page?
+   - Impact: Content design for confirmation page
+   - Assumption: Generic placeholder text: "Your claim has been received. We will review your submission and contact you within 10 working days."
+
+---
+
+**Run `/qk-implement` when ready to implement**
+
+---
+
+**linusnorton** commented on 2026-01-21T10:30:52Z:
+5. Data Retention: Don't worry about it, we'll keep the data forever.
+
+---
+
+**linusnorton** commented on 2026-01-21T13:06:16Z:
+1. Dont worry about auth yet
+2. Yes
+3. Remove evidence upload
+4. Just store in DB
+6. Yes, separate pages
+
+---
+
+**linusnorton** commented on 2026-01-21T13:06:21Z:
+@ready
