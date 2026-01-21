@@ -162,7 +162,7 @@ jobs:
           anthropic_api_key: ${{ secrets.CLAUDE_API_KEY }}
           github_token: ${{ steps.app-token.outputs.token }}
           prompt: |
-            Run the /qk-plan command for issue #${{ github.event.issue.number }}.
+            Run the /qk-plan #${{ github.event.issue.number }}.
 
             After completing the plan:
             1. Create a new branch named: feature/${{ github.event.issue.number }}-<short-description>
@@ -180,3 +180,87 @@ jobs:
             --dangerously-skip-permissions
             --append-system-prompt "You are running in a GitHub Action. The environment has been set up and yarn install has been run. Read @CLAUDE.md. After generating the plan, you MUST: 1) Create a feature branch, 2) Commit and push the plan files, 3) Post clarifications to the issue."
             --allowedTools "Bash(corepack:*),Bash(yarn:*),Bash(git:*),Bash(gh issue:*),Bash(mkdir:*),Read,Write,Edit,Grep,Glob,TodoWrite,Skill"
+
+  claude-ready:
+    if: github.event_name == 'issue_comment' && contains(github.event.comment.body, '@ready')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+    steps:
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.CLAUDE_CODE_APP_ID }}
+          private-key: ${{ secrets.CLAUDE_CODE_PRIVATE_KEY }}
+
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "claude-code-bot[bot]"
+          git config user.email "claude-code-bot[bot]@users.noreply.github.com"
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'yarn'
+          cache-dependency-path: '**/yarn.lock'
+
+      - name: Cache Yarn dependencies
+        uses: actions/cache@v5
+        with:
+          path: |
+            .yarn/cache
+            .yarn/install-state.gz
+            node_modules
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install dependencies
+        run: yarn install --immutable
+
+      - name: Generate Prisma client
+        run: yarn db:generate
+
+      - name: Run Claude Code Ready
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.CLAUDE_API_KEY }}
+          github_token: ${{ steps.app-token.outputs.token }}
+          prompt: |
+            Review issue #${{ github.event.issue.number }} and update the technical plan if needed.
+
+            Steps:
+            1. Checkout the feature branch for this issue (feature/${{ github.event.issue.number }}-*)
+            2. Read docs/tickets/${{ github.event.issue.number }}/ticket.md to see existing comments
+            3. Fetch latest comments: gh issue view ${{ github.event.issue.number }} --json comments
+            4. Compare and identify any NEW comments not in ticket.md
+            5. If new comments exist:
+               - Update ticket.md with the new comments
+               - Review if they contain new requirements, clarifications, or answers
+               - Update plan.md and tasks.md if the approach needs to change
+               - Commit and push changes to the feature branch
+            6. Update the GitHub Project status to "Refined Tickets" using:
+               - First get item ID: gh api graphql -f query='query { repository(owner: "hmcts", name: "expressjs-monorepo-template") { issue(number: ${{ github.event.issue.number }}) { projectItems(first: 1) { nodes { id } } } } }' --jq '.data.repository.issue.projectItems.nodes[0].id'
+               - Then update status: gh api graphql -f query='mutation($itemId: ID!) { updateProjectV2ItemFieldValue(input: { projectId: "PVT_kwDOAVwpV84BMvy3", itemId: $itemId, fieldId: "PVTSSF_lADOAVwpV84BMvy3zg78TBM", value: { singleSelectOptionId: "03294712" } }) { projectV2Item { id } } }' -f itemId="<ITEM_ID>"
+            7. Post a comment on the issue with:
+               - Summary of what changed (or "No changes needed")
+               - Confirmation that status was updated to "Refined Tickets"
+          claude_args: |
+            --dangerously-skip-permissions
+            --append-system-prompt "You are running in a GitHub Action. Read @CLAUDE.md. Checkout the feature branch for this issue before making changes."
+            --allowedTools "Bash(git:*),Bash(gh:*),Read,Write,Edit,Grep,Glob,TodoWrite"

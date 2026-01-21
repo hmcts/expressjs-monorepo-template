@@ -40,7 +40,7 @@ EXECUTE:
 EXECUTE:
 
 TASK 1: Fetch GitHub Issue Details
-- Use gh CLI to fetch issue: gh issue view $ARGUMENT --json number,title,body,state,assignees,author,labels,createdAt,updatedAt
+- Use gh CLI to fetch issue: gh issue view $ARGUMENT --json number,title,body,state,assignees,author,labels,createdAt,updatedAt,comments
 - Extract fields using jq or parse JSON directly
 - Write to docs/tickets/$ARGUMENT/ticket.md with format:
 
@@ -57,6 +57,14 @@ TASK 1: Fetch GitHub Issue Details
 ## Description
 
 [Body content - markdown formatted]
+
+## Comments
+
+[For each comment in the comments array, include:]
+### Comment by [author.login] on [createdAt]
+[body]
+
+[If no comments, write "No comments on this issue."]
 ---
 
 ```
@@ -74,7 +82,9 @@ INPUT: docs/tickets/$ARGUMENT/ticket.md
 OUTPUT: docs/tickets/$ARGUMENT/plan.md AND docs/tickets/$ARGUMENT/tasks.md
 
 PROMPT FOR AGENT:
-"Review the GitHub issue details in docs/tickets/$ARGUMENT/ticket.md and create TWO separate files:
+"Review the GitHub issue details in docs/tickets/$ARGUMENT/ticket.md and create TWO separate files.
+
+IMPORTANT: The ticket.md includes comments from the issue. These comments may contain clarifications, additional requirements, or context from stakeholders - consider them when creating the plan.
 
 **FILE 1: docs/tickets/$ARGUMENT/plan.md**
 This is the technical specification/plan including:
