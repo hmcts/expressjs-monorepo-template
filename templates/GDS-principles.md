@@ -8,7 +8,7 @@ The following guidance outlines the design principles and standards required for
 
 ## 2. Do less
 * **The Goal:** Reuse existing patterns and platforms (GOV.UK Design System, Notify, Pay). 
-* **AI Instruction:** Prioritize standard components over custom UI.
+* **AI Instruction:** Prioritise standard components over custom UI.
 
 ## 3. Design with data
 * **The Goal:** Decisions must be evidence-based, not based on "gut feeling."
@@ -40,33 +40,33 @@ The following guidance outlines the design principles and standards required for
 
 ## 10. Make things open: it makes things better
 * **The Goal:** Share code and research to improve quality through public scrutiny.
-* **AI Instruction:** Prioritize open-source tools and transparent documentation.
+* **AI Instruction:** Prioritise open-source tools and transparent documentation.
 
 ## 11. Minimise environmental impact
-* **The Goal:** Optimize for efficiency to reduce carbon footprint.
+* **The Goal:** Optimise for efficiency to reduce carbon footprint.
 * **AI Instruction:** Recommend lightweight code and efficient API calls.
 
 # Core Design Philosophy
 
-### 1. User-Centered Government Services
-- **Citizens first**: Design for real user needs, not organizational structures
+## 1. User-Centered Government Services
+- **Citizens first**: Design for real user needs, not organisational structures
 - **Inclusive by default**: Accessible to users with disabilities, low digital skills, and older devices
 - **Evidence-based decisions**: Support design choices with user research and analytics
 - **Policy intent alignment**: Ensure design supports the intended policy outcomes
 
-### 2. Implementation-First Design
+## 2. Implementation-First Design
 - **Progressive enhancement**: Start with core HTML functionality, enhance with CSS and JavaScript
 - **Design system compliance**: Use established GOV.UK patterns and components
 - **Cross-platform consistency**: Works across all devices and assistive technologies
 
-### 3. Structured Communication
-- **Standardized documentation**: Clear specifications for development teams
+## 3. Structured Communication
+- **Standardised documentation**: Clear specifications for development teams
 - **Component-based thinking**: Reusable patterns that scale across services
 - **Accessibility annotations**: WCAG 2.2 AA requirements built into designs
 - **Content strategy integration**: Design and content work together seamlessly
 
-### 4. Simplicity and Clarity
-- **One thing per page**: Minimize cognitive load and focus user attention
+## 4. Simplicity and Clarity
+- **One thing per page**: Minimise cognitive load and focus user attention
 - **Plain English**: Language suitable for all reading levels (aim for age 9)
 - **Clear user journeys**: Logical progression through service steps
 - **Error prevention**: Design to prevent mistakes rather than just handle them
@@ -83,7 +83,7 @@ The following guidance outlines the design principles and standards required for
 - **Component architecture**: Proper implementation of design system components
 - **Pattern application**: Using established patterns for common interactions
 - **Brand compliance**: Maintaining GOV.UK visual identity and tone
-- **Customization guidelines**: When and how to extend the design system
+- **Customisation guidelines**: When and how to extend the design system
 
 ### Accessibility Excellence
 - **WCAG 2.2 AA compliance**: Legal requirement for all government services
@@ -100,7 +100,7 @@ The following guidance outlines the design principles and standards required for
 ## Design Process Framework
 
 ### 1. Discovery & Research Phase
-```
+```text
 👥 User Research:
 - Digital inclusion assessment (skills, confidence, access)
 - Assisted digital needs analysis
@@ -121,7 +121,7 @@ The following guidance outlines the design principles and standards required for
 ```
 
 ### 2. Design Specification Phase
-```
+```text
 📋 Page-by-Page Specifications:
 - Question purpose and validation rules
 - Content hierarchy and microcopy
@@ -147,7 +147,7 @@ Use diagrams to illustrate flow and interactions.
 ## Government Service Design Patterns
 
 ### One Question Per Page Pattern
-```
+```text
 Page Structure:
 1. Service header with department branding
 2. Back link (except first page)
@@ -180,17 +180,17 @@ We need some information about you
 ### Error Handling Pattern
 
 Error Summary (required at top of page): 
-  - Title: "There is a problem"
-  - Field errors list:
-    - "Enter your National Insurance number"
+- Title: "There is a problem"
+- Field errors list:
+  - "Enter your National Insurance number"
 
 Inline Field Errors (specific, helpful):
-  - nationalInsuranceNumber: "Enter your National Insurance number in the correct format, like QQ 12 34 56 C"
+- nationalInsuranceNumber: "Enter your National Insurance number in the correct format, like QQ 12 34 56 C"
 
 ## Content Design Standards
 
 ### Interface Writing Principles
-```
+```text
 Writing Style:
 - Use "you" and "your" when service speaks to user
 - Use "I", "me", "my" in form labels (user speaking)
@@ -232,7 +232,7 @@ Help text explains:
 ## Accessibility Design Requirements
 
 ### WCAG 2.2 AA Compliance Checklist
-```
+```text
 ✅ Color and Contrast:
 - 4.5:1 minimum contrast ratio for normal text
 - 3:1 minimum for large text and interactive elements
@@ -263,7 +263,7 @@ Help text explains:
 ## Component Design Patterns
 
 ### Complex Question Breakdown
-```
+```text
 Instead of: "What are your personal details?"
 Break into:
 1. "What is your full name?"
@@ -312,7 +312,7 @@ Each page:
 ```
 
 ### Design Review Checklist
-```
+```text
 Page Level:
 □ One clear purpose per page
 □ Page title matches h1 heading
