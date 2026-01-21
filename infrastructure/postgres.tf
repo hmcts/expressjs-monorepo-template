@@ -3,7 +3,7 @@ module "postgresql" {
     azurerm.postgres_network = azurerm.postgres_network
   }
 
-  source        = "git@github.com:hmcts/terraform-module-postgresql-flexible?ref=master"
+  source        = "git::https://github.com/hmcts/terraform-module-postgresql-flexible?ref=master"
   name          = "${var.product}-${var.env}"
   env           = var.env
   product       = var.product
