@@ -9,6 +9,8 @@ on:
     types: [opened, assigned]
   pull_request_review:
     types: [submitted]
+  projects_v2_item:
+    types: [edited]
 
 jobs:
   claude:
@@ -31,16 +33,19 @@ jobs:
         uses: actions/github-script@v8
         with:
           script: |
-            if (github.event.issue.pull_request) {
-              const pr = await github.rest.pulls.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: context.issue.number
-              });
-              return pr.data;
-            } else {
-              return github.event.pull_request;
-            }
+            const pr = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.issue.number
+            });
+            return pr.data;
+
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.CLAUDE_CODE_APP_ID }}
+          private-key: ${{ secrets.CLAUDE_CODE_PRIVATE_KEY }}
 
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -48,6 +53,12 @@ jobs:
           fetch-depth: 1
           repository: ${{ (github.event.issue.pull_request || github.event.pull_request) && fromJSON(steps.get-pr.outputs.result).head.repo.full_name || github.repository }}
           ref: ${{ (github.event.issue.pull_request || github.event.pull_request) && fromJSON(steps.get-pr.outputs.result).head.ref || github.ref }}
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "claude-code-bot[bot]"
+          git config user.email "claude-code-bot[bot]@users.noreply.github.com"
 
       - name: Enable Corepack
         run: corepack enable
@@ -65,6 +76,7 @@ jobs:
           path: |
             .yarn/cache
             .yarn/install-state.gz
+            node_modules
           key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
           restore-keys: |
             ${{ runner.os }}-yarn-
@@ -80,6 +92,7 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.CLAUDE_API_KEY }}
+          github_token: ${{ steps.app-token.outputs.token }}
           prompt: |
             Repository: ${{ github.repository }}
             Issue/PR: #${{ github.event.issue.number || github.event.pull_request.number }}
@@ -89,3 +102,143 @@ jobs:
             --dangerously-skip-permissions
             --append-system-prompt "You are running in a GitHub Action. The environment has been set up and yarn install has been run. You can use bash and yarn commands. Read @CLAUDE.md. Run yarn format, yarn lint and yarn test before committing changes. IMPORTANT: After committing, you MUST push the changes using 'git push'."
             --allowedTools "Bash(corepack:*),Bash(yarn:*),Bash(git:*)"
+
+  claude-plan:
+    if: |
+      (github.event_name == 'projects_v2_item' && github.event.action == 'edited') ||
+      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@plan'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write
+      id-token: write
+    steps:
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.CLAUDE_CODE_APP_ID }}
+          private-key: ${{ secrets.CLAUDE_CODE_PRIVATE_KEY }}
+
+      - name: Check project item status
+        id: check-status
+        if: github.event_name == 'projects_v2_item'
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const itemNodeId = context.payload.projects_v2_item.node_id;
+
+            // Query the project item to get its status and linked issue
+            const query = `
+              query($itemId: ID!) {
+                node(id: $itemId) {
+                  ... on ProjectV2Item {
+                    fieldValueByName(name: "Status") {
+                      ... on ProjectV2ItemFieldSingleSelectValue {
+                        name
+                      }
+                    }
+                    content {
+                      ... on Issue {
+                        number
+                        title
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+
+            const result = await github.graphql(query, { itemId: itemNodeId });
+            const status = result.node?.fieldValueByName?.name;
+            const issueNumber = result.node?.content?.number;
+            const issueTitle = result.node?.content?.title;
+
+            console.log(`Status: ${status}, Issue: #${issueNumber}`);
+
+            const shouldProceed = status === 'Prioritised Backlog' && issueNumber;
+            core.setOutput('should_proceed', shouldProceed);
+            core.setOutput('issue_number', issueNumber || '');
+            core.setOutput('issue_title', issueTitle || '');
+
+      - name: Get issue number from comment
+        id: get-issue
+        if: github.event_name == 'issue_comment'
+        run: |
+          echo "should_proceed=true" >> $GITHUB_OUTPUT
+          echo "issue_number=${{ github.event.issue.number }}" >> $GITHUB_OUTPUT
+          echo "issue_title=${{ github.event.issue.title }}" >> $GITHUB_OUTPUT
+
+      - name: Checkout repository
+        if: steps.check-status.outputs.should_proceed == 'true' || steps.get-issue.outputs.should_proceed == 'true'
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 1
+          token: ${{ steps.app-token.outputs.token }}
+
+      - name: Configure Git
+        if: steps.check-status.outputs.should_proceed == 'true' || steps.get-issue.outputs.should_proceed == 'true'
+        run: |
+          git config user.name "claude-code-bot[bot]"
+          git config user.email "claude-code-bot[bot]@users.noreply.github.com"
+
+      - name: Enable Corepack
+        if: steps.check-status.outputs.should_proceed == 'true' || steps.get-issue.outputs.should_proceed == 'true'
+        run: corepack enable
+
+      - name: Setup Node.js
+        if: steps.check-status.outputs.should_proceed == 'true' || steps.get-issue.outputs.should_proceed == 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'yarn'
+          cache-dependency-path: '**/yarn.lock'
+
+      - name: Cache Yarn dependencies
+        if: steps.check-status.outputs.should_proceed == 'true' || steps.get-issue.outputs.should_proceed == 'true'
+        uses: actions/cache@v5
+        with:
+          path: |
+            .yarn/cache
+            .yarn/install-state.gz
+            node_modules
+          key: ${{ runner.os }}-yarn-${{ hashFiles('yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+
+      - name: Install dependencies
+        if: steps.check-status.outputs.should_proceed == 'true' || steps.get-issue.outputs.should_proceed == 'true'
+        run: yarn install --immutable
+
+      - name: Generate Prisma client
+        if: steps.check-status.outputs.should_proceed == 'true' || steps.get-issue.outputs.should_proceed == 'true'
+        run: yarn db:generate
+
+      - name: Run Claude Code Plan
+        if: steps.check-status.outputs.should_proceed == 'true' || steps.get-issue.outputs.should_proceed == 'true'
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.CLAUDE_API_KEY }}
+          github_token: ${{ steps.app-token.outputs.token }}
+          prompt: |
+            Run the /qk-plan command for issue #${{ steps.check-status.outputs.issue_number || steps.get-issue.outputs.issue_number }}.
+
+            After completing the plan:
+            1. Create a new branch named: feature/${{ steps.check-status.outputs.issue_number || steps.get-issue.outputs.issue_number }}-<short-description>
+               (derive short-description from the issue title, lowercase, hyphens, max 30 chars)
+            2. Commit the generated files (docs/tickets/${{ steps.check-status.outputs.issue_number || steps.get-issue.outputs.issue_number }}/)
+            3. Push the branch
+            4. Read the generated plan.md and extract any "CLARIFICATIONS NEEDED" section
+            5. Post a comment on issue #${{ steps.check-status.outputs.issue_number || steps.get-issue.outputs.issue_number }} using gh issue comment with:
+               - A header: "## 📋 Technical Plan Created"
+               - A link to the branch
+               - Links to the plan files in that branch
+               - The "CLARIFICATIONS NEEDED" section (if any questions exist)
+               - A note: "Run `/qk-implement` when ready to implement"
+          claude_args: |
+            --dangerously-skip-permissions
+            --append-system-prompt "You are running in a GitHub Action. The environment has been set up and yarn install has been run. Read @CLAUDE.md. After generating the plan, you MUST: 1) Create a feature branch, 2) Commit and push the plan files, 3) Post clarifications to the issue."
+            --allowedTools "Bash(corepack:*),Bash(yarn:*),Bash(git:*),Bash(gh issue:*),Bash(mkdir:*),Read,Write,Edit,Grep,Glob,TodoWrite,Skill"

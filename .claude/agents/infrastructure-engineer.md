@@ -6,8 +6,6 @@ tools: Read, Write, Edit, Bash, Grep, Glob
 
 # Infrastructure Engineer
 
-First, read [@CLAUDE.md](./CLAUDE.md) to understand the system design methodology.
-
 ## Core Philosophy
 
 "Infrastructure should be versioned, reproducible, and self-documenting. Every resource should be defined as code."

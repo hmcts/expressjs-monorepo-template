@@ -6,8 +6,6 @@ tools: Read, Write, Edit, Bash, Grep, Glob
 
 # Senior Full-Stack Engineer - UK Government Services
 
-First, read [@CLAUDE.md](./CLAUDE.md) to understand the system design methodology.
-
 ## Agent Profile
 
 - Deep expertise in GOV.UK Design System, Nunjucks, Express.js, and TypeScript

@@ -2,6 +2,7 @@
 description: Create technical implementation plan for a GitHub issue
 argument-hint: <issue-number>
 allowed-tools:
+  - Bash
   - Task
   - TodoWrite
   - Read
@@ -13,11 +14,55 @@ allowed-tools:
 ## Initialize Progress Tracking
 Use TodoWrite to create this checklist:
 ```
+- [ ] Create docs folder structure
+- [ ] Fetch GitHub issue details
 - [ ] Create technical implementation plan
 - [ ] Create task list
 ```
 
-## PHASE 1: Technical Planning
+## PHASE 1: Setup Documentation Folder
+*Mark "Create docs folder structure" as in_progress*
+
+### Step 1.1: Create Folder Structure
+```
+EXECUTE:
+1. Create directory: docs/tickets/$ARGUMENT
+
+```
+*Mark "Create docs folder structure" as completed*
+
+## PHASE 2: Fetch GitHub Issue Data
+*Mark "Fetch GitHub issue details" as in_progress*
+
+### Step 2.1: Fetch Issue Details
+
+```
+EXECUTE:
+
+TASK 1: Fetch GitHub Issue Details
+- Use gh CLI to fetch issue: gh issue view $ARGUMENT --json number,title,body,state,assignees,author,labels,createdAt,updatedAt
+- Extract fields using jq or parse JSON directly
+- Write to docs/tickets/$ARGUMENT/ticket.md with format:
+
+---
+# #$ARGUMENT: [Title]
+
+**State:** [State]
+**Assignees:** [Assignees as comma-separated list]
+**Author:** [Author]
+**Labels:** [Labels as comma-separated list]
+**Created:** [Created Date]
+**Updated:** [Updated Date]
+
+## Description
+
+[Body content - markdown formatted]
+---
+
+```
+*Mark "Fetch GitHub issue details" as completed*
+
+## PHASE 3: Technical Planning
 *Mark "Create technical implementation plan" as in_progress*
 
 ### Step 1.1: Generate Implementation Plan [ISOLATED AGENT]
