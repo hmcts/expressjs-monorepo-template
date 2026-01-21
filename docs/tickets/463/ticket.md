@@ -251,3 +251,100 @@ Before implementation, please clarify the following:
 
 **linusnorton** commented on 2026-01-21T13:06:21Z:
 @ready
+
+---
+
+**hmctsclaudecode** commented on 2026-01-21T13:10:24Z:
+## 📋 Technical Plan Updated
+
+The technical plan has been updated based on stakeholder feedback from @linusnorton.
+
+### Summary of Changes
+
+**Major architectural changes:**
+
+1. **Evidence upload removed** ✅
+   - No file upload functionality
+   - No evidence page
+   - Database schema simplified (no file-related fields)
+
+2. **Contact information split into separate pages** ✅
+   - Separate pages for email and phone number
+   - Applies to both offender and victim
+   - Total of 10 pages instead of original 7
+
+3. **Multiple victims support** ✅
+   - "Add another victim" page with yes/no radios
+   - Loop back to victim-name if user selects "yes"
+   - Victims stored as JSON array in database
+
+4. **No authentication required** ✅
+   - Anonymous submission allowed
+   - No auth middleware needed
+
+5. **Data retention** ✅
+   - Keep data forever
+   - No cleanup jobs or GDPR deletion logic
+
+### Updated Page Flow
+
+```
+/civil-claim/start
+  ↓
+/civil-claim/offender-name
+  ↓
+/civil-claim/offender-email
+  ↓
+/civil-claim/offender-phone
+  ↓
+/civil-claim/victim-name
+  ↓
+/civil-claim/victim-email
+  ↓
+/civil-claim/victim-phone
+  ↓
+/civil-claim/add-another-victim (yes → loop back to victim-name, no → continue)
+  ↓
+/civil-claim/insult
+  ↓
+/civil-claim/review
+  ↓
+/civil-claim/confirmation/:confirmationId
+```
+
+### Updated Database Schema
+
+```prisma
+model CivilClaimSubmission {
+  id                    String   @id @default(cuid())
+  offenderName          String   @map("offender_name")
+  offenderEmail         String   @map("offender_email")
+  offenderPhone         String   @map("offender_phone")
+  victims               Json     @map("victims")  // [{ name, email, phone }, ...]
+  insultDescription     String   @db.Text @map("insult_description")
+  submittedAt           DateTime @default(now()) @map("submitted_at")
+
+  @@index([submittedAt])
+  @@map("civil_claim_submission")
+}
+```
+
+### Files Updated
+- `docs/tickets/463/ticket.md` - Added all GitHub comments for reference
+- `docs/tickets/463/plan.md` - Updated technical approach, schema, page flow
+- `docs/tickets/463/tasks.md` - Updated task breakdown (now 140+ tasks)
+
+### Branch
+All changes committed and pushed to `feature/463-civil-claim-submission`
+
+### Next Steps
+Ready for implementation using `/qk-implement` command.
+
+---
+
+**Note:** Issue could not be moved to "Refined Tickets" status as it's not currently tracked in a GitHub Project. If you'd like project tracking, please add the issue to the project board first.
+
+---
+
+**linusnorton** commented on 2026-01-21T13:59:28Z:
+@ready
