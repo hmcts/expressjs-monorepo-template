@@ -62,7 +62,7 @@ jobs:
   smoke-test-stage:
     name: Smoke Test
     needs: [deploy-stage]
-    if: needs.deploy-stage.result == 'success'
+    if: always() && needs.deploy-stage.result == 'success'
     uses: ./.github/workflows/stage.smoke-test.yml
     with:
       change-id: staging
@@ -71,7 +71,7 @@ jobs:
   e2e-stage:
     name: E2E
     needs: [smoke-test-stage, deploy-stage]
-    if: needs.deploy-stage.result == 'success'
+    if: always() && needs.deploy-stage.result == 'success' && needs.smoke-test-stage.result == 'success'
     uses: ./.github/workflows/stage.e2e.yml
     with:
       preview-urls: ${{ needs.deploy-stage.outputs.urls }}
@@ -90,7 +90,7 @@ jobs:
   promote-stage:
     name: Promote Images
     needs: [e2e-stage, build-stage]
-    if: needs.e2e-stage.result == 'success'
+    if: always() && needs.e2e-stage.result == 'success'
     uses: ./.github/workflows/stage.promote-images.yml
     with:
       short-sha: ${{ needs.build-stage.outputs.short-sha }}
