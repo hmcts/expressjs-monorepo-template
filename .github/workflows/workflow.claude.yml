@@ -189,6 +189,7 @@ jobs:
       pull-requests: write
       issues: write
       id-token: write
+      repository-projects: write
     steps:
       - name: Generate GitHub App Token
         id: app-token
@@ -196,6 +197,7 @@ jobs:
         with:
           app-id: ${{ secrets.CLAUDE_CODE_APP_ID }}
           private-key: ${{ secrets.CLAUDE_CODE_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
 
       - name: Checkout repository
         uses: actions/checkout@v6
@@ -254,13 +256,42 @@ jobs:
                - Review if they contain new requirements, clarifications, or answers
                - Update plan.md and tasks.md if the approach needs to change
                - Commit and push changes to the feature branch
-            6. Update the GitHub Project status to "Refined Tickets" using:
-               - First get item ID: gh api graphql -f query='query { repository(owner: "hmcts", name: "expressjs-monorepo-template") { issue(number: ${{ github.event.issue.number }}) { projectItems(first: 1) { nodes { id } } } } }' --jq '.data.repository.issue.projectItems.nodes[0].id'
-               - Then update status: gh api graphql -f query='mutation($itemId: ID!) { updateProjectV2ItemFieldValue(input: { projectId: "PVT_kwDOAVwpV84BMvy3", itemId: $itemId, fieldId: "PVTSSF_lADOAVwpV84BMvy3zg78TBM", value: { singleSelectOptionId: "03294712" } }) { projectV2Item { id } } }' -f itemId="<ITEM_ID>"
-            7. Post a comment on the issue with:
+            6. Post a comment on the issue with:
                - Summary of what changed (or "No changes needed")
-               - Confirmation that status was updated to "Refined Tickets"
+               - Note: "Run `/qk-implement` when ready to implement"
           claude_args: |
             --dangerously-skip-permissions
             --append-system-prompt "You are running in a GitHub Action. Read @CLAUDE.md. Checkout the feature branch for this issue before making changes."
             --allowedTools "Bash(git:*),Bash(gh:*),Read,Write,Edit,Grep,Glob,TodoWrite"
+
+      - name: Update GitHub Project Status
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          # Get the project item ID for this issue (GraphQL needed to query issue's project items)
+          ITEM_ID=$(gh api graphql -f query='
+            query($owner: String!, $repo: String!, $issueNumber: Int!) {
+              repository(owner: $owner, name: $repo) {
+                issue(number: $issueNumber) {
+                  projectItems(first: 10) {
+                    nodes { id project { id } }
+                  }
+                }
+              }
+            }
+          ' -f owner="${{ github.repository_owner }}" -f repo="${{ github.event.repository.name }}" -F issueNumber=${{ github.event.issue.number }} \
+            --jq '.data.repository.issue.projectItems.nodes[] | select(.project.id == "PVT_kwDOAVwpV84BMvy3") | .id' 2>/dev/null | head -1) || true
+
+          if [ -z "$ITEM_ID" ]; then
+            echo "::warning::Issue not found in project. Ensure GitHub App has 'Organization projects: Read and write' permission."
+            exit 0
+          fi
+
+          # Update status to "Refined Tickets" using gh CLI
+          gh project item-edit \
+            --id "$ITEM_ID" \
+            --project-id "PVT_kwDOAVwpV84BMvy3" \
+            --field-id "PVTSSF_lADOAVwpV84BMvy3zg78TBM" \
+            --single-select-option-id "03294712" \
+          && echo "✅ Updated project status to 'Refined Tickets'" \
+          || echo "::warning::Failed to update project status"
