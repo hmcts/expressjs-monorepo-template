@@ -16,7 +16,7 @@ module "application_insights" {
 # Store App Insights connection string in Key Vault
 # Secret name must match Helm values (apps/*/helm/values.yaml)
 resource "azurerm_key_vault_secret" "app_insights_connection_string" {
-  name         = "AppInsightsConnectionString"
+  name         = "ExpressJsAppInsightsConnectionString"
   value        = module.application_insights.connection_string
   key_vault_id = data.azurerm_key_vault.key_vault.id
 }
