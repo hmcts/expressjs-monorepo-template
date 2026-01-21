@@ -56,6 +56,6 @@
   "packageManager": "yarn@4.12.0",
   "resolutions": {
     "glob": "13.0.0",
-    "tar": "7.5.3"
+    "tar": "7.5.4"
   }
 }
