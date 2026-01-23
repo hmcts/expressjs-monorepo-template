@@ -96,6 +96,12 @@ resource "azurerm_resource_group" "rg" {
 ```
 
 ### Using HMCTS Modules
+
+**Important: Module Source URL Format**
+- Use `git::https://github.com/hmcts/...` for GitHub Actions CI/CD (this repo)
+- HMCTS repos using Jenkins may use `git@github.com:hmcts/...` (SSH) - do not copy this format
+- GitHub Actions does not have SSH git access, so HTTPS is required
+
 ```hcl
 # Application Insights
 module "application_insights" {

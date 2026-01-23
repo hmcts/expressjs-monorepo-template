@@ -2,19 +2,19 @@ module "redis" {
   source = "git::https://github.com/hmcts/cnp-module-redis?ref=master"
 
   product       = var.product
-  env           = var.env
+  name          = "${var.product}-${var.component}-${var.env}"
   location      = var.location
+  env           = var.env
   common_tags   = var.common_tags
   business_area = "cft"
 
-  sku_name = var.env == "prod" ? "Premium" : "Standard"
-  family   = var.env == "prod" ? "P" : "C"
-  capacity = 1
+  private_endpoint_enabled      = true
+  public_network_access_enabled = false
 
   redis_version = "6"
-
-  private_endpoint_enabled      = var.env == "prod"
-  public_network_access_enabled = var.env != "prod"
+  sku_name      = "Premium"
+  family        = "P"
+  capacity      = 1
 }
 
 resource "azurerm_key_vault_secret" "redis_host" {
