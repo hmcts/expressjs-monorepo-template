@@ -11,6 +11,9 @@ module "postgresql" {
   business_area = "cft"
   common_tags   = var.common_tags
 
+  # Use expanded subnet - original postgresql subnet is full
+  subnet_suffix = "expanded"
+
   pgsql_databases = [
     {
       name = "expressjs-monorepo-template"

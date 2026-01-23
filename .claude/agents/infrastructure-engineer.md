@@ -129,6 +129,9 @@ module "postgresql" {
   business_area = "cft"
   common_tags   = var.common_tags
 
+  # IMPORTANT: Use expanded subnet - original postgresql subnet is full
+  subnet_suffix = "expanded"
+
   pgsql_databases = [
     { name = "my-database" }
   ]
