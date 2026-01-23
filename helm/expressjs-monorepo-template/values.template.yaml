@@ -33,6 +33,9 @@ expressjs-monorepo-template-web:
       POSTGRES_PORT:
         secretRef: postgres
         key: PORT
+      REDIS_URL:
+        secretRef: redis
+        key: URL
 
 # API application configuration
 expressjs-monorepo-template-api:

@@ -4,8 +4,6 @@ nodejs:
   aadIdentityName: dtsse
   ingressHost: expressjs-monorepo-template-web.{{ .Values.global.environment }}.platform.hmcts.net
   image: 'hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-web:latest'
-  environment:
-    REDIS_URL: 'redis://dtsse-{{ .Values.global.environment }}.redis.cache.windows.net:6379'
   keyVaults:
     dtsse:
       secrets:
@@ -13,3 +11,5 @@ nodejs:
           alias: APPLICATION_INSIGHTS_CONNECTION_STRING
         - name: db-url
           alias: DATABASE_URL
+        - name: redis-url
+          alias: REDIS_URL
