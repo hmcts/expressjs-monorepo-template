@@ -44,18 +44,51 @@ const REQUIRED_STATUS_OPTIONS = [
 ];
 
 // JIRA status to GitHub Project column name mapping
+// Keys are normalized (lowercase, spaces replaced with hyphens)
 const JIRA_STATUS_TO_COLUMN_NAME: Record<string, string> = {
+  // Backlog statuses
   new: "Backlog",
+  open: "Backlog",
+  backlog: "Backlog",
+  "to-do": "Backlog",
+  todo: "Backlog",
+  // Prioritised/Refined statuses
   "prioritised-backlog": "Prioritised Backlog",
   "ready-for-progress": "Refined Tickets",
+  "ready-for-development": "Refined Tickets",
+  refined: "Refined Tickets",
+  // In Progress statuses
   "in-progress": "In Progress",
+  "in-development": "In Progress",
+  development: "In Progress",
+  // Code Review statuses
   "code-review": "Code Review",
+  "in-review": "Code Review",
+  review: "Code Review",
+  // Test statuses
   "ready-for-test": "Ready For Test",
+  "ready-for-testing": "Ready For Test",
   "in-test": "In Test",
+  "in-testing": "In Test",
+  testing: "In Test",
+  // Sign off statuses
   "ready-for-sign-off": "Ready For Sign Off",
+  "ready-for-signoff": "Ready For Sign Off",
+  "awaiting-sign-off": "Ready For Sign Off",
+  // Done statuses
   closed: "Done",
   done: "Done",
-  withdrawn: "Done"
+  resolved: "Done",
+  complete: "Done",
+  completed: "Done",
+  finished: "Done",
+  withdrawn: "Done",
+  cancelled: "Done",
+  canceled: "Done",
+  rejected: "Done",
+  "won't-do": "Done",
+  wontdo: "Done",
+  "wont-do": "Done"
 };
 
 // Dynamic mapping populated after project setup
@@ -167,7 +200,7 @@ async function ensureLabelsExist(labels: string[]): Promise<void> {
  */
 async function getProjectNodeId(projectNumber: number): Promise<string | null> {
   try {
-    const { stdout } = await execAsync(`gh project view ${projectNumber} --owner hmcts --format json`);
+    const { stdout } = await execAsync(`gh project view ${projectNumber} --owner ${GITHUB_OWNER} --format json`);
     const project = JSON.parse(stdout);
     return project.id || null;
   } catch {
@@ -200,17 +233,47 @@ async function getProjectFieldIds(projectNumber: number): Promise<{ statusId: st
 }
 
 /**
- * Set up the project board with required status columns
- * This ensures all JIRA statuses can be mapped to GitHub project columns
+ * Query existing status field options from the project
+ */
+async function getStatusFieldOptions(projectNumber: number): Promise<Array<{ id: string; name: string }>> {
+  try {
+    const query = `
+      query {
+        organization(login: "${GITHUB_OWNER}") {
+          projectV2(number: ${projectNumber}) {
+            field(name: "Status") {
+              ... on ProjectV2SingleSelectField {
+                id
+                options {
+                  id
+                  name
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const { stdout } = await execAsync(`gh api graphql -f query='${query}'`, {
+      maxBuffer: 1024 * 1024
+    });
+
+    const result = JSON.parse(stdout);
+    return result.data?.organization?.projectV2?.field?.options || [];
+  } catch {
+    return [];
+  }
+}
+
+/**
+ * Set up the project board - queries existing status columns and builds mapping
  */
 export async function setupProjectBoard(projectNumber: number, dryRun = false): Promise<boolean> {
   console.log("\nSetting up project board...");
 
   if (dryRun) {
-    console.log("  [DRY RUN] Would set up status columns:");
-    for (const opt of REQUIRED_STATUS_OPTIONS) {
-      console.log(`    - ${opt.name}`);
-    }
+    console.log("  [DRY RUN] Would query status columns");
     console.log("  [DRY RUN] Would use Estimate field for story points");
     // Set up dummy mappings for dry run
     PROJECT_ID = "dry-run-project-id";
@@ -245,55 +308,40 @@ export async function setupProjectBoard(projectNumber: number, dryRun = false): 
       console.log("  ✓ Estimate field found for story points");
     }
 
-    // Build the GraphQL mutation to update status options
-    const optionsJson = REQUIRED_STATUS_OPTIONS.map((opt) => `{ name: "${opt.name}", color: ${opt.color}, description: "${opt.description}" }`).join(", ");
+    // Query existing status options from the project
+    const options = await getStatusFieldOptions(projectNumber);
 
-    const mutation = `
-      mutation {
-        updateProjectV2Field(input: {
-          fieldId: "${STATUS_FIELD_ID}"
-          singleSelectOptions: [${optionsJson}]
-        }) {
-          projectV2Field {
-            ... on ProjectV2SingleSelectField {
-              id
-              name
-              options { id name }
-            }
-          }
-        }
-      }
-    `;
-
-    const { stdout } = await execAsync(`gh api graphql -f query='${mutation}'`, {
-      maxBuffer: 1024 * 1024
-    });
-
-    const result = JSON.parse(stdout);
-    if (result.errors) {
-      console.error("  ✗ Failed to update status columns:", result.errors);
+    if (options.length === 0) {
+      console.error("  ✗ No status options found in project");
       return false;
     }
 
-    // Build the STATUS_TO_COLUMN mapping from the response
-    const options = result.data?.updateProjectV2Field?.projectV2Field?.options || [];
+    // Build mapping from column name to option ID
     const nameToId: Record<string, string> = {};
     for (const opt of options) {
       nameToId[opt.name] = opt.id;
+      // Also add normalized version for flexible matching
+      nameToId[opt.name.toLowerCase()] = opt.id;
+      nameToId[opt.name.toLowerCase().replace(/\s+/g, "-")] = opt.id;
     }
 
     // Map JIRA statuses to column IDs
     for (const [jiraStatus, columnName] of Object.entries(JIRA_STATUS_TO_COLUMN_NAME)) {
-      const columnId = nameToId[columnName];
+      // Try exact match first, then normalized matches
+      const columnId = nameToId[columnName] || nameToId[columnName.toLowerCase()] || nameToId[columnName.toLowerCase().replace(/\s+/g, "-")];
       if (columnId) {
         STATUS_TO_COLUMN[jiraStatus] = columnId;
       }
     }
 
-    console.log("  ✓ Status columns configured:");
+    console.log("  ✓ Status columns found:");
     for (const opt of options) {
       console.log(`    - ${opt.name} (${opt.id})`);
     }
+
+    // Show which JIRA statuses are mapped
+    const mappedCount = Object.keys(STATUS_TO_COLUMN).length;
+    console.log(`  ✓ Mapped ${mappedCount} JIRA statuses to project columns`);
 
     return true;
   } catch (error) {
@@ -504,42 +552,133 @@ export async function updateGitHubIssue(issueNumber: number, issue: JiraIssue, d
  */
 export async function addIssueToProject(issueUrl: string, jiraStatus: string, projectNumber: number, dryRun = false): Promise<string | null> {
   const normalizedStatus = normalizeLabel(jiraStatus);
-  const columnOptionId = STATUS_TO_COLUMN[normalizedStatus] || STATUS_TO_COLUMN.new;
+  const columnName = JIRA_STATUS_TO_COLUMN_NAME[normalizedStatus];
+  const columnOptionId = STATUS_TO_COLUMN[normalizedStatus];
 
   if (dryRun) {
     console.log(`  [DRY RUN] Would add to project ${projectNumber}`);
-    console.log(`    JIRA Status: ${jiraStatus} -> Column: ${normalizedStatus}`);
+    if (columnName) {
+      console.log(`    JIRA Status: "${jiraStatus}" -> "${normalizedStatus}" -> Column: "${columnName}"`);
+    } else {
+      console.log(`    JIRA Status: "${jiraStatus}" -> "${normalizedStatus}" (unmapped, will use Backlog)`);
+    }
     return "dry-run-item-id";
   }
 
+  let itemId: string | null = null;
+
   try {
     // Add issue to project
-    const addCommand = `gh project item-add ${projectNumber} --owner hmcts --url "${issueUrl}" --format json`;
+    const addCommand = `gh project item-add ${projectNumber} --owner ${GITHUB_OWNER} --url "${issueUrl}" --format json`;
     const { stdout: addOutput } = await execAsync(addCommand, {
       maxBuffer: 1024 * 1024
     });
 
     const addResult = JSON.parse(addOutput);
-    const itemId = addResult.id;
+    itemId = addResult.id;
 
     if (!itemId) {
       console.error("  ✗ Failed to get project item ID from response");
       return null;
     }
 
-    // Set the status column
-    const editCommand = `gh project item-edit --id "${itemId}" --project-id "${PROJECT_ID}" --field-id "${STATUS_FIELD_ID}" --single-select-option-id "${columnOptionId}"`;
-    await execAsync(editCommand, {
-      maxBuffer: 1024 * 1024
-    });
-
-    console.log(`  ✓ Added to project board (${normalizedStatus})`);
-    return itemId;
+    console.log(`  ✓ Added to project board`);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(`  ✗ Failed to add to project: ${message}`);
-    return null;
+    // Check if already in project
+    if (message.includes("already exists")) {
+      console.log(`  ✓ Already in project board`);
+      // Try to get the item ID from the project by matching issue number
+      try {
+        // Extract issue number from URL (e.g., https://github.com/owner/repo/issues/123 -> 123)
+        const issueNumberMatch = issueUrl.match(/\/issues\/(\d+)/);
+        const issueNumber = issueNumberMatch ? issueNumberMatch[1] : null;
+
+        const listCommand = `gh project item-list ${projectNumber} --owner ${GITHUB_OWNER} --format json --limit 1000`;
+        const { stdout } = await execAsync(listCommand, { maxBuffer: 1024 * 1024 * 10 });
+        const items = JSON.parse(stdout);
+
+        // Try to match by URL first, then by issue number in URL
+        const existingItem = items.items?.find((item: { content?: { url?: string; number?: number } }) => {
+          if (item.content?.url === issueUrl) return true;
+          if (issueNumber && item.content?.url?.includes(`/issues/${issueNumber}`)) return true;
+          if (issueNumber && item.content?.number === Number(issueNumber)) return true;
+          return false;
+        });
+
+        if (existingItem) {
+          itemId = existingItem.id;
+        } else if (issueNumber) {
+          // Fallback: Try GraphQL to find the project item for this issue
+          try {
+            const query = `
+              query {
+                repository(owner: "${GITHUB_OWNER}", name: "${GITHUB_REPO}") {
+                  issue(number: ${issueNumber}) {
+                    projectItems(first: 10) {
+                      nodes {
+                        id
+                        project { number }
+                      }
+                    }
+                  }
+                }
+              }
+            `;
+            const { stdout: gqlOutput } = await execAsync(`gh api graphql -f query='${query}'`, {
+              maxBuffer: 1024 * 1024
+            });
+            const gqlResult = JSON.parse(gqlOutput);
+            const projectItem = gqlResult.data?.repository?.issue?.projectItems?.nodes?.find(
+              (item: { project?: { number?: number } }) => item.project?.number === projectNumber
+            );
+            if (projectItem) {
+              itemId = projectItem.id;
+            } else {
+              console.warn(`  ⚠ Could not find project item via GraphQL, will skip status update`);
+            }
+          } catch {
+            console.warn(`  ⚠ Could not find existing project item for issue, will skip status update`);
+          }
+        } else {
+          console.warn(`  ⚠ Could not find existing project item for issue, will skip status update`);
+        }
+      } catch (listError) {
+        const listMessage = listError instanceof Error ? listError.message : String(listError);
+        console.warn(`  ⚠ Could not list project items: ${listMessage}`);
+      }
+    } else {
+      console.error(`  ✗ Failed to add to project: ${message}`);
+      return null;
+    }
   }
+
+  // Set the status column if we have an item ID
+  if (itemId) {
+    // Use the mapped column or fall back to Backlog
+    const targetColumnId = columnOptionId || STATUS_TO_COLUMN.new || STATUS_TO_COLUMN.backlog;
+
+    if (!targetColumnId) {
+      console.warn(`  ⚠ No status column ID available for "${normalizedStatus}", skipping status update`);
+      return itemId;
+    }
+
+    try {
+      const editCommand = `gh project item-edit --id "${itemId}" --project-id "${PROJECT_ID}" --field-id "${STATUS_FIELD_ID}" --single-select-option-id "${targetColumnId}"`;
+      await execAsync(editCommand, {
+        maxBuffer: 1024 * 1024
+      });
+
+      const targetColumnName = columnName || "Backlog";
+      console.log(`  ✓ Set status: "${jiraStatus}" -> "${targetColumnName}"`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.warn(`  ⚠ Failed to set status for "${jiraStatus}" (${normalizedStatus}): ${message}`);
+      // Still return itemId since the issue was added to the project
+    }
+  }
+
+  return itemId;
 }
 
 /**
@@ -585,6 +724,35 @@ export async function getIssueNodeId(issueNumber: number): Promise<string | null
 }
 
 /**
+ * Check if an issue is already linked as a sub-issue of a parent
+ */
+async function isAlreadyLinkedAsSubIssue(parentIssueNumber: number, childIssueNumber: number): Promise<boolean> {
+  try {
+    const query = `
+      query {
+        repository(owner: "${GITHUB_OWNER}", name: "${GITHUB_REPO}") {
+          issue(number: ${parentIssueNumber}) {
+            subIssues(first: 100) {
+              nodes { number }
+            }
+          }
+        }
+      }
+    `;
+
+    const { stdout } = await execAsync(`gh api graphql -f query='${query}'`, {
+      maxBuffer: 1024 * 1024
+    });
+
+    const result = JSON.parse(stdout);
+    const subIssues = result.data?.repository?.issue?.subIssues?.nodes || [];
+    return subIssues.some((issue: { number: number }) => issue.number === childIssueNumber);
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Link a child issue as a sub-issue of a parent issue using GraphQL
  */
 export async function linkSubIssue(parentIssueNumber: number, childIssueNumber: number, dryRun = false): Promise<boolean> {
@@ -594,6 +762,13 @@ export async function linkSubIssue(parentIssueNumber: number, childIssueNumber: 
   }
 
   try {
+    // Check if already linked
+    const alreadyLinked = await isAlreadyLinkedAsSubIssue(parentIssueNumber, childIssueNumber);
+    if (alreadyLinked) {
+      console.log(`  ✓ Already linked as sub-issue of #${parentIssueNumber}`);
+      return true;
+    }
+
     // Get node IDs for both issues
     const parentNodeId = await getIssueNodeId(parentIssueNumber);
     const childNodeId = await getIssueNodeId(childIssueNumber);
@@ -642,7 +817,7 @@ export async function addIssueToProjectAndGetItemId(issueUrl: string, projectNum
   }
 
   try {
-    const addCommand = `gh project item-add ${projectNumber} --owner hmcts --url "${issueUrl}" --format json`;
+    const addCommand = `gh project item-add ${projectNumber} --owner ${GITHUB_OWNER} --url "${issueUrl}" --format json`;
     const { stdout } = await execAsync(addCommand, { maxBuffer: 1024 * 1024 });
     const result = JSON.parse(stdout);
     return result.id || null;
@@ -684,7 +859,7 @@ ${convertedBody}`;
 }
 
 /**
- * Add a comment to a GitHub issue
+ * Add a comment to a GitHub issue with retry logic for rate limiting
  */
 export async function addCommentToIssue(issueNumber: number, body: string, dryRun = false): Promise<boolean> {
   if (dryRun) {
@@ -695,21 +870,42 @@ export async function addCommentToIssue(issueNumber: number, body: string, dryRu
   const bodyFile = `/tmp/gh-comment-body-${issueNumber}-${Date.now()}.txt`;
   await import("node:fs/promises").then((fs) => fs.writeFile(bodyFile, body));
 
-  try {
-    const command = `gh issue comment -R ${GITHUB_OWNER}/${GITHUB_REPO} ${issueNumber} --body-file "${bodyFile}"`;
-    await execAsync(command, { maxBuffer: 1024 * 1024 * 10 });
-    return true;
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.warn(`    ⚠ Failed to add comment: ${message}`);
-    return false;
-  } finally {
-    await import("node:fs/promises")
-      .then((fs) => fs.unlink(bodyFile))
-      .catch(() => {
-        /* ignore */
-      });
+  const maxRetries = 3;
+  let lastError = "";
+
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      const command = `gh issue comment -R ${GITHUB_OWNER}/${GITHUB_REPO} ${issueNumber} --body-file "${bodyFile}"`;
+      await execAsync(command, { maxBuffer: 1024 * 1024 * 10 });
+      return true;
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : String(error);
+
+      // Check if it's a rate limit error
+      if (lastError.includes("submitted too quickly") || lastError.includes("rate limit")) {
+        if (attempt < maxRetries) {
+          // Exponential backoff: 2s, 4s, 8s
+          const delay = Math.pow(2, attempt) * 1000;
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          continue;
+        }
+      } else {
+        // Non-rate-limit error, don't retry
+        break;
+      }
+    }
   }
+
+  console.warn(`    ⚠ Failed to add comment after ${maxRetries} attempts: ${lastError}`);
+
+  // Clean up temp file
+  await import("node:fs/promises")
+    .then((fs) => fs.unlink(bodyFile))
+    .catch(() => {
+      /* ignore */
+    });
+
+  return false;
 }
 
 /**
@@ -735,8 +931,8 @@ export async function migrateCommentsToIssue(issueNumber: number, comments: Jira
       successCount++;
     }
 
-    // Add delay between comments to avoid rate limiting
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // Add delay between comments to avoid rate limiting (longer due to parallel processing)
+    await new Promise((resolve) => setTimeout(resolve, 1500));
   }
 
   if (successCount > 0) {

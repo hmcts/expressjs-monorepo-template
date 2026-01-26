@@ -121,6 +121,23 @@ interface MigrateIssueContext {
   epicMapping: Map<string, number>; // JIRA key → GitHub issue number
 }
 
+const PARALLEL_BATCH_SIZE = 10;
+
+/**
+ * Process an array in parallel batches
+ */
+async function processInBatches<T, R>(items: T[], batchSize: number, processor: (item: T) => Promise<R>): Promise<R[]> {
+  const results: R[] = [];
+
+  for (let i = 0; i < items.length; i += batchSize) {
+    const batch = items.slice(i, i + batchSize);
+    const batchResults = await Promise.all(batch.map(processor));
+    results.push(...batchResults);
+  }
+
+  return results;
+}
+
 /**
  * Check if an issue is an Epic
  */
@@ -368,13 +385,17 @@ async function main() {
   };
 
   // PASS 1: Create Epics first (so we have their GitHub issue numbers for linking)
+  // Epics are processed in batches but we need to update the mapping after each batch
   if (epics.length > 0) {
     console.log(`\n${"=".repeat(60)}`);
-    console.log("Pass 1: Creating Epics...");
+    console.log(`Pass 1: Creating Epics (${PARALLEL_BATCH_SIZE} in parallel)...`);
     console.log("=".repeat(60));
 
-    for (const issue of epics) {
-      const result = await migrateIssue(issue, context);
+    const epicResults = await processInBatches(epics, PARALLEL_BATCH_SIZE, async (issue) => {
+      return migrateIssue(issue, context);
+    });
+
+    for (const result of epicResults) {
       report.results.push(result);
 
       if (result.success) {
@@ -388,22 +409,20 @@ async function main() {
       } else {
         report.failedMigrations++;
       }
-
-      // Add a small delay between issues to avoid rate limiting
-      if (!options.dryRun) {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-      }
     }
   }
 
   // PASS 2: Create child issues (Stories, Tasks, Bugs) and link to parent Epics
   if (nonEpics.length > 0) {
     console.log(`\n${"=".repeat(60)}`);
-    console.log("Pass 2: Creating Child Issues...");
+    console.log(`Pass 2: Creating Child Issues (${PARALLEL_BATCH_SIZE} in parallel)...`);
     console.log("=".repeat(60));
 
-    for (const issue of nonEpics) {
-      const result = await migrateIssue(issue, context);
+    const childResults = await processInBatches(nonEpics, PARALLEL_BATCH_SIZE, async (issue) => {
+      return migrateIssue(issue, context);
+    });
+
+    for (const result of childResults) {
       report.results.push(result);
 
       if (result.success) {
@@ -420,11 +439,6 @@ async function main() {
         }
       } else {
         report.failedMigrations++;
-      }
-
-      // Add a small delay between issues to avoid rate limiting
-      if (!options.dryRun) {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
       }
     }
   }
