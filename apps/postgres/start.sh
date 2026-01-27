@@ -3,20 +3,28 @@ set -e
 
 echo "Loading /mnt/secrets..."
 
-if [ -d "/mnt/secrets" ]; then                                                                                                                                                                
-  echo "Loading secrets from /mnt/secrets..."                                                                                                                                                 
-  for vault_dir in /mnt/secrets/*/; do                                                                                                                                                        
-    if [ -d "$vault_dir" ]; then                                                                                                                                                              
-      for secret in "$vault_dir"*; do                                                                                                                                                         
-        if [ -f "$secret" ]; then                                                                                                                                                             
-          name=$(basename "$secret")                                                                                                                                                          
-          value=$(cat "$secret")                                                                                                                                                              
-          export "$name"="$value"                                                                                                                                                             
-          echo "  Loaded: $name"                                                                                                                                                              
-        fi                                                                                                                                                                                    
-      done                                                                                                                                                                                    
-    fi                                                                                                                                                                                        
-  done                                                                                                                                                                                        
+if [ -d "/mnt/secrets" ]; then
+  echo "Loading secrets from /mnt/secrets..."
+  for vault_dir in /mnt/secrets/*/; do
+    if [ -d "$vault_dir" ]; then
+      for secret in "$vault_dir"*; do
+        name=$(basename "$secret")
+        # Skip CSI driver internal entries (start with ..)
+        case "$name" in
+          ..*) continue ;;
+        esac
+        # Check for regular file or symlink pointing to a file
+        if [ -f "$secret" ] || [ -L "$secret" ]; then
+          # Verify it's not a symlink to a directory
+          if [ ! -d "$secret" ]; then
+            value=$(cat "$secret")
+            export "$name"="$value"
+            echo "  Loaded: $name"
+          fi
+        fi
+      done
+    fi
+  done
 fi 
 
 echo "Running database migrations..."
