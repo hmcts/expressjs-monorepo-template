@@ -8,13 +8,13 @@ module "redis" {
   common_tags   = var.common_tags
   business_area = "cft"
 
-  private_endpoint_enabled      = true
-  public_network_access_enabled = false
+  private_endpoint_enabled      = false
+  public_network_access_enabled = true
 
   redis_version = "6"
-  sku_name      = "Premium"
-  family        = "P"
-  capacity      = 1
+  sku_name      = "Basic"
+  family        = "C"
+  capacity      = 0
 }
 
 resource "azurerm_key_vault_secret" "redis_host" {
