@@ -32,6 +32,10 @@ on:
         required: true
         type: string
         description: "Azure subscription name (e.g. DCD-CNP-DEV)"
+      aks-subscription:
+        required: true
+        type: string
+        description: "Azure subscription name for AKS cluster (contains network subnets, e.g. DCD-CFTAPPS-STG)"
       plan-only:
         required: false
         type: boolean
@@ -100,6 +104,12 @@ jobs:
           az account set --subscription "${{ inputs.subscription }}"
           SUBSCRIPTION_ID=$(az account show --query id -o tsv)
           echo "id=$SUBSCRIPTION_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve AKS subscription ID
+        id: aks-subscription
+        run: |
+          AKS_SUBSCRIPTION_ID=$(az account show --subscription "${{ inputs.aks-subscription }}" --query id -o tsv)
+          echo "id=$AKS_SUBSCRIPTION_ID" >> "$GITHUB_OUTPUT"
 
       - name: Get Storage Account Key
         id: storage-key
@@ -170,6 +180,7 @@ jobs:
             -var "env=${{ inputs.environment }}" \
             -var "product=${PRODUCT}" \
             -var "subscription=${{ steps.subscription.outputs.id }}" \
+            -var "aks_subscription_id=${{ steps.aks-subscription.outputs.id }}" \
             -var "tenant_id=${TENANT_ID}" \
             -var "builtFrom=${GITHUB_REPOSITORY}" \
             -var "ci_service_principal_object_id=${SP_OBJECT_ID}"

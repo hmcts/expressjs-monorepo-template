@@ -19,6 +19,11 @@ variable "subscription" {
   type        = string
 }
 
+variable "aks_subscription_id" {
+  description = "Azure subscription ID for AKS cluster (contains network subnets)"
+  type        = string
+}
+
 variable "location" {
   description = "Azure region"
   type        = string

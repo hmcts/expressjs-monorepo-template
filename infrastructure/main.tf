@@ -6,7 +6,7 @@ provider "azurerm" {
 
 provider "azurerm" {
   alias           = "postgres_network"
-  subscription_id = var.subscription
+  subscription_id = var.aks_subscription_id
   features {}
 }
 
