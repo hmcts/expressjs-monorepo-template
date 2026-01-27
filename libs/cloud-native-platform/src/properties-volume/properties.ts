@@ -67,7 +67,8 @@ async function loadFromAzureVault(chartPath: string, injectEnvVars: boolean, omi
 }
 
 function readSecretsFromDirectory(dirPath: string, vaultName: string, injectEnvVars: boolean, secrets: Secrets, failOnError: boolean, omit: string[]): void {
-  const files = readdirSync(dirPath, { withFileTypes: true }).filter((f) => f.isFile() || f.isSymbolicLink?.());
+  // Filter for files and symlinks, but exclude CSI driver internal entries (start with ..)
+  const files = readdirSync(dirPath, { withFileTypes: true }).filter((f) => !f.name.startsWith("..") && (f.isFile() || f.isSymbolicLink?.()));
 
   for (const file of files) {
     const secretKey = `${vaultName}.${file.name}`;
