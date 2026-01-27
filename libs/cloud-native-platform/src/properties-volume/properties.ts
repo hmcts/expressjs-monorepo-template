@@ -35,7 +35,7 @@ export async function getPropertiesVolumeSecrets(options: GetSecretsOptions = {}
     try {
       if (entry.isDirectory()) {
         readSecretsFromDirectory(path, entry.name, injectEnvVars, secrets, failOnError, omit);
-      } else if (entry.isFile()) {
+      } else if (entry.isFile() || entry.isSymbolicLink?.()) {
         if (!shouldOmit(entry.name, omit)) {
           const content = readSecretFile(path);
           processSecret(entry.name, content, injectEnvVars, secrets);
@@ -67,7 +67,7 @@ async function loadFromAzureVault(chartPath: string, injectEnvVars: boolean, omi
 }
 
 function readSecretsFromDirectory(dirPath: string, vaultName: string, injectEnvVars: boolean, secrets: Secrets, failOnError: boolean, omit: string[]): void {
-  const files = readdirSync(dirPath, { withFileTypes: true }).filter((f) => f.isFile());
+  const files = readdirSync(dirPath, { withFileTypes: true }).filter((f) => f.isFile() || f.isSymbolicLink?.());
 
   for (const file of files) {
     const secretKey = `${vaultName}.${file.name}`;
