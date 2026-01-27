@@ -8,8 +8,8 @@ module "redis" {
   common_tags   = var.common_tags
   business_area = "cft"
 
-  private_endpoint_enabled      = false
-  public_network_access_enabled = true
+  private_endpoint_enabled      = true
+  public_network_access_enabled = false
 
   redis_version = "6"
   sku_name      = "Basic"
