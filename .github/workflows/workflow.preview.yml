@@ -64,6 +64,7 @@ jobs:
     with:
       change-id: ${{ github.event.pull_request.number }}
       preview-urls: ${{ needs.deploy-stage.outputs.urls }}
+      is-pr: true
 
   e2e-stage:
     name: E2E

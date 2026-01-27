@@ -11,10 +11,16 @@ on:
         required: true
         type: string
         description: "Base64-encoded JSON of preview URLs"
+      is-pr:
+        required: false
+        type: boolean
+        default: false
+        description: "Whether this is a PR (enables PR comment)"
 
 jobs:
   pr-comment:
     name: PR Comment
+    if: inputs.is-pr
     uses: ./.github/workflows/job.pr-comment.yml
     with:
       change-id: ${{ inputs.change-id }}

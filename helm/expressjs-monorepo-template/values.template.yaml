@@ -17,13 +17,13 @@ crons:
 expressjs-monorepo-template-web:
   nodejs:
     image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-web:${WEB_IMAGE}"
-    ingressHost: "${TEAM_NAME}-expressjs-monorepo-template-web.${ENVIRONMENT}.platform.hmcts.net"
+    ingressHost: "${TEAM_NAME}-{{ .Release.Name }}-web.${ENVIRONMENT}.platform.hmcts.net"
 
 # API application configuration
 expressjs-monorepo-template-api:
   nodejs:
     image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-api:${API_IMAGE}"
-    ingressHost: "${TEAM_NAME}-expressjs-monorepo-template-api.${ENVIRONMENT}.platform.hmcts.net"
+    ingressHost: "${TEAM_NAME}-{{ .Release.Name }}-api.${ENVIRONMENT}.platform.hmcts.net"
 
 # Crons application configuration
 expressjs-monorepo-template-crons:
@@ -37,7 +37,7 @@ expressjs-monorepo-template-crons:
 expressjs-monorepo-template-postgres:
   nodejs:
     image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-postgres:${POSTGRES_IMAGE}"
-    ingressHost: "${TEAM_NAME}-expressjs-monorepo-template-postgres.${ENVIRONMENT}.platform.hmcts.net"
+    ingressHost: "${TEAM_NAME}-{{ .Release.Name }}-postgres.${ENVIRONMENT}.platform.hmcts.net"
 
 # Dev dependencies - DISABLED for AAT/Prod (managed by Terraform)
 postgresql:
