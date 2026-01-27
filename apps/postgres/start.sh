@@ -1,6 +1,24 @@
 #!/bin/sh
 set -e
 
+echo "Loading /mnt/secrets..."
+
+if [ -d "/mnt/secrets" ]; then                                                                                                                                                                
+  echo "Loading secrets from /mnt/secrets..."                                                                                                                                                 
+  for vault_dir in /mnt/secrets/*/; do                                                                                                                                                        
+    if [ -d "$vault_dir" ]; then                                                                                                                                                              
+      for secret in "$vault_dir"*; do                                                                                                                                                         
+        if [ -f "$secret" ]; then                                                                                                                                                             
+          name=$(basename "$secret")                                                                                                                                                          
+          value=$(cat "$secret")                                                                                                                                                              
+          export "$name"="$value"                                                                                                                                                             
+          echo "  Loaded: $name"                                                                                                                                                              
+        fi                                                                                                                                                                                    
+      done                                                                                                                                                                                    
+    fi                                                                                                                                                                                        
+  done                                                                                                                                                                                        
+fi 
+
 echo "Running database migrations..."
 npx prisma migrate deploy --schema=./dist/schema.prisma
 
