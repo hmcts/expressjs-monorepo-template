@@ -21,7 +21,6 @@ expressjs-monorepo-template-web:
     ingressHost: "${TEAM_NAME}-{{ .Release.Name }}-web.preview.platform.hmcts.net"
     environment:
       REDIS_URL: "redis://{{ .Release.Name }}-redis-master:6379"
-      POSTGRES_DATABASE: "{{ .Release.Name }}"
     secrets:
       POSTGRES_HOST:
         secretRef: postgres
@@ -55,8 +54,6 @@ expressjs-monorepo-template-postgres:
   nodejs:
     image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-postgres:${POSTGRES_IMAGE}"
     ingressHost: "${TEAM_NAME}-{{ .Release.Name }}-postgres.preview.platform.hmcts.net"
-    environment:
-      POSTGRES_DATABASE: "{{ .Release.Name }}"
     secrets:
       POSTGRES_HOST:
         secretRef: postgres

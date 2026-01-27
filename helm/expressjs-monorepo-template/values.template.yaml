@@ -18,24 +18,6 @@ expressjs-monorepo-template-web:
   nodejs:
     image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-web:${WEB_IMAGE}"
     ingressHost: "${TEAM_NAME}-expressjs-monorepo-template-web.${ENVIRONMENT}.platform.hmcts.net"
-    environment:
-      POSTGRES_DATABASE: "expressjs-monorepo-template"
-    secrets:
-      POSTGRES_HOST:
-        secretRef: postgres
-        key: HOST
-      POSTGRES_USER:
-        secretRef: postgres
-        key: USER
-      POSTGRES_PASSWORD:
-        secretRef: postgres
-        key: PASSWORD
-      POSTGRES_PORT:
-        secretRef: postgres
-        key: PORT
-      REDIS_URL:
-        secretRef: redis
-        key: URL
 
 # API application configuration
 expressjs-monorepo-template-api:
@@ -56,21 +38,6 @@ expressjs-monorepo-template-postgres:
   nodejs:
     image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-postgres:${POSTGRES_IMAGE}"
     ingressHost: "${TEAM_NAME}-expressjs-monorepo-template-postgres.${ENVIRONMENT}.platform.hmcts.net"
-    environment:
-      POSTGRES_DATABASE: "expressjs-monorepo-template"
-    secrets:
-      POSTGRES_HOST:
-        secretRef: postgres
-        key: HOST
-      POSTGRES_USER:
-        secretRef: postgres
-        key: USER
-      POSTGRES_PASSWORD:
-        secretRef: postgres
-        key: PASSWORD
-      POSTGRES_PORT:
-        secretRef: postgres
-        key: PORT
 
 # Dev dependencies - DISABLED for AAT/Prod (managed by Terraform)
 postgresql:

@@ -4,8 +4,16 @@ nodejs:
   aadIdentityName: dtsse
   ingressHost: expressjs-monorepo-template-postgres.{{ .Values.global.environment }}.platform.hmcts.net
   image: 'hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-postgres:latest'
+  environment:
+    POSTGRES_DATABASE: expressjs-monorepo-template
   keyVaults:
     dtsse:
       secrets:
-        - name: db-url
-          alias: DATABASE_URL
+        - name: postgres-host                                                                                                                                                                   
+          alias: POSTGRES_HOST                                                                                                                                                                  
+        - name: postgres-user                                                                                                                                                                   
+          alias: POSTGRES_USER                                                                                                                                                                  
+        - name: postgres-password                                                                                                                                                               
+          alias: POSTGRES_PASSWORD                                                                                                                                                              
+        - name: postgres-port                                                                                                                                                                   
+          alias: POSTGRES_PORT
