@@ -120,6 +120,49 @@ jobs:
           oci-username: ${{ secrets.REGISTRY_USERNAME }}
           oci-password: ${{ secrets.REGISTRY_PASSWORD }}
 
+      - name: Register DNS for AAT
+        if: inputs.environment == 'aat'
+        run: |
+          # Get Traefik ingress IP
+          INGRESS_IP=$(kubectl get svc traefik -n admin -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+
+          # DNS config (matches Jenkins private-dns-config.yml)
+          RESOURCE_GROUP="core-infra-intsvc-rg"
+          ZONE="aat.platform.hmcts.net"
+          SUBSCRIPTION="DTS-CFTPTL-INTSVC"
+          TTL=300
+
+          # Get all ingress hostnames for this release
+          HOSTNAMES=$(kubectl get ingress -n ${{ env.TEAM_NAME }} \
+            -l "app.kubernetes.io/instance=${{ env.RELEASE_NAME }}" \
+            -o jsonpath='{.items[*].spec.rules[*].host}')
+
+          for HOST in $HOSTNAMES; do
+            # Extract record name (hostname without zone suffix)
+            RECORD_NAME="${HOST%.${ZONE}}"
+
+            echo "Registering DNS: ${RECORD_NAME} -> ${INGRESS_IP}"
+
+            # Check if record exists
+            if ! az network private-dns record-set a show \
+              -g "$RESOURCE_GROUP" -z "$ZONE" -n "$RECORD_NAME" \
+              --subscription "$SUBSCRIPTION" &>/dev/null; then
+              # Create new record
+              az network private-dns record-set a create \
+                -g "$RESOURCE_GROUP" -z "$ZONE" -n "$RECORD_NAME" \
+                --ttl "$TTL" --subscription "$SUBSCRIPTION"
+              az network private-dns record-set a add-record \
+                -g "$RESOURCE_GROUP" -z "$ZONE" -n "$RECORD_NAME" \
+                -a "$INGRESS_IP" --subscription "$SUBSCRIPTION"
+            else
+              # Update existing record
+              az network private-dns record-set a update \
+                -g "$RESOURCE_GROUP" -z "$ZONE" -n "$RECORD_NAME" \
+                --subscription "$SUBSCRIPTION" \
+                --set "aRecords[0].ipv4Address=\"${INGRESS_IP}\"" --set "ttl=${TTL}"
+            fi
+          done
+
       - name: Get deployment URLs from ingress
         id: urls
         run: |
