@@ -988,7 +988,7 @@ __metadata:
     "@types/cors": "npm:2.8.19"
     "@types/express": "npm:5.0.6"
     compression: "npm:1.8.1"
-    config: "npm:4.1.1"
+    config: "npm:4.2.0"
     cors: "npm:2.8.5"
     express: "npm:5.2.1"
     nodemon: "npm:3.1.11"
@@ -1025,7 +1025,7 @@ __metadata:
     "@hmcts/cloud-native-platform": "workspace:*"
     "@hmcts/postgres-prisma": "workspace:*"
     "@types/config": "npm:3.3.5"
-    config: "npm:4.1.1"
+    config: "npm:4.2.0"
   languageName: unknown
   linkType: soft
 
@@ -1135,7 +1135,7 @@ __metadata:
     "@types/govuk-frontend": "npm:5.11.0"
     "@types/nunjucks": "npm:3.2.6"
     compression: "npm:1.8.1"
-    config: "npm:4.1.1"
+    config: "npm:4.2.0"
     connect-redis: "npm:9.0.0"
     cookie-parser: "npm:1.4.7"
     express: "npm:5.2.1"
@@ -3481,12 +3481,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"config@npm:4.1.1":
-  version: 4.1.1
-  resolution: "config@npm:4.1.1"
+"config@npm:4.2.0":
+  version: 4.2.0
+  resolution: "config@npm:4.2.0"
   dependencies:
     json5: "npm:^2.2.3"
-  checksum: 10c0/661c0c1b6a7ace9d1a8cae29fa95f329c76cd05c22a1dac7834c1fb4ce2d6c62b1fb9900d06a808cdfeb2ce16b325a0c7a5ea15ac7c58ae5b1c1feb434fedf0b
+  checksum: 10c0/a0f81ee93a3b7fe26870b6b53eefb17302224477f5b3a12d990f9dcaaa50ec5881a23daaed13c0a77319dadda02cb679b6988087939c58cdbb36527745d6d4af
   languageName: node
   linkType: hard
 
