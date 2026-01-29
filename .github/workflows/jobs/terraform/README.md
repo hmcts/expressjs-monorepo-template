@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Runs Terraform plan and optionally apply against Azure infrastructure. Follows HMCTS patterns for state management using Azure Storage backend.
+Runs Terraform plan and optionally apply against Azure infrastructure. This job is a thin wrapper around the [cnp-githubactions-library terraform-deploy workflow](https://github.com/hmcts/cnp-githubactions-library/blob/main/.github/workflows/terraform-deploy.md).
 
 ## Inputs
 
@@ -10,6 +10,7 @@ Runs Terraform plan and optionally apply against Azure infrastructure. Follows H
 |------|----------|---------|-------------|
 | `environment` | Yes | - | Target environment (e.g., `aat`) |
 | `subscription` | Yes | - | Azure subscription name (e.g., `DCD-CNP-DEV`) |
+| `aks-subscription` | Yes | - | Azure subscription for AKS cluster (e.g., `DCD-CFTAPPS-STG`) |
 | `storage-account` | Yes | - | Storage account postfix (`nonprod`, `prod`) |
 | `plan-only` | No | `false` | Run plan only, skip apply |
 | `working-directory` | No | `infrastructure` | Directory containing Terraform files |
@@ -19,21 +20,13 @@ Runs Terraform plan and optionally apply against Azure infrastructure. Follows H
 | Name | Description |
 |------|-------------|
 | `plan-exitcode` | Terraform plan exit code: `0` = no changes, `2` = changes detected |
-
-## Artifacts
-
-None
+| `has-changes` | Boolean indicating if plan has changes |
 
 ## Secrets
 
 | Name | Required | Description |
 |------|----------|-------------|
 | `AZURE_CREDENTIALS_CFT_PREVIEW` | Yes | Azure Service Principal credentials (JSON) |
-
-The Service Principal requires:
-- Storage Account Key access (to read/write Terraform state)
-- Contributor on target resource groups
-- Key Vault Secrets Officer (to write secrets)
 
 ## Usage
 
@@ -46,6 +39,7 @@ terraform:
   with:
     environment: aat
     subscription: DCD-CNP-DEV
+    aks-subscription: DCD-CFTAPPS-STG
     storage-account: nonprod
     plan-only: true
   secrets: inherit
@@ -60,6 +54,7 @@ terraform:
   with:
     environment: aat
     subscription: DCD-CNP-DEV
+    aks-subscription: DCD-CFTAPPS-STG
     storage-account: nonprod
     plan-only: false
   secrets: inherit
@@ -67,37 +62,11 @@ terraform:
 
 The job is typically called from `stage.infrastructure.yml` which handles change detection at the workflow level.
 
-## State Storage
+## Implementation
 
-| Component | Pattern |
-|-----------|---------|
-| Storage Account | `mgmtstatestore{storage-account}` |
-| Resource Group | `mgmt-state-store-{storage-account}` |
-| Container | `mgmtstatestorecontainer{environment}` |
-| State Key | `expressjs-monorepo/{environment}/terraform.tfstate` |
+This job delegates to `hmcts/cnp-githubactions-library/.github/workflows/terraform-deploy.yaml@main`. See the [library documentation](https://github.com/hmcts/cnp-githubactions-library/blob/main/.github/workflows/terraform-deploy.md) for full details on:
 
-The team name is extracted from the `annotations.team` field in `helm/expressjs-monorepo-template/Chart.yaml`.
-
-## Local Development
-
-```bash
-cd infrastructure
-az login
-terraform init \
-  -backend-config="storage_account_name=mgmtstatestorenonprod" \
-  -backend-config="container_name=mgmtstatestorecontaineraat" \
-  -backend-config="resource_group_name=mgmt-state-store-nonprod" \
-  -backend-config="key=expressjs-monorepo/aat/terraform.tfstate"
-
-terraform plan -var "env=aat" -var "product=dtsse" -var "subscription=<subscription-id>"
-```
-
-## Version Requirements
-
-| Tool | Version | Notes |
-|------|---------|-------|
-| Terraform CLI | 1.14.x | Pinned in `.terraform-version` |
-| AzureRM Provider | ~> 4.57 | Allows patch updates within 4.57.x |
-| actions/checkout | v6 | Latest major version |
-| hashicorp/setup-terraform | v3 | Latest major version |
-| azure/login | v2 | Latest major version |
+- State storage configuration
+- Environment tag mapping
+- PR comment features
+- Backend configuration

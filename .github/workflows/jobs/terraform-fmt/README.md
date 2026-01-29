@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Validates that all Terraform files are properly formatted. Fails fast if formatting issues are detected.
+Validates that all Terraform files are properly formatted. This job uses the [cnp-githubactions-library terraform-fmt action](https://github.com/hmcts/cnp-githubactions-library/blob/main/terraform-fmt/README.md).
 
 ## Inputs
 
@@ -11,10 +11,6 @@ Validates that all Terraform files are properly formatted. Fails fast if formatt
 | `working-directory` | No | `infrastructure` | Directory containing Terraform files |
 
 ## Outputs
-
-None
-
-## Artifacts
 
 None
 
@@ -39,9 +35,6 @@ cd infrastructure
 terraform fmt -recursive
 ```
 
-## Version Requirements
+## Implementation
 
-| Tool | Version | Notes |
-|------|---------|-------|
-| Terraform CLI | 1.14.x | Pinned in `.terraform-version` |
-| hashicorp/setup-terraform | v3 | Latest major version |
+This job uses `hmcts/cnp-githubactions-library/terraform-fmt@main`. See the [library documentation](https://github.com/hmcts/cnp-githubactions-library/blob/main/terraform-fmt/README.md) for full details.

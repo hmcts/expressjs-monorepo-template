@@ -51,3 +51,9 @@ variable "builtFrom" {
   type        = string
   default     = null
 }
+
+variable "aks_subscription_id" {
+  description = "Azure subscription ID for AKS cluster (auto-set in CI)"
+  type        = string
+  default     = null
+}
