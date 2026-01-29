@@ -5,7 +5,7 @@ global:
 job:
   releaseNameOverride: "{{ .Release.Name }}-crons"
   disableActiveClusterCheck: true
-  image: hmctsprod.azurecr.io/dtsse/expressjs-monorepo-template-crons:latest
+  image: hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-crons:latest
   aadIdentityName: dtsse
   environment:
     SCRIPT_NAME: 'example'

@@ -17,7 +17,7 @@ on:
         description: "JSON array of all Helm apps"
 
 env:
-  REGISTRY: hmctsprod.azurecr.io
+  REGISTRY: hmctspublic.azurecr.io
 
 jobs:
   promote:

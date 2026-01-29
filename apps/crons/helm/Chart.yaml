@@ -9,4 +9,4 @@ version: 0.0.1
 dependencies:
   - name: job
     version: 2.2.0
-    repository: 'oci://hmctsprod.azurecr.io/helm'
+    repository: 'oci://hmctspublic.azurecr.io/helm'

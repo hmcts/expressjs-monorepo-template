@@ -16,19 +16,19 @@ crons:
 # Web application configuration
 expressjs-monorepo-template-web:
   nodejs:
-    image: "hmctsprod.azurecr.io/dtsse/expressjs-monorepo-template-web:${WEB_IMAGE}"
+    image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-web:${WEB_IMAGE}"
     ingressHost: "${TEAM_NAME}-{{ .Release.Name }}-web.${ENVIRONMENT}.platform.hmcts.net"
 
 # API application configuration
 expressjs-monorepo-template-api:
   nodejs:
-    image: "hmctsprod.azurecr.io/dtsse/expressjs-monorepo-template-api:${API_IMAGE}"
+    image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-api:${API_IMAGE}"
     ingressHost: "${TEAM_NAME}-{{ .Release.Name }}-api.${ENVIRONMENT}.platform.hmcts.net"
 
 # Crons application configuration
 expressjs-monorepo-template-crons:
   job:
-    image: "hmctsprod.azurecr.io/dtsse/expressjs-monorepo-template-crons:${CRONS_IMAGE}"
+    image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-crons:${CRONS_IMAGE}"
     schedule: "*/5 * * * *"
     suspend: false
     kind: CronJob
@@ -36,7 +36,7 @@ expressjs-monorepo-template-crons:
 # Postgres Prisma Studio service configuration
 expressjs-monorepo-template-postgres:
   nodejs:
-    image: "hmctsprod.azurecr.io/dtsse/expressjs-monorepo-template-postgres:${POSTGRES_IMAGE}"
+    image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-postgres:${POSTGRES_IMAGE}"
     ingressHost: "${TEAM_NAME}-{{ .Release.Name }}-postgres.${ENVIRONMENT}.platform.hmcts.net"
 
 # Dev dependencies - DISABLED for AAT/Prod (managed by Terraform)

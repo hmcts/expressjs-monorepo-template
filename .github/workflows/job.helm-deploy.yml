@@ -41,7 +41,7 @@ on:
 
 env:
   CHANGE_ID: ${{ inputs.change-id }}
-  REGISTRY: hmctsprod.azurecr.io
+  REGISTRY: hmctspublic.azurecr.io
 
 jobs:
   helm-deploy:

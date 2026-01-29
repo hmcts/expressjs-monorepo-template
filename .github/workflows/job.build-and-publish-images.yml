@@ -26,7 +26,7 @@ on:
 
 env:
   CHANGE_ID: ${{ inputs.change-id }}
-  REGISTRY_NAME: hmctsprod
+  REGISTRY_NAME: hmctspublic
 
 jobs:
   get-last-successful-sha:
