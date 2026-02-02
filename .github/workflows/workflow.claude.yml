@@ -108,7 +108,10 @@ jobs:
     if: |
       github.event_name == 'issue_comment' &&
       !github.event.issue.pull_request &&
-      contains(github.event.comment.body, '@spec')
+      contains(github.event.comment.body, '@spec') &&
+      (github.event.comment.author_association == 'OWNER' ||
+       github.event.comment.author_association == 'MEMBER' ||
+       github.event.comment.author_association == 'COLLABORATOR')
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -121,8 +124,10 @@ jobs:
 
       - name: Parse template type
         id: parse
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
-          COMMENT="${{ github.event.comment.body }}"
+          COMMENT="$COMMENT_BODY"
           # Extract template name after @spec (default: new-feature)
           if [[ "$COMMENT" =~ @spec[[:space:]]+([a-zA-Z0-9_-]+) ]]; then
             TEMPLATE="${BASH_REMATCH[1]}"
@@ -131,7 +136,7 @@ jobs:
           fi
 
           # Validate template exists
-          if [[ -f "templates/$TEMPLATE" ]]; then
+          if [[ -f "templates/$TEMPLATE.md" ]]; then
             echo "template=$TEMPLATE" >> $GITHUB_OUTPUT
             echo "valid=true" >> $GITHUB_OUTPUT
           else
@@ -162,7 +167,7 @@ jobs:
             Generate a technical specification for this GitHub issue using the specified template.
 
             ## Template
-            Read the template from: templates/${{ steps.parse.outputs.template }}
+            Read the template from: templates/${{ steps.parse.outputs.template }}.md
 
             ## Issue Details
             Issue #${{ github.event.issue.number }}
@@ -171,7 +176,7 @@ jobs:
             ${{ github.event.issue.body }}
 
             ## Instructions
-            1. Read the template file from templates/${{ steps.parse.outputs.template }}
+            1. Read the template file from templates/${{ steps.parse.outputs.template }}.md
             2. Read .claude/rules/design.md for GOV.UK Design System guidance
             3. Search the codebase for similar implementations to understand existing patterns
             4. Fill in ALL sections of the template with specific, actionable content based on the issue
