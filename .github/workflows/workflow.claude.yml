@@ -118,6 +118,13 @@ jobs:
       issues: write
       id-token: write
     steps:
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.CLAUDE_CODE_APP_ID }}
+          private-key: ${{ secrets.CLAUDE_CODE_PRIVATE_KEY }}
+
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
@@ -164,6 +171,7 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.CLAUDE_API_KEY }}
+          github_token: ${{ steps.app-token.outputs.token }}
           prompt: |
             Generate a technical specification for this GitHub issue using the specified template.
 
@@ -183,13 +191,13 @@ jobs:
             4. Fill in ALL sections of the template with specific, actionable content based on the issue
             5. Replace all placeholder text [in brackets] with real content
             6. For wireframes, use ASCII art diagrams
-            7. Output ONLY the completed specification markdown - no preamble or explanation
+            7. Post the completed specification as a comment on issue #${{ github.event.issue.number }} using:
+               gh issue comment ${{ github.event.issue.number }} --body "<specification>"
 
-            IMPORTANT: Your entire output will be posted as a GitHub issue comment.
             Do not create files, make commits, or modify anything.
           claude_args: |
-            --allowedTools "Read,Glob,Grep"
-            --append-system-prompt "You are generating a technical specification. Output ONLY the completed specification markdown. Do not include any preamble like 'Here is the specification' - start directly with the specification content. Do not create files, make commits, or modify anything."
+            --allowedTools "Read,Glob,Grep,Bash(gh issue comment:*)"
+            --append-system-prompt "You are generating a technical specification. After generating the spec, use 'gh issue comment' to post it to the issue. Do not create files, make commits, or modify anything."
 
   claude-plan:
     if: github.event_name == 'issue_comment' && contains(github.event.comment.body, '@plan')
