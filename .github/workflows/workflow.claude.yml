@@ -118,6 +118,13 @@ jobs:
       issues: write
       id-token: write
     steps:
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.CLAUDE_CODE_APP_ID }}
+          private-key: ${{ secrets.CLAUDE_CODE_PRIVATE_KEY }}
+
       - name: Checkout repository
         uses: actions/checkout@v6
         with:
@@ -164,7 +171,7 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.CLAUDE_API_KEY }}
-          github_token: ${{ github.token }}
+          github_token: ${{ steps.app-token.outputs.token }}
           prompt: |
             Generate a technical specification for this GitHub issue using the specified template.
 
