@@ -8,8 +8,19 @@ variable "product" {
   type        = string
 }
 
+variable "component" {
+  description = "Component name for resource group naming"
+  type        = string
+  default     = "expressjs"
+}
+
 variable "subscription" {
   description = "Azure subscription name"
+  type        = string
+}
+
+variable "aks_subscription_id" {
+  description = "Azure subscription ID for AKS cluster (contains network subnets)"
   type        = string
 }
 

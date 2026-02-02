@@ -1,7 +1,7 @@
 # Terraform Job
 #
 # Runs Terraform plan and optionally apply for infrastructure changes.
-# Call this job only when infrastructure changes are detected.
+# This is a thin wrapper around the cnp-githubactions-library terraform-deploy workflow.
 #
 # Usage:
 #   terraform:
@@ -11,6 +11,7 @@
 #     with:
 #       environment: aat
 #       subscription: DCD-CNP-DEV
+#       aks-subscription: DCD-CFTAPPS-STG
 #       storage-account: nonprod
 #       plan-only: true
 #     secrets: inherit
@@ -32,6 +33,10 @@ on:
         required: true
         type: string
         description: "Azure subscription name (e.g. DCD-CNP-DEV)"
+      aks-subscription:
+        required: true
+        type: string
+        description: "Azure subscription name for AKS cluster (e.g. DCD-CFTAPPS-STG)"
       plan-only:
         required: false
         type: boolean
@@ -49,190 +54,14 @@ on:
 jobs:
   terraform:
     name: Terraform ${{ inputs.plan-only && 'Plan' || 'Apply' }}
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-    outputs:
-      plan-exitcode: ${{ steps.plan.outputs.exitcode }}
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Extract team name from Chart.yaml
-        id: metadata
-        run: |
-          CHART_FILE="helm/expressjs-monorepo-template/Chart.yaml"
-          # Extract team from annotations (same pattern as helm-deploy)
-          TEAM=$(grep -A 1 'annotations:' "$CHART_FILE" | grep 'team:' | awk '{print $2}' | tr -d '"')
-          if [ -z "$TEAM" ]; then
-            echo "::error::No team annotation found in $CHART_FILE"
-            exit 1
-          fi
-          echo "product=$TEAM" >> "$GITHUB_OUTPUT"
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version_file: ${{ inputs.working-directory }}/.terraform-version
-          terraform_wrapper: false  # Disable wrapper to preserve exit codes
-
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS_CFT_PREVIEW }}
-
-      - name: Get Azure context
-        id: azure-context
-        run: |
-          # Extract tenant ID and service principal object ID from logged-in context
-          TENANT_ID=$(az account show --query tenantId -o tsv)
-          CLIENT_ID=$(az account show --query user.name -o tsv)
-          SP_OBJECT_ID=$(az ad sp show --id "$CLIENT_ID" --query id -o tsv)
-
-          echo "tenant_id=$TENANT_ID" >> "$GITHUB_OUTPUT"
-          echo "sp_object_id=$SP_OBJECT_ID" >> "$GITHUB_OUTPUT"
-
-      - name: Set subscription
-        id: subscription
-        run: |
-          az account set --subscription "${{ inputs.subscription }}"
-          SUBSCRIPTION_ID=$(az account show --query id -o tsv)
-          echo "id=$SUBSCRIPTION_ID" >> "$GITHUB_OUTPUT"
-
-      - name: Get Storage Account Key
-        id: storage-key
-        run: |
-          STORAGE_ACCOUNT="mgmtstatestore${{ inputs.storage-account }}"
-          RESOURCE_GROUP="mgmt-state-store-${{ inputs.storage-account }}"
-          KEY=$(az storage account keys list \
-            --account-name "$STORAGE_ACCOUNT" \
-            --resource-group "$RESOURCE_GROUP" \
-            --query '[0].value' -o tsv)
-          echo "::add-mask::$KEY"
-          echo "key=$KEY" >> "$GITHUB_OUTPUT"
-
-      # TODO: Use terraform actions rather than DIY
-
-      - name: Terraform Init
-        working-directory: ${{ inputs.working-directory }}
-        env:
-          ARM_ACCESS_KEY: ${{ steps.storage-key.outputs.key }}
-        run: |
-          terraform init -reconfigure \
-            -backend-config="storage_account_name=mgmtstatestore${{ inputs.storage-account }}" \
-            -backend-config="container_name=mgmtstatestorecontainer${{ inputs.environment }}" \
-            -backend-config="resource_group_name=mgmt-state-store-${{ inputs.storage-account }}" \
-            -backend-config="key=${{ github.event.repository.name }}/${{ inputs.environment }}/terraform.tfstate"
-
-      - name: Terraform Validate
-        working-directory: ${{ inputs.working-directory }}
-        run: terraform validate
-
-      - name: Terraform Plan
-        id: plan
-        working-directory: ${{ inputs.working-directory }}
-        env:
-          ARM_ACCESS_KEY: ${{ steps.storage-key.outputs.key }}
-          PRODUCT: ${{ steps.metadata.outputs.product }}
-          TENANT_ID: ${{ steps.azure-context.outputs.tenant_id }}
-          SP_OBJECT_ID: ${{ steps.azure-context.outputs.sp_object_id }}
-        run: |
-          # Construct common_tags as JSON
-          COMMON_TAGS=$(jq -n \
-            --arg env "${{ inputs.environment }}" \
-            --arg managedBy "$PRODUCT" \
-            --arg builtFrom "$GITHUB_REPOSITORY" \
-            --arg application "$PRODUCT" \
-            --arg businessArea "CFT" \
-            '{environment: $env, managedBy: $managedBy, builtFrom: $builtFrom, application: $application, businessArea: $businessArea}')
-
-          set +e
-          terraform plan -detailed-exitcode -out=tfplan \
-            -var "env=${{ inputs.environment }}" \
-            -var "product=${PRODUCT}" \
-            -var "subscription=${{ steps.subscription.outputs.id }}" \
-            -var "tenant_id=${TENANT_ID}" \
-            -var "builtFrom=${GITHUB_REPOSITORY}" \
-            -var "ci_service_principal_object_id=${SP_OBJECT_ID}" \
-            -var "common_tags=${COMMON_TAGS}"
-          EXITCODE=$?
-          echo "exitcode=$EXITCODE" >> "$GITHUB_OUTPUT"
-          if [ $EXITCODE -eq 1 ]; then
-            exit 1
-          fi
-
-      - name: Save Plan Output
-        if: ${{ github.event.pull_request.number && steps.plan.outputs.exitcode == '2' }}
-        working-directory: ${{ inputs.working-directory }}
-        run: terraform show -no-color tfplan > plan.txt
-
-      - name: Post Plan to PR
-        if: ${{ github.event.pull_request.number && steps.plan.outputs.exitcode == '2' }}
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const fs = require('fs');
-            const path = require('path');
-            const planPath = path.join('${{ inputs.working-directory }}', 'plan.txt');
-            const plan = fs.readFileSync(planPath, 'utf8');
-
-            const maxLength = 60000;
-            const truncatedPlan = plan.length > maxLength
-              ? plan.substring(0, maxLength) + '\n\n... (truncated)'
-              : plan;
-
-            const body = [
-              '### Terraform Plan for `${{ inputs.environment }}`',
-              '',
-              '<details>',
-              '<summary>Show Plan</summary>',
-              '',
-              '```terraform',
-              truncatedPlan,
-              '```',
-              '',
-              '</details>'
-            ].join('\n');
-
-            const prNumber = context.payload.pull_request?.number;
-            if (!prNumber) {
-              console.log('No PR number found, skipping comment');
-              return;
-            }
-
-            const { data: comments } = await github.rest.issues.listComments({
-              issue_number: prNumber,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-            });
-
-            const botComment = comments.find(comment =>
-              comment.user.type === 'Bot' &&
-              comment.body.includes('Terraform Plan for `${{ inputs.environment }}`')
-            );
-
-            if (botComment) {
-              await github.rest.issues.updateComment({
-                comment_id: botComment.id,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: body
-              });
-            } else {
-              await github.rest.issues.createComment({
-                issue_number: prNumber,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: body
-              });
-            }
-
-      - name: Terraform Apply
-        if: ${{ !inputs.plan-only && steps.plan.outputs.exitcode == '2' }}
-        working-directory: ${{ inputs.working-directory }}
-        run: terraform apply -auto-approve tfplan
-        env:
-          ARM_ACCESS_KEY: ${{ steps.storage-key.outputs.key }}
-
+    uses: hmcts/cnp-githubactions-library/.github/workflows/terraform-deploy.yaml@main
+    with:
+      environment: ${{ inputs.environment }}
+      subscription: ${{ inputs.subscription }}
+      aks-subscription: ${{ inputs.aks-subscription }}
+      storage-account: ${{ inputs.storage-account }}
+      working-directory: ${{ inputs.working-directory }}
+      plan-only: ${{ inputs.plan-only }}
+      helm-chart-path: helm/expressjs-monorepo-template/Chart.yaml
+    secrets:
+      AZURE_CREDENTIALS: ${{ secrets.AZURE_CREDENTIALS_CFT_PREVIEW }}

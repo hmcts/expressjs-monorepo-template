@@ -26,7 +26,7 @@ on:
 
 env:
   CHANGE_ID: ${{ inputs.change-id }}
-  REGISTRY: hmctspublic.azurecr.io
+  REGISTRY_NAME: hmctspublic
 
 jobs:
   get-last-successful-sha:
@@ -37,7 +37,7 @@ jobs:
     steps:
       - name: Restore last successful SHA from cache
         id: cache
-        uses: actions/cache/restore@v4
+        uses: actions/cache/restore@v5
         with:
           path: .last-successful-sha
           key: last-successful-docker-build-sha
@@ -136,11 +136,11 @@ jobs:
           fi
 
       - name: Build and push Docker image
-        uses: hmcts/cnp-githubactions-library/container-build-push@main
+        uses: hmcts/cnp-githubactions-library/container-build-push-openid@main
         with:
-          registry: ${{ env.REGISTRY }}
-          registry-username: ${{ secrets.REGISTRY_USERNAME }}
-          registry-password: ${{ secrets.REGISTRY_PASSWORD }}
+          registry-name: ${{ env.REGISTRY_NAME }}
+          azure-client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          azure-tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           image-name: ${{ env.REGISTRY_PREFIX }}
           dockerfile: apps/${{ matrix.app }}/Dockerfile
           context: .

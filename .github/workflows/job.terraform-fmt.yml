@@ -1,7 +1,7 @@
 # Terraform Format Check Job
 #
 # Checks that all Terraform files are properly formatted.
-# Call this job only when infrastructure changes are detected.
+# This is a thin wrapper around the cnp-githubactions-library terraform-fmt action.
 #
 # Usage:
 #   terraform-fmt:
@@ -28,15 +28,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3
-        with:
-          terraform_version_file: ${{ inputs.working-directory }}/.terraform-version
-
       - name: Terraform Format Check
-        working-directory: ${{ inputs.working-directory }}
-        run: |
-          if ! terraform fmt -check -recursive -diff; then
-            echo "::error::Terraform files are not formatted. Run 'terraform fmt -recursive' in the infrastructure directory to fix."
-            exit 1
-          fi
+        uses: hmcts/cnp-githubactions-library/terraform-fmt@main
+        with:
+          working-directory: ${{ inputs.working-directory }}

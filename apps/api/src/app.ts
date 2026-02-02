@@ -1,3 +1,4 @@
+// API Application Entry Point
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { getPropertiesVolumeSecrets, healthcheck, monitoringMiddleware } from "@hmcts/cloud-native-platform";

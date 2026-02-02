@@ -25,6 +25,7 @@ jobs:
     with:
       environment: aat
       subscription: DCD-CNP-DEV
+      aks-subscription: DCD-CFTAPPS-STG
       storage-account: nonprod
       plan-only: ${{ inputs.plan-only }}
     secrets: inherit

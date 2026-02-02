@@ -9,7 +9,7 @@ nodejs:
   keyVaults:
     dtsse:
       secrets:
-        - name: AppInsightsConnectionString
+        - name: ExpressJsAppInsightsConnectionString
           alias: APPLICATION_INSIGHTS_CONNECTION_STRING
         - name: db-url
           alias: DATABASE_URL

@@ -15,12 +15,14 @@ jobs:
     uses: ./.github/workflows/job.detect-changes.yml
     with:
       paths: "^(yarn\\.lock|apps/|libs/|helm/)"
+      cache-key: code
 
   detect-infra-changes:
     name: Detect Infrastructure Changes
     uses: ./.github/workflows/job.detect-changes.yml
     with:
       paths: "^infrastructure/"
+      cache-key: infra
 
   build-stage:
     name: Build
@@ -43,7 +45,10 @@ jobs:
   deploy-stage:
     name: Deploy to AAT
     needs: [build-stage, infrastructure-stage]
-    if: needs.build-stage.result == 'success'
+    if: |
+      always() &&
+      needs.build-stage.result == 'success' &&
+      (needs.infrastructure-stage.result == 'success' || needs.infrastructure-stage.result == 'skipped')
     uses: ./.github/workflows/stage.deploy.yml
     with:
       change-id: staging
@@ -57,7 +62,7 @@ jobs:
   smoke-test-stage:
     name: Smoke Test
     needs: [deploy-stage]
-    if: needs.deploy-stage.result == 'success'
+    if: always() && needs.deploy-stage.result == 'success'
     uses: ./.github/workflows/stage.smoke-test.yml
     with:
       change-id: staging
@@ -66,7 +71,7 @@ jobs:
   e2e-stage:
     name: E2E
     needs: [smoke-test-stage, deploy-stage]
-    if: needs.deploy-stage.result == 'success'
+    if: always() && needs.deploy-stage.result == 'success' && needs.smoke-test-stage.result == 'success'
     uses: ./.github/workflows/stage.e2e.yml
     with:
       preview-urls: ${{ needs.deploy-stage.outputs.urls }}
@@ -85,10 +90,26 @@ jobs:
   promote-stage:
     name: Promote Images
     needs: [e2e-stage, build-stage]
-    if: needs.e2e-stage.result == 'success'
+    if: always() && needs.e2e-stage.result == 'success'
     uses: ./.github/workflows/stage.promote-images.yml
     with:
       short-sha: ${{ needs.build-stage.outputs.short-sha }}
       affected-apps: ${{ needs.build-stage.outputs.affected-apps }}
       helm-apps: ${{ needs.build-stage.outputs.helm-apps }}
     secrets: inherit
+
+  save-code-success:
+    name: Save Code SHA
+    needs: [build-stage]
+    if: always() && needs.build-stage.result == 'success'
+    uses: ./.github/workflows/job.save-successful-sha.yml
+    with:
+      cache-key: code
+
+  save-infra-success:
+    name: Save Infra SHA
+    needs: [infrastructure-stage]
+    if: always() && needs.infrastructure-stage.result == 'success'
+    uses: ./.github/workflows/job.save-successful-sha.yml
+    with:
+      cache-key: infra

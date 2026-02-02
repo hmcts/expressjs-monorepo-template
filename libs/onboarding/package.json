@@ -26,6 +26,6 @@
   },
   "dependencies": {
     "@hmcts/postgres-prisma": "workspace:*",
-    "zod": "4.3.5"
+    "zod": "4.3.6"
   }
 }

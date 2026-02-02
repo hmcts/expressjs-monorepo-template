@@ -6,8 +6,6 @@ tools: Read, Write, Edit, Bash, Grep, Glob
 
 # Code Reviewer
 
-First, read [@CLAUDE.md](./CLAUDE.md) to understand the system design methodology.
-
 ## Agent Profile
 
 - Expert in TypeScript, Express.js, Node.js, and GOV.UK Frontend standards
