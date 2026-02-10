@@ -54,6 +54,7 @@ const JIRA_STATUS_TO_COLUMN_NAME: Record<string, string> = {
   todo: "Backlog",
   // Prioritised/Refined statuses
   "prioritised-backlog": "Prioritised Backlog",
+  "next---prioritised": "Prioritised Backlog",
   "ready-for-progress": "Refined Tickets",
   "ready-for-development": "Refined Tickets",
   refined: "Refined Tickets",
@@ -71,10 +72,12 @@ const JIRA_STATUS_TO_COLUMN_NAME: Record<string, string> = {
   "in-test": "In Test",
   "in-testing": "In Test",
   testing: "In Test",
+  test: "In Test",
   // Sign off statuses
   "ready-for-sign-off": "Ready For Sign Off",
   "ready-for-signoff": "Ready For Sign Off",
   "awaiting-sign-off": "Ready For Sign Off",
+  acceptance: "Ready For Sign Off",
   // Done statuses
   closed: "Done",
   done: "Done",
@@ -88,7 +91,8 @@ const JIRA_STATUS_TO_COLUMN_NAME: Record<string, string> = {
   rejected: "Done",
   "won't-do": "Done",
   wontdo: "Done",
-  "wont-do": "Done"
+  "wont-do": "Done",
+  "prod-release": "Done"
 };
 
 // Dynamic mapping populated after project setup
