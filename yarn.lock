@@ -1089,7 +1089,7 @@ __metadata:
     "@prisma/adapter-pg": "npm:7.3.0"
     "@prisma/client": "npm:7.3.0"
     "@types/pg": "npm:8.11.11"
-    glob: "npm:13.0.0"
+    glob: "npm:13.0.2"
     pg: "npm:8.16.3"
     prisma: "npm:7.3.0"
   languageName: unknown
@@ -1140,7 +1140,7 @@ __metadata:
     cookie-parser: "npm:1.4.7"
     express: "npm:5.2.1"
     express-session: "npm:1.18.2"
-    glob: "npm:13.0.0"
+    glob: "npm:13.0.2"
     govuk-frontend: "npm:5.13.0"
     helmet: "npm:8.1.0"
     nodemon: "npm:3.1.11"
