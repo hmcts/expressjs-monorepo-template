@@ -67,6 +67,7 @@ jobs:
     with:
       change-id: staging
       preview-urls: ${{ needs.deploy-stage.outputs.urls }}
+      runner-group: azure-prod
 
   e2e-stage:
     name: E2E
@@ -75,6 +76,7 @@ jobs:
     uses: ./.github/workflows/stage.e2e.yml
     with:
       preview-urls: ${{ needs.deploy-stage.outputs.urls }}
+      runner-group: azure-prod
     secrets: inherit
 
   cleanup-stage:

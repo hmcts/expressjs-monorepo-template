@@ -7,12 +7,17 @@ on:
         required: true
         type: string
         description: "Base64-encoded JSON of preview URLs"
+      runner-group:
+        required: false
+        type: string
+        description: "GitHub Actions runner group"
+        default: "azure-nonprod"
 
 jobs:
   smoke-test:
     name: Smoke Test
     runs-on:
-      group: azure-nonprod
+      group: ${{ inputs.runner-group }}
 
     steps:
       - name: Decode preview URLs

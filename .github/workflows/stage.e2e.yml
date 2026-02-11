@@ -7,6 +7,11 @@ on:
         required: true
         type: string
         description: "Base64-encoded JSON of preview URLs"
+      runner-group:
+        required: false
+        type: string
+        description: "GitHub Actions runner group"
+        default: "azure-nonprod"
 
 jobs:
   e2e-test:
@@ -14,4 +19,5 @@ jobs:
     uses: ./.github/workflows/job.e2e-test.yml
     with:
       preview-urls: ${{ inputs.preview-urls }}
+      runner-group: ${{ inputs.runner-group }}
     secrets: inherit

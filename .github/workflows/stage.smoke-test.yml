@@ -16,6 +16,11 @@ on:
         type: boolean
         default: false
         description: "Whether this is a PR (enables PR comment)"
+      runner-group:
+        required: false
+        type: string
+        description: "GitHub Actions runner group"
+        default: "azure-nonprod"
 
 jobs:
   pr-comment:
@@ -31,3 +36,4 @@ jobs:
     uses: ./.github/workflows/job.smoke-test.yml
     with:
       preview-urls: ${{ inputs.preview-urls }}
+      runner-group: ${{ inputs.runner-group }}
