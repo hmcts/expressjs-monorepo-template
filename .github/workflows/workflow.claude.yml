@@ -192,14 +192,14 @@ jobs:
             5. Fill in ALL sections of the template with specific, actionable content based on the issue
             6. Replace all placeholder text [in brackets] with real content
             7. For wireframes, use ASCII art diagrams
-            8. When the spec includes user-facing content, check if EXACT translations exist in the Welsh catalogue and include them. Only use translations that match exactly - Welsh is highly specific and should not be approximated or created.
+            8. For Welsh content sections: The structure MUST mirror the English content exactly (same headings, fields, order). For each English text, search for the EXACT WORD-FOR-WORD translation in the Welsh catalogue. If found, use it. If NOT found, use the placeholder format: [WELSH TRANSLATION REQUIRED: <english text>]. NEVER provide "closest matches" or alternatives.
             9. Post the completed specification as a comment on issue #${{ github.event.issue.number }} using:
                gh issue comment ${{ github.event.issue.number }} --body "<specification>"
 
             Do not create files, make commits, or modify anything.
           claude_args: |
             --allowedTools "Read,Glob,Grep,Bash(gh issue comment:*)"
-            --append-system-prompt "You are generating a technical specification. After generating the spec, use 'gh issue comment' to post it to the issue. Do not create files, make commits, or modify anything. For Welsh translations: only use EXACT matches from the Welsh translation catalogue - never approximate, guess, or create Welsh translations as the language is highly specific."
+            --append-system-prompt "You are generating a technical specification. After generating the spec, use 'gh issue comment' to post it to the issue. Do not create files, make commits, or modify anything. For Welsh translations: Welsh content structure must mirror English exactly. Use ONLY exact word-for-word matches from the catalogue. If no exact match exists, use [WELSH TRANSLATION REQUIRED: <english text>] as placeholder. NEVER provide closest matches, alternatives, or approximations."
 
   claude-plan:
     if: github.event_name == 'issue_comment' && contains(github.event.comment.body, '@plan')
