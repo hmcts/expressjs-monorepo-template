@@ -154,7 +154,7 @@ jobs:
 
       - name: Post error if template not found
         if: steps.parse.outputs.valid == 'false'
-        uses: actions/github-script@v7
+        uses: actions/github-script@v8
         with:
           script: |
             const fs = require('fs');
