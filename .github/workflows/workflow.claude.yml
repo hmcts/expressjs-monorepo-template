@@ -197,7 +197,7 @@ jobs:
                - For EACH piece of English text that needs Welsh:
                  a) Search the catalogue for that EXACT English string (character-for-character, including punctuation)
                  b) IF AND ONLY IF an exact match exists: copy the Welsh from that catalogue row
-                 c) OTHERWISE: use [WELSH TRANSLATION REQUIRED: <english text>]
+                 c) OTHERWISE: use [WELSH TRANSLATION REQUIRED: "english text"]
                - NEVER adapt Welsh from similar-but-different English entries
                - NEVER create, guess, or translate Welsh yourself
             9. Post the completed specification as a comment on issue #${{ github.event.issue.number }} using:
@@ -206,7 +206,7 @@ jobs:
             Do not create files, make commits, or modify anything.
           claude_args: |
             --allowedTools "Read,Glob,Grep,Bash(gh issue comment:*)"
-            --append-system-prompt "You are generating a technical specification. After generating the spec, use 'gh issue comment' to post it to the issue. Do not create files, make commits, or modify anything. WELSH TRANSLATION RULE: For each English text, search the catalogue. IF AND ONLY IF the exact English string exists (character-for-character match), use the Welsh from that row. Otherwise, use [WELSH TRANSLATION REQUIRED: <english text>]. Never adapt Welsh from similar entries. Never create, guess, or translate Welsh yourself."
+            --append-system-prompt "You are generating a technical specification. After generating the spec, use 'gh issue comment' to post it to the issue. Do not create files, make commits, or modify anything. WELSH TRANSLATION RULE: For each English text, search the catalogue. IF AND ONLY IF the exact English string exists (character-for-character match), use the Welsh from that row. Otherwise, use [WELSH TRANSLATION REQUIRED: \"english text\"]. Never adapt Welsh from similar entries. Never create, guess, or translate Welsh yourself."
 
   claude-plan:
     if: github.event_name == 'issue_comment' && contains(github.event.comment.body, '@plan')
