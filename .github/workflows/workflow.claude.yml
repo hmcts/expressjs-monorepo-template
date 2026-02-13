@@ -199,15 +199,12 @@ jobs:
             7. For Welsh translations, use markers: [TRANSLATE: "English text here"]
                - These markers will be processed by a translation script after generation
                - Use markers for ALL Welsh text - the script handles lookups and missing translations
-            8. Write the completed specification to /tmp/spec-output.md using:
-               cat > /tmp/spec-output.md << 'SPEC_EOF'
-               <specification content here>
-               SPEC_EOF
+            8. Write the completed specification to /tmp/spec-output.md using the Write tool
 
             Do not post comments directly. Do not create other files or make commits.
           claude_args: |
-            --allowedTools "Read,Glob,Grep,Bash(cat:*)"
-            --append-system-prompt "You are generating a technical specification. Write the spec to /tmp/spec-output.md. Do not post comments directly. For Welsh translations, use [TRANSLATE: \"English text\"] markers - a post-processing script will handle the actual translations."
+            --allowedTools "Read,Glob,Grep,Write"
+            --append-system-prompt "You are generating a technical specification. Use the Write tool to write the spec to /tmp/spec-output.md. Do not post comments directly. For Welsh translations, use [TRANSLATE: \"English text\"] markers - a post-processing script will handle the actual translations."
 
       - name: Process Welsh translations and post spec
         if: steps.parse.outputs.valid == 'true'
