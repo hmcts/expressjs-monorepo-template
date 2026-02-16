@@ -40,6 +40,8 @@ The scanner is configured via `.github/osv-scanner.toml`. This file can be used 
 - Ignore specific vulnerabilities with justification
 - Configure scanning behavior
 
+The workflow only fails on HIGH or CRITICAL severity vulnerabilities (`--fail-on-severity=HIGH`). Lower severity issues are still reported to the GitHub Security tab but won't block PRs.
+
 ## Permissions
 
 This job requires specific permissions:
@@ -50,4 +52,4 @@ This job requires specific permissions:
 ## External Workflow
 
 This job uses Google's official OSV Scanner reusable workflow:
-`google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2.3.0`
+`google/osv-scanner-action/.github/workflows/osv-scanner-reusable.yml@v2.3.2`

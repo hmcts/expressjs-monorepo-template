@@ -18,4 +18,5 @@ jobs:
     with:
       scan-args: |-
         --config=.github/osv-scanner.toml
+        --fail-on-severity=HIGH
         ./
