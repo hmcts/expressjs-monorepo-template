@@ -89,7 +89,7 @@ jobs:
         id: deploy-preview
         uses: hmcts/cnp-githubactions-library/helm-deploy@main
         with:
-          environment: cft-preview-01
+          environment: cft-preview-00
           team-name: ${{ env.TEAM_NAME }}
           application-name: ${{ env.APPLICATION_NAME }}
           azure-credentials: ${{ secrets.AZURE_CREDENTIALS_CFT_PREVIEW }}

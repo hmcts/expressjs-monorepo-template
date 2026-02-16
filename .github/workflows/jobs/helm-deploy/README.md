@@ -44,8 +44,8 @@ Key values:
 
 | Aspect | Preview | AAT |
 |--------|---------|-----|
-| Cluster | `cft-preview-01-aks` | `cft-aat-00-aks` |
-| Resource Group | `cft-preview-01-rg` | `cft-aat-00-rg` |
+| Cluster | `cft-preview-00-aks` | `cft-aat-00-aks` |
+| Resource Group | `cft-preview-00-rg` | `cft-aat-00-rg` |
 | Release Name | `{app}-pr-{PR#}` | `{app}-staging` |
 | Values Template | `values.preview.template.yaml` | None (base values) |
 
