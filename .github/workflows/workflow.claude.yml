@@ -487,26 +487,34 @@ jobs:
 
             ## PHASE 3: Impact Analysis
 
-            Identify what EXISTING code would be affected by this issue:
-            - Which existing modules in libs/ would need changes?
-            - Which existing files would need modification?
+            Identify ONLY what EXISTING code would be affected by this issue:
+            - Which existing modules in libs/ would need modifications?
+            - Which existing files would need changes?
             - What existing modules depend on affected code?
             - What existing tests cover the affected areas?
 
-            NOTE: Do NOT list new files to create. Only identify conflicts and impacts on existing code.
+            IMPORTANT: Do NOT list:
+            - New files to create
+            - New modules to scaffold
+            - New schemas to add
+            - Where to register new modules
+            That is the job of @plan, not @analyse. Only report impacts on existing code.
 
             ## PHASE 4: Output
 
-            CRITICAL: Only output if you find conflicts OR significant impact.
+            CRITICAL: Only output if you find:
+            - Conflicts with other issues, OR
+            - Conflicts with existing code, OR
+            - Existing code that would need modification
 
-            Use the template from templates/requirements-analysis.md as the format.
-            Fill in the placeholders with your findings.
+            If this is a greenfield feature with no conflicts and no existing code to modify,
+            do NOT create the output file. Simply report "No conflicts or impacts on existing code."
+
+            If there ARE conflicts or impacts, use the template from templates/requirements-analysis.md.
             Write the completed analysis to /tmp/analysis-output.md using the Write tool.
-
-            If NO conflicts and minimal impact, do NOT create the output file.
           claude_args: |
             --allowedTools "Read,Glob,Grep,Bash(gh:*),Write"
-            --append-system-prompt "Focus on CONFLICTS and IMPACT. Use the template from templates/requirements-analysis.md for output format. Only report if you find actual problems. Be specific with file paths and issue numbers."
+            --append-system-prompt "Focus ONLY on CONFLICTS and IMPACT TO EXISTING CODE. Never suggest new files to create, new modules to scaffold, or where to register new code. If there are no conflicts and no existing code impacted, output nothing. Use the template from templates/requirements-analysis.md for output format. Be specific with file paths and issue numbers."
 
       - name: Post analysis to issue
         if: always()
