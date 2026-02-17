@@ -487,11 +487,13 @@ jobs:
 
             ## PHASE 3: Impact Analysis
 
-            Determine what would need to change to implement this issue:
-            - Which modules in libs/ would be affected?
-            - Which specific files would need modification?
-            - What other modules depend on the affected code?
+            Identify what EXISTING code would be affected by this issue:
+            - Which existing modules in libs/ would need changes?
+            - Which existing files would need modification?
+            - What existing modules depend on affected code?
             - What existing tests cover the affected areas?
+
+            NOTE: Do NOT list new files to create. Only identify conflicts and impacts on existing code.
 
             ## PHASE 4: Output
 
