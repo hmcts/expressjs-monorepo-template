@@ -485,36 +485,34 @@ jobs:
             - Would implementing this break existing functionality?
             - Are there assumptions that don't match current implementation?
 
-            ## PHASE 3: Impact Analysis
+            ## PHASE 3: Impact Rating
 
-            Identify ONLY what EXISTING code would be affected by this issue:
-            - Which existing modules in libs/ would need modifications?
-            - Which existing files would need changes?
-            - What existing modules depend on affected code?
-            - What existing tests cover the affected areas?
+            Assess the overall impact on existing code:
+            - **Low**: Greenfield feature, no existing code affected
+            - **Medium**: Some existing modules would need changes
+            - **High**: Core systems affected, significant refactoring needed
 
-            IMPORTANT: Do NOT list:
-            - New files to create
-            - New modules to scaffold
-            - New schemas to add
-            - Where to register new modules
-            That is the job of @plan, not @analyse. Only report impacts on existing code.
+            Provide ONLY the rating and a one-line reason.
+            Do NOT list specific files, modules, or patterns — that is @plan's job.
 
             ## PHASE 4: Output
 
-            CRITICAL: Only output if you find:
-            - Conflicts with other issues, OR
-            - Conflicts with existing code, OR
-            - Existing code that would need modification
+            Always produce output using the template from templates/requirements-analysis.md.
+            Include:
+            - Conflicts with other issues (if any)
+            - Conflicts with existing code (if any)
+            - Impact rating (Low/Medium/High) with one-line reason
 
-            If this is a greenfield feature with no conflicts and no existing code to modify,
-            do NOT create the output file and do NOT post any comments. The workflow will handle the response.
+            Do NOT include:
+            - Lists of files to modify
+            - Patterns to follow
+            - Implementation recommendations
+            Those are @plan's job.
 
-            If there ARE conflicts or impacts, use the template from templates/requirements-analysis.md.
             Write the completed analysis to /tmp/analysis-output.md using the Write tool.
           claude_args: |
             --allowedTools "Read,Glob,Grep,Bash(gh:*),Write"
-            --append-system-prompt "Focus ONLY on CONFLICTS and IMPACT TO EXISTING CODE. Never suggest new files to create, new modules to scaffold, or where to register new code. If there are no conflicts and no existing code impacted, do NOT create any output file and do NOT post any comments — the workflow handles the response. Use the template from templates/requirements-analysis.md for output format. Be specific with file paths and issue numbers."
+            --append-system-prompt "You are detecting CONFLICTS and providing an IMPACT RATING only. Do not list files to modify, patterns to follow, or implementation guidance — that is @plan's job. Always provide output with conflicts (if any) and impact rating. Be specific with issue numbers when reporting conflicts."
 
       - name: Post analysis to issue
         if: always()
