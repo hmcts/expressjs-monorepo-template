@@ -37,7 +37,7 @@ if [ $? -eq 0 ]; then
   HEALTH_PID=$!
 
   echo "Starting Prisma Studio on port 5556..."
-  npx prisma studio --schema=./dist/schema.prisma --port 5556 --hostname 127.0.0.1 --browser none &
+  npx prisma studio --config=./prisma.config.ts --port 5556 --browser none &
   STUDIO_PID=$!
 
   # Wait for both processes
