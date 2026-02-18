@@ -25,7 +25,7 @@
   "dependencies": {
     "@azure/identity": "^4.2.1",
     "@azure/keyvault-secrets": "^4.7.0",
-    "applicationinsights": "3.12.1",
+    "applicationinsights": "3.13.0",
     "js-yaml": "^4.1.0"
   },
   "devDependencies": {
