@@ -415,9 +415,9 @@ jobs:
           || echo "::warning::Failed to update project status"
 
   analyse:
-    # Performs conflict detection and impact analysis for an issue
+    # Performs conflict detection and provides an impact rating for an issue
     # Usage: @analyse
-    # Detects conflicts with other issues, conflicts with existing code, and impact analysis
+    # Detects conflicts with other issues, conflicts with existing code, and provides an impact rating
     if: |
       github.event_name == 'issue_comment' &&
       !github.event.issue.pull_request &&
