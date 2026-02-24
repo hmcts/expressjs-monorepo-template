@@ -105,7 +105,7 @@ jobs:
       - name: Deploy to AAT
         if: inputs.environment == 'aat'
         id: deploy-aat
-        uses: hmcts/cnp-githubactions-library/helm-deploy@helm-deploy
+        uses: hmcts/cnp-githubactions-library/helm-deploy@main
         with:
           environment: cft-aat-00
           team-name: ${{ env.TEAM_NAME }}

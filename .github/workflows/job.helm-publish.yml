@@ -46,30 +46,49 @@ jobs:
       - name: Build umbrella chart dependencies
         run: helm dependency update helm/expressjs-monorepo-template
 
-      - name: Package chart
+      - name: Package and push charts
         run: |
+          mkdir -p ./dist
+
+          # Publish individual subcharts (used by Flux GitOps)
+          for chart_dir in apps/*/helm; do
+            CHART_NAME=$(grep '^name:' "${chart_dir}/Chart.yaml" | awk '{print $2}')
+            BASE_VERSION=$(grep '^version:' "${chart_dir}/Chart.yaml" | awk '{print $2}')
+            CHART_VERSION="${BASE_VERSION}-${{ inputs.short-sha }}"
+
+            helm package "${chart_dir}" --version "${CHART_VERSION}" -d ./dist
+
+            CHART_REF="oci://${{ env.REGISTRY }}/helm/${CHART_NAME}"
+            if helm show chart "${CHART_REF}" --version "${CHART_VERSION}" > /dev/null 2>&1; then
+              echo "Chart ${CHART_NAME}:${CHART_VERSION} already exists, skipping"
+            else
+              helm push "./dist/${CHART_NAME}-${CHART_VERSION}.tgz" "oci://${{ env.REGISTRY }}/helm"
+              echo "Published ${CHART_NAME}:${CHART_VERSION}"
+            fi
+          done
+
+          # Publish umbrella chart (used by CI pipeline helm deploy)
           BASE_VERSION=$(grep '^version:' helm/expressjs-monorepo-template/Chart.yaml | awk '{print $2}')
           CHART_VERSION="${BASE_VERSION}-${{ inputs.short-sha }}"
           echo "CHART_VERSION=${CHART_VERSION}" >> "$GITHUB_ENV"
 
-          mkdir -p ./dist
           helm package helm/expressjs-monorepo-template --version "${CHART_VERSION}" -d ./dist
 
-      - name: Push chart to OCI registry
-        run: |
           CHART_REF="oci://${{ env.REGISTRY }}/helm/expressjs-monorepo-template"
-
           if helm show chart "${CHART_REF}" --version "${CHART_VERSION}" > /dev/null 2>&1; then
-            echo "Chart version ${CHART_VERSION} already exists, skipping push"
+            echo "Chart expressjs-monorepo-template:${CHART_VERSION} already exists, skipping"
           else
-            helm push "./dist/expressjs-monorepo-template-${CHART_VERSION}.tgz" \
-              "oci://${{ env.REGISTRY }}/helm"
+            helm push "./dist/expressjs-monorepo-template-${CHART_VERSION}.tgz" "oci://${{ env.REGISTRY }}/helm"
+            echo "Published expressjs-monorepo-template:${CHART_VERSION}"
           fi
 
       - name: Output publish summary
         run: |
           echo "### Helm Chart Publish Summary :package:" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Chart:** \`expressjs-monorepo-template\`" >> $GITHUB_STEP_SUMMARY
-          echo "**Version:** \`${CHART_VERSION}\`" >> $GITHUB_STEP_SUMMARY
-          echo "**Registry:** \`oci://${{ env.REGISTRY }}/helm\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Charts published to** \`oci://${{ env.REGISTRY }}/helm\` **version** \`${CHART_VERSION}\`:" >> $GITHUB_STEP_SUMMARY
+          for chart_dir in apps/*/helm; do
+            CHART_NAME=$(grep '^name:' "${chart_dir}/Chart.yaml" | awk '{print $2}')
+            echo "- \`${CHART_NAME}\`" >> $GITHUB_STEP_SUMMARY
+          done
+          echo "- \`expressjs-monorepo-template\` (umbrella)" >> $GITHUB_STEP_SUMMARY

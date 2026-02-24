@@ -72,9 +72,11 @@ jobs:
       - name: Promote image to prod and latest
         run: |
           SOURCE_TAG="staging-${{ inputs.short-sha }}"
-          PROD_TAG="prod-${{ inputs.short-sha }}"
+          TIMESTAMP=$(date +%Y%m%d%H%M%S)
+          PROD_TAG="prod-${{ inputs.short-sha }}-${TIMESTAMP}"
           IMAGE="${{ env.REGISTRY }}/${{ steps.metadata.outputs.registry-prefix }}"
 
+          echo "PROD_TAG=${PROD_TAG}" >> "$GITHUB_ENV"
           echo "Promoting ${IMAGE}:${SOURCE_TAG} to ${PROD_TAG} and latest"
 
           docker pull "${IMAGE}:${SOURCE_TAG}"
@@ -90,4 +92,4 @@ jobs:
           echo "**App:** \`${{ matrix.app }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Image:** \`${{ env.REGISTRY }}/${{ steps.metadata.outputs.registry-prefix }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Source Tag:** \`staging-${{ inputs.short-sha }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "**Target Tags:** \`prod-${{ inputs.short-sha }}\`, \`latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Target Tags:** \`${PROD_TAG}\`, \`latest\`" >> $GITHUB_STEP_SUMMARY
