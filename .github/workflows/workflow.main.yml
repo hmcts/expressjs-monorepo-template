@@ -14,14 +14,14 @@ jobs:
     name: Detect Code Changes
     uses: ./.github/workflows/job.detect-changes.yml
     with:
-      paths: "^(yarn\\.lock|apps/|libs/|helm/)"
+      paths: "^(yarn\\.lock|apps/|libs/|helm/|\\.github/workflows/)"
       cache-key: code
 
   detect-infra-changes:
     name: Detect Infrastructure Changes
     uses: ./.github/workflows/job.detect-changes.yml
     with:
-      paths: "^infrastructure/"
+      paths: "^(infrastructure/|\\.github/workflows/)"
       cache-key: infra
 
   build-stage:
@@ -91,7 +91,7 @@ jobs:
     secrets: inherit
 
   promote-stage:
-    name: Promote Images
+    name: Promote
     needs: [e2e-stage, build-stage]
     if: always() && needs.e2e-stage.result == 'success'
     uses: ./.github/workflows/stage.promote-images.yml

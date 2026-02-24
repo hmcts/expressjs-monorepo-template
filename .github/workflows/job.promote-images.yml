@@ -21,7 +21,7 @@ env:
 
 jobs:
   promote:
-    name: Promote ${{ matrix.app }} to latest
+    name: Promote ${{ matrix.app }} to prod
     runs-on: ubuntu-latest
     if: fromJson(inputs.affected-apps)[0] != null
     strategy:
@@ -69,24 +69,19 @@ jobs:
           username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
-      - name: Promote image to latest
+      - name: Promote image to prod and latest
         run: |
           SOURCE_TAG="staging-${{ inputs.short-sha }}"
-          TARGET_TAG="latest"
+          PROD_TAG="prod-${{ inputs.short-sha }}"
           IMAGE="${{ env.REGISTRY }}/${{ steps.metadata.outputs.registry-prefix }}"
 
-          echo "Promoting ${IMAGE}:${SOURCE_TAG} to ${IMAGE}:${TARGET_TAG}"
+          echo "Promoting ${IMAGE}:${SOURCE_TAG} to ${PROD_TAG} and latest"
 
-          # Pull the source image
           docker pull "${IMAGE}:${SOURCE_TAG}"
-
-          # Tag as latest
-          docker tag "${IMAGE}:${SOURCE_TAG}" "${IMAGE}:${TARGET_TAG}"
-
-          # Push latest
-          docker push "${IMAGE}:${TARGET_TAG}"
-
-          echo "Successfully promoted to latest"
+          docker tag "${IMAGE}:${SOURCE_TAG}" "${IMAGE}:${PROD_TAG}"
+          docker tag "${IMAGE}:${SOURCE_TAG}" "${IMAGE}:latest"
+          docker push "${IMAGE}:${PROD_TAG}"
+          docker push "${IMAGE}:latest"
 
       - name: Output promotion summary
         run: |
@@ -95,4 +90,4 @@ jobs:
           echo "**App:** \`${{ matrix.app }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Image:** \`${{ env.REGISTRY }}/${{ steps.metadata.outputs.registry-prefix }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Source Tag:** \`staging-${{ inputs.short-sha }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "**Target Tag:** \`latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Target Tags:** \`prod-${{ inputs.short-sha }}\`, \`latest\`" >> $GITHUB_STEP_SUMMARY
