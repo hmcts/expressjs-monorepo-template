@@ -63,7 +63,7 @@ jobs:
     uses: ./.github/workflows/stage.smoke-test.yml
     with:
       change-id: ${{ github.event.pull_request.number }}
-      preview-urls: ${{ needs.deploy-stage.outputs.urls }}
+      urls: ${{ needs.deploy-stage.outputs.urls }}
       is-pr: true
 
   e2e-stage:
@@ -72,7 +72,7 @@ jobs:
     if: always() && needs.deploy-stage.result == 'success' && needs.smoke-test-stage.result == 'success'
     uses: ./.github/workflows/stage.e2e.yml
     with:
-      preview-urls: ${{ needs.deploy-stage.outputs.urls }}
+      urls: ${{ needs.deploy-stage.outputs.urls }}
     secrets: inherit
 
   # Save successful SHAs for future change detection comparisons within this PR

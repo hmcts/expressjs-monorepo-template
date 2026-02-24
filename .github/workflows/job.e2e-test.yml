@@ -3,10 +3,10 @@ name: E2E Test Job
 on:
   workflow_call:
     inputs:
-      preview-urls:
+      urls:
         required: true
         type: string
-        description: "Base64-encoded JSON of preview URLs"
+        description: "Base64-encoded JSON of deployment URLs"
       runner-group:
         required: false
         type: string
@@ -43,22 +43,22 @@ jobs:
       - name: Install Playwright browsers
         run: yarn workspace e2e-tests playwright install --with-deps chromium
 
-      - name: Set preview URLs from deployment
+      - name: Set deployment URLs
         run: |
-          # Decode base64-encoded URLs from deploy-preview job
-          URLS_B64="${{ inputs.preview-urls }}"
+          # Decode base64-encoded URLs from deploy job
+          URLS_B64="${{ inputs.urls }}"
           URLS_JSON=$(echo -n "${URLS_B64}" | base64 -d 2>/dev/null) || {
-            echo "::error::Failed to decode base64-encoded preview URLs"
-            exit 1
-          }
-          
-          # Validate JSON structure
-          echo "${URLS_JSON}" | jq . > /dev/null 2>&1 || {
-            echo "::error::Invalid JSON in decoded preview URLs"
+            echo "::error::Failed to decode base64-encoded deployment URLs"
             exit 1
           }
 
-          echo "Preview URLs JSON: ${URLS_JSON}"
+          # Validate JSON structure
+          echo "${URLS_JSON}" | jq . > /dev/null 2>&1 || {
+            echo "::error::Invalid JSON in decoded deployment URLs"
+            exit 1
+          }
+
+          echo "Deployment URLs JSON: ${URLS_JSON}"
 
           # Extract URLs using jq and set as environment variables
           WEB_URL=$(echo "${URLS_JSON}" | jq -r '.web // empty')
@@ -68,7 +68,7 @@ jobs:
             echo "EXPRESSJS_MONOREPO_TEMPLATE_WEB_URL=${WEB_URL}" >> $GITHUB_ENV
             echo "Web URL: ${WEB_URL}"
           else
-            echo "::error::No web URL found in preview deployment"
+            echo "::error::No web URL found in deployment"
             exit 1
           fi
 
@@ -77,7 +77,7 @@ jobs:
             echo "API URL: ${API_URL}"
           fi
 
-      - name: Run E2E tests against preview
+      - name: Run E2E tests
         id: e2e-tests
         run: |
           # Capture all output including server logs
@@ -90,7 +90,7 @@ jobs:
         uses: dorny/test-reporter@v2
         if: always()
         with:
-          name: E2E Test Results (Preview)
+          name: E2E Test Results
           path: e2e-tests/junit-results.xml
           reporter: java-junit
           fail-on-error: false
@@ -100,7 +100,7 @@ jobs:
         uses: actions/upload-artifact@v6
         if: always() && steps.e2e-tests.outcome == 'failure'
         with:
-          name: playwright-test-results-preview
+          name: playwright-test-results
           path: |
             e2e-tests/test-results/
             e2e-tests/playwright-report/
@@ -111,7 +111,7 @@ jobs:
         uses: actions/upload-artifact@v6
         if: always() && steps.e2e-tests.outcome == 'failure'
         with:
-          name: application-logs-preview
+          name: application-logs
           path: e2e-server-logs.txt
           retention-days: 7
 
@@ -121,6 +121,6 @@ jobs:
         if: always() && github.event_name == 'pull_request'
         with:
           files: e2e-tests/junit-results.xml
-          check_name: E2E Test Results (Preview)
-          comment_title: 🎭 Playwright E2E Test Results (Preview Environment)
+          check_name: E2E Test Results
+          comment_title: 🎭 Playwright E2E Test Results
           fail_on: nothing

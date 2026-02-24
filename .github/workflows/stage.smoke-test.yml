@@ -7,10 +7,10 @@ on:
         required: true
         type: string
         description: "PR number or change identifier"
-      preview-urls:
+      urls:
         required: true
         type: string
-        description: "Base64-encoded JSON of preview URLs"
+        description: "Base64-encoded JSON of deployment URLs"
       is-pr:
         required: false
         type: boolean
@@ -29,11 +29,11 @@ jobs:
     uses: ./.github/workflows/job.pr-comment.yml
     with:
       change-id: ${{ inputs.change-id }}
-      preview-urls: ${{ inputs.preview-urls }}
+      urls: ${{ inputs.urls }}
 
   smoke-test:
     name: Smoke Test
     uses: ./.github/workflows/job.smoke-test.yml
     with:
-      preview-urls: ${{ inputs.preview-urls }}
+      urls: ${{ inputs.urls }}
       runner-group: ${{ inputs.runner-group }}

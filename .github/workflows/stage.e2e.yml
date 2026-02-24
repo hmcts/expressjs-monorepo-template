@@ -3,10 +3,10 @@ name: E2E Stage
 on:
   workflow_call:
     inputs:
-      preview-urls:
+      urls:
         required: true
         type: string
-        description: "Base64-encoded JSON of preview URLs"
+        description: "Base64-encoded JSON of deployment URLs"
       runner-group:
         required: false
         type: string
@@ -18,6 +18,6 @@ jobs:
     name: E2E Tests
     uses: ./.github/workflows/job.e2e-test.yml
     with:
-      preview-urls: ${{ inputs.preview-urls }}
+      urls: ${{ inputs.urls }}
       runner-group: ${{ inputs.runner-group }}
     secrets: inherit

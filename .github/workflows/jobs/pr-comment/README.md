@@ -9,7 +9,7 @@ Adds a comment to the pull request with preview environment URLs and adds cleanu
 | Type | Name | Required | Description |
 |------|------|----------|-------------|
 | `string` | `change-id` | Yes | PR number or change identifier |
-| `string` | `preview-urls` | Yes | Base64-encoded JSON of preview URLs |
+| `string` | `urls` | Yes | Base64-encoded JSON of deployment URLs |
 
 ## Artifacts
 

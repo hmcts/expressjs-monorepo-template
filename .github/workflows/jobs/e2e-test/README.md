@@ -8,14 +8,14 @@ Runs Playwright end-to-end tests against the deployed preview environment. Tests
 
 | Type | Name | Required | Description |
 |------|------|----------|-------------|
-| `string` | `preview-urls` | Yes | Base64-encoded JSON of preview URLs |
+| `string` | `urls` | Yes | Base64-encoded JSON of deployment URLs |
 
 ## Artifacts
 
 | Direction | Name | Description |
 |-----------|------|-------------|
-| Produced | `playwright-test-results-preview` | Test screenshots and traces (on failure only) |
-| Produced | `application-logs-preview` | Server logs captured during test run (on failure only) |
+| Produced | `playwright-test-results` | Test screenshots and traces (on failure only) |
+| Produced | `application-logs` | Server logs captured during test run (on failure only) |
 
 ## Environment Variables
 

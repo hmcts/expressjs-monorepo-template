@@ -7,10 +7,10 @@ on:
         required: true
         type: string
         description: "PR number or change identifier"
-      preview-urls:
+      urls:
         required: true
         type: string
-        description: "Base64-encoded JSON of preview URLs"
+        description: "Base64-encoded JSON of deployment URLs"
 
 env:
   CHANGE_ID: ${{ inputs.change-id }}
@@ -67,15 +67,15 @@ jobs:
         with:
           script: |
             // Decode base64-encoded URLs
-            const urlsB64 = '${{ inputs.preview-urls }}';
+            const urlsB64 = '${{ inputs.urls }}';
             let urls = {};
             try {
               const urlsJson = Buffer.from(urlsB64, 'base64').toString('utf-8');
               urls = JSON.parse(urlsJson);
-              console.log('Parsed preview URLs:', urls);
+              console.log('Parsed deployment URLs:', urls);
             } catch (error) {
-              console.error('Failed to decode or parse preview URLs:', error.message);
-              console.log('Using empty URL map; preview URLs will show as not found');
+              console.error('Failed to decode or parse deployment URLs:', error.message);
+              console.log('Using empty URL map; deployment URLs will show as not found');
             }
 
             // Build URL list dynamically from ingress resources

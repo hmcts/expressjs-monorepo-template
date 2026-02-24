@@ -8,7 +8,7 @@ Performs basic health checks on deployed preview environment services to verify 
 
 | Type | Name | Required | Description |
 |------|------|----------|-------------|
-| `string` | `preview-urls` | Yes | Base64-encoded JSON of preview URLs |
+| `string` | `urls` | Yes | Base64-encoded JSON of deployment URLs |
 
 ## Artifacts
 
