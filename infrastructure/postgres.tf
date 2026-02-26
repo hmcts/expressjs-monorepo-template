@@ -51,8 +51,8 @@ resource "azurerm_key_vault_secret" "postgres_port" {
   key_vault_id = data.azurerm_key_vault.key_vault.id
 }
 
-resource "azurerm_key_vault_secret" "db_url" {
-  name         = "db-url"
+resource "azurerm_key_vault_secret" "postgres_url" {
+  name         = "postgres-url"
   value        = "postgresql://${module.postgresql.username}:${module.postgresql.password}@${module.postgresql.fqdn}:5432/expressjs-monorepo-template?sslmode=require"
   key_vault_id = data.azurerm_key_vault.key_vault.id
 }

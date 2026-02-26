@@ -40,6 +40,13 @@ expressjs-monorepo-template-api:
   nodejs:
     image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-api:${API_IMAGE}"
     ingressHost: "${TEAM_NAME}-{{ .Release.Name }}-api.preview.platform.hmcts.net"
+    keyVaults:
+      dtsse:
+        secrets:
+          - name: ExpressJsAppInsightsConnectionString
+            alias: APPLICATION_INSIGHTS_CONNECTION_STRING
+          - name: db-url
+            alias: DATABASE_URL
 
 # Crons application configuration
 expressjs-monorepo-template-crons:
@@ -48,6 +55,13 @@ expressjs-monorepo-template-crons:
     schedule: "*/5 * * * *"  # Every 5 minutes
     suspend: false
     kind: CronJob
+    keyVaults:
+      dtsse:
+        secrets:
+          - name: ExpressJsAppInsightsConnectionString
+            alias: APPLICATION_INSIGHTS_CONNECTION_STRING
+          - name: db-url
+            alias: DATABASE_URL
 
 # Postgres Prisma Studio service configuration
 expressjs-monorepo-template-postgres:

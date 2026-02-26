@@ -14,7 +14,7 @@ job:
       secrets:
         - name: ExpressJsAppInsightsConnectionString
           alias: APPLICATION_INSIGHTS_CONNECTION_STRING
-        - name: db-url
+        - name: postgres-url
           alias: DATABASE_URL
   schedule: "0 0/10 * * *" # this is just a placeholder, configure in your flux
   concurrencyPolicy: Forbid

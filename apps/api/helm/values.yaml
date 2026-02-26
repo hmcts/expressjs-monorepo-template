@@ -11,5 +11,5 @@ nodejs:
       secrets:
         - name: ExpressJsAppInsightsConnectionString
           alias: APPLICATION_INSIGHTS_CONNECTION_STRING
-        - name: db-url
+        - name: postgres-url
           alias: DATABASE_URL
