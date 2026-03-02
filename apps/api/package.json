@@ -19,7 +19,7 @@
     "@hmcts/postgres-prisma": "workspace:*",
     "@hmcts/simple-router": "workspace:*",
     "compression": "1.8.1",
-    "config": "4.4.0",
+    "config": "4.4.1",
     "cors": "2.8.6",
     "express": "5.2.1"
   },
