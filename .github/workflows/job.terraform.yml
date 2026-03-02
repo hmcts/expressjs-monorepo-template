@@ -3,17 +3,27 @@
 # Runs Terraform plan and optionally apply for infrastructure changes.
 # This is a thin wrapper around the cnp-githubactions-library terraform-deploy workflow.
 #
-# Usage:
+# Usage (CFT):
 #   terraform:
-#     needs: [detect-infra-changes]
-#     if: needs.detect-infra-changes.outputs.has-changes == 'true'
 #     uses: ./.github/workflows/job.terraform.yml
 #     with:
 #       environment: aat
 #       subscription: DCD-CNP-DEV
 #       aks-subscription: DCD-CFTAPPS-STG
 #       storage-account: nonprod
-#       plan-only: true
+#     secrets: inherit
+#
+# Usage (SDS - override state store names):
+#   terraform:
+#     uses: ./.github/workflows/job.terraform.yml
+#     with:
+#       environment: stg
+#       subscription: DTS-SHAREDSERVICES-STG
+#       aks-subscription: DTS-SHAREDSERVICES-STG
+#       storage-account: nonprod
+#       state-store-resource-group: jenkins-state
+#       state-store-account-name: sdsstatenonprod
+#       state-store-container-name: tfstate-stg
 #     secrets: inherit
 
 name: Terraform
@@ -46,6 +56,21 @@ on:
         required: false
         type: string
         default: "infrastructure"
+      state-store-resource-group:
+        required: false
+        type: string
+        default: ""
+        description: "Override resource group name for Terraform state (default: mgmt-state-store-{storage-account})"
+      state-store-account-name:
+        required: false
+        type: string
+        default: ""
+        description: "Override storage account name for Terraform state (default: mgmtstatestore{storage-account})"
+      state-store-container-name:
+        required: false
+        type: string
+        default: ""
+        description: "Override container name for Terraform state (default: mgmtstatestorecontainer{environment})"
     outputs:
       plan-exitcode:
         description: "Terraform plan exit code (0=no changes, 2=changes)"
@@ -60,6 +85,9 @@ jobs:
       subscription: ${{ inputs.subscription }}
       aks-subscription: ${{ inputs.aks-subscription }}
       storage-account: ${{ inputs.storage-account }}
+      state-store-resource-group: ${{ inputs.state-store-resource-group }}
+      state-store-account-name: ${{ inputs.state-store-account-name }}
+      state-store-container-name: ${{ inputs.state-store-container-name }}
       working-directory: ${{ inputs.working-directory }}
       plan-only: ${{ inputs.plan-only }}
       helm-chart-path: helm/expressjs-monorepo-template/Chart.yaml
