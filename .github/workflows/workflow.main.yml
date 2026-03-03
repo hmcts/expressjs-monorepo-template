@@ -82,8 +82,7 @@ jobs:
   cleanup-stage:
     name: Cleanup
     needs: [e2e-stage, deploy-stage]
-    # Temporarily disabled while looking at AAT connectivity issues
-    if: false # always() && needs.deploy-stage.result == 'success'
+    if: always() && needs.deploy-stage.result == 'success'
     uses: ./.github/workflows/stage.cleanup.yml
     with:
       release-name: ${{ needs.deploy-stage.outputs.release-name }}
