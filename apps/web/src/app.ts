@@ -37,6 +37,9 @@ export async function createApp(): Promise<Express> {
   app.use(monitoringMiddleware(config.get("applicationInsights")));
   app.use(configureNonce());
   app.use(configureHelmet());
+  // Serve static assets before session middleware so they don't trigger Redis round-trips
+  // or set session cookies, allowing Front Door to cache them correctly
+  app.use("/assets", express.static(path.join(__dirname, "../dist/assets"), { maxAge: "1y" }));
   app.use(expressSessionRedis({ redisConnection }));
   app.use(
     healthcheck({
