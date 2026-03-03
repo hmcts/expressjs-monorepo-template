@@ -38,8 +38,18 @@ export async function createApp(): Promise<Express> {
   app.use(configureNonce());
   app.use(configureHelmet());
   // Serve static assets before session middleware so they don't trigger Redis round-trips
-  // or set session cookies on asset responses
-  app.use("/assets", express.static(path.join(__dirname, "../dist/assets")));
+  // or set session cookies on asset responses.
+  // Remove Content-Length so Azure Front Door can apply Brotli compression without a
+  // Content-Length mismatch — the WAF strips Accept-Encoding before reaching Express,
+  // so compression() never fires to clear it, causing ERR_HTTP2_PROTOCOL_ERROR.
+  app.use(
+    "/assets",
+    express.static(path.join(__dirname, "../dist/assets"), {
+      setHeaders: (res) => {
+        res.removeHeader("Content-Length");
+      }
+    })
+  );
   app.use(expressSessionRedis({ redisConnection }));
   app.use(
     healthcheck({
