@@ -4527,10 +4527,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"hono@npm:4.12.5":
-  version: 4.12.5
-  resolution: "hono@npm:4.12.5"
-  checksum: 10c0/a8cf0c988e84b370978b57d941fc543b93994b7b01c847611ec73be8e8c9fda5baeac8be08a44eaefdf215381fea2620ccb742ff5c4eaeecb35b92f6a75832c6
+"hono@npm:4.11.4":
+  version: 4.11.4
+  resolution: "hono@npm:4.11.4"
+  checksum: 10c0/19b5ebf28f89ad8e8d9fc465e9e9073026a344e15e841b5b251831b0ae3843e50c29328c95e69a0d7e2681c5b35e475445f4faf59d3d51c6c32a834a0211099a
   languageName: node
   linkType: hard
 
@@ -6543,7 +6543,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tar@npm:7.5.9":
+"tar@npm:^7.4.3":
   version: 7.5.9
   resolution: "tar@npm:7.5.9"
   dependencies:
