@@ -63,7 +63,7 @@ jobs:
           echo "Registry prefix: ${registry_prefix}"
 
       - name: Login to ACR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ secrets.REGISTRY_USERNAME }}
