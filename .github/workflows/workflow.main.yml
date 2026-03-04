@@ -82,7 +82,7 @@ jobs:
   cleanup-stage:
     name: Cleanup
     needs: [e2e-stage, deploy-stage]
-    if: always() && needs.deploy-stage.result == 'success'
+    if: always() && needs.e2e-stage.result == 'success'
     uses: ./.github/workflows/stage.cleanup.yml
     with:
       release-name: ${{ needs.deploy-stage.outputs.release-name }}
