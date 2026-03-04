@@ -31,7 +31,7 @@
     "connect-redis": "^9.0.0",
     "express": "^5.1.0",
     "express-session": "^1.18.2",
-    "govuk-frontend": "^5.2.0",
+    "govuk-frontend": "^5.2.0 || ^6.0.0",
     "helmet": "^8.0.0",
     "nunjucks": "^3.2.4",
     "sass": "^1.90.0",
