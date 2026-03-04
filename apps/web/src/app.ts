@@ -13,7 +13,6 @@ import {
 import { pageRoutes as footerPages } from "@hmcts/footer-pages/config";
 import { pageRoutes as onboardingPages } from "@hmcts/onboarding/config";
 import { createSimpleRouter } from "@hmcts/simple-router";
-import compression from "compression";
 import cookieParser from "cookie-parser";
 import type { Express } from "express";
 import express from "express";
@@ -31,17 +30,11 @@ export async function createApp(): Promise<Express> {
   const app = express();
 
   app.set("trust proxy", 1);
-  app.use(compression());
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
   app.use(monitoringMiddleware(config.get("applicationInsights")));
   app.use(configureNonce());
   app.use(configureHelmet());
-  // Serve static assets before session middleware so they don't trigger Redis round-trips
-  // or set session cookies on asset responses.
-  // Remove Content-Length so Azure Front Door can apply Brotli compression without a
-  // Content-Length mismatch — the WAF strips Accept-Encoding before reaching Express,
-  // so compression() never fires to clear it, causing ERR_HTTP2_PROTOCOL_ERROR.
   app.use(
     "/assets",
     express.static(path.join(__dirname, "../dist/assets"), {

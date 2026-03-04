@@ -26,7 +26,6 @@
     "@hmcts/onboarding": "workspace:*",
     "@hmcts/postgres-prisma": "workspace:*",
     "@hmcts/simple-router": "workspace:*",
-    "compression": "1.8.1",
     "config": "4.4.1",
     "connect-redis": "9.0.0",
     "cookie-parser": "1.4.7",
@@ -39,7 +38,6 @@
     "redis": "5.11.0"
   },
   "devDependencies": {
-    "@types/compression": "1.8.1",
     "@types/config": "3.3.5",
     "@types/cookie-parser": "1.4.10",
     "@types/express": "5.0.6",
