@@ -86,7 +86,7 @@ jobs:
         run: yarn db:generate
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: arn:aws:iam::313941174580:role/HMCTSClaudeGitHubActionsRole
           aws-region: eu-west-1
@@ -185,7 +185,7 @@ jobs:
 
       - name: Configure AWS credentials
         if: steps.parse.outputs.valid == 'true'
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: arn:aws:iam::313941174580:role/HMCTSClaudeGitHubActionsRole
           aws-region: eu-west-1
@@ -299,7 +299,7 @@ jobs:
         run: yarn db:generate
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: arn:aws:iam::313941174580:role/HMCTSClaudeGitHubActionsRole
           aws-region: eu-west-1
@@ -393,7 +393,7 @@ jobs:
         run: yarn db:generate
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: arn:aws:iam::313941174580:role/HMCTSClaudeGitHubActionsRole
           aws-region: eu-west-1
@@ -493,7 +493,7 @@ jobs:
           fetch-depth: 1
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: arn:aws:iam::313941174580:role/HMCTSClaudeGitHubActionsRole
           aws-region: eu-west-1
