@@ -173,7 +173,7 @@ keyVaults:
     secrets:
       - name: AppInsightsConnectionString
         alias: APPLICATION_INSIGHTS_CONNECTION_STRING
-      - name: db-url
+      - name: postgres-url
         alias: DATABASE_URL
 ```
 
@@ -182,7 +182,7 @@ keyVaults:
 | Secret | Description |
 |--------|-------------|
 | `AppInsightsConnectionString` | Application Insights telemetry |
-| `db-url` | PostgreSQL connection string |
+| `postres-url` | PostgreSQL connection string of Terraform DB |
 
 ### Adding New Secrets
 

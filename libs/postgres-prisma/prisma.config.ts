@@ -9,6 +9,8 @@ if (process.env.POSTGRES_HOST && process.env.POSTGRES_USER && process.env.POSTGR
 // Default to local PostgreSQL if DATABASE_URL is not set
 process.env.DATABASE_URL ??= "postgresql://hmcts@localhost:5432/postgres";
 
+console.log(`DATABASE_URL: ${process.env.DATABASE_URL}`);
+
 export default defineConfig({
   schema: path.join("dist", "schema.prisma"),
   datasource: {
