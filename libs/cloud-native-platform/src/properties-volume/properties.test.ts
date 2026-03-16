@@ -357,14 +357,13 @@ describe("getPropertiesVolumeSecrets", () => {
   });
 
   describe("omit parameter", () => {
-    it("should omit direct file by exact name", async () => {
+    it("should not omit direct files from properties volume even when omit is specified", async () => {
       mockExistsSync.mockReturnValue(true);
       mockReaddirSync.mockReturnValueOnce([
         { name: "keep-this", isDirectory: () => false, isFile: () => true },
         { name: "omit-this", isDirectory: () => false, isFile: () => true }
       ] as any);
-      // Only keep-this is read since omit-this is omitted
-      mockReadFileSync.mockReturnValueOnce("keep-value");
+      mockReadFileSync.mockReturnValueOnce("keep-value").mockReturnValueOnce("omit-value");
 
       const secrets = await getPropertiesVolumeSecrets({
         injectEnvVars: false,
@@ -372,19 +371,19 @@ describe("getPropertiesVolumeSecrets", () => {
       });
 
       expect(secrets).toEqual({
-        "keep-this": "keep-value"
+        "keep-this": "keep-value",
+        "omit-this": "omit-value"
       });
     });
 
-    it("should omit vault secret by full key", async () => {
+    it("should not omit vault secrets from properties volume even when omit is specified", async () => {
       mockExistsSync.mockReturnValue(true);
       mockReaddirSync.mockReturnValueOnce([{ name: "vault", isDirectory: () => true, isFile: () => false }] as any);
       mockReaddirSync.mockReturnValueOnce([
         { name: "SECRET1", isFile: () => true },
         { name: "SECRET2", isFile: () => true }
       ] as any);
-      // Only SECRET2 is read since SECRET1 is omitted
-      mockReadFileSync.mockReturnValueOnce("value2");
+      mockReadFileSync.mockReturnValueOnce("value1").mockReturnValueOnce("value2");
 
       const secrets = await getPropertiesVolumeSecrets({
         injectEnvVars: false,
@@ -392,19 +391,19 @@ describe("getPropertiesVolumeSecrets", () => {
       });
 
       expect(secrets).toEqual({
+        "vault.SECRET1": "value1",
         "vault.SECRET2": "value2"
       });
     });
 
-    it("should omit vault secret by last segment", async () => {
+    it("should not omit secrets by last segment from properties volume", async () => {
       mockExistsSync.mockReturnValue(true);
       mockReaddirSync.mockReturnValueOnce([{ name: "vault", isDirectory: () => true, isFile: () => false }] as any);
       mockReaddirSync.mockReturnValueOnce([
         { name: "DATABASE_URL", isFile: () => true },
         { name: "API_KEY", isFile: () => true }
       ] as any);
-      // Only API_KEY is read since DATABASE_URL is omitted
-      mockReadFileSync.mockReturnValueOnce("api-value");
+      mockReadFileSync.mockReturnValueOnce("db-value").mockReturnValueOnce("api-value");
 
       const secrets = await getPropertiesVolumeSecrets({
         injectEnvVars: false,
@@ -412,11 +411,12 @@ describe("getPropertiesVolumeSecrets", () => {
       });
 
       expect(secrets).toEqual({
+        "vault.DATABASE_URL": "db-value",
         "vault.API_KEY": "api-value"
       });
     });
 
-    it("should omit multiple secrets", async () => {
+    it("should not omit multiple secrets from properties volume", async () => {
       mockExistsSync.mockReturnValue(true);
       mockReaddirSync.mockReturnValueOnce([{ name: "vault", isDirectory: () => true, isFile: () => false }] as any);
       mockReaddirSync.mockReturnValueOnce([
@@ -424,8 +424,7 @@ describe("getPropertiesVolumeSecrets", () => {
         { name: "SECRET2", isFile: () => true },
         { name: "SECRET3", isFile: () => true }
       ] as any);
-      // Only SECRET2 is read since SECRET1 and SECRET3 are omitted
-      mockReadFileSync.mockReturnValueOnce("value2");
+      mockReadFileSync.mockReturnValueOnce("value1").mockReturnValueOnce("value2").mockReturnValueOnce("value3");
 
       const secrets = await getPropertiesVolumeSecrets({
         injectEnvVars: false,
@@ -433,7 +432,9 @@ describe("getPropertiesVolumeSecrets", () => {
       });
 
       expect(secrets).toEqual({
-        "vault.SECRET2": "value2"
+        "vault.SECRET1": "value1",
+        "vault.SECRET2": "value2",
+        "vault.SECRET3": "value3"
       });
     });
 

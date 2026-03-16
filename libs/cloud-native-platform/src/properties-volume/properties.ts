@@ -34,12 +34,10 @@ export async function getPropertiesVolumeSecrets(options: GetSecretsOptions = {}
 
     try {
       if (entry.isDirectory()) {
-        readSecretsFromDirectory(path, entry.name, injectEnvVars, secrets, failOnError, omit);
+        readSecretsFromDirectory(path, entry.name, injectEnvVars, secrets, failOnError);
       } else if (entry.isFile() || entry.isSymbolicLink?.()) {
-        if (!shouldOmit(entry.name, omit)) {
-          const content = readSecretFile(path);
-          processSecret(entry.name, content, injectEnvVars, secrets);
-        }
+        const content = readSecretFile(path);
+        processSecret(entry.name, content, injectEnvVars, secrets);
       }
     } catch (error) {
       if (failOnError) throw new Error(`Failed to load secrets from ${mountPoint}: ${error}`);
@@ -66,13 +64,12 @@ async function loadFromAzureVault(chartPath: string, injectEnvVars: boolean, omi
   return secrets;
 }
 
-function readSecretsFromDirectory(dirPath: string, vaultName: string, injectEnvVars: boolean, secrets: Secrets, failOnError: boolean, omit: string[]): void {
+function readSecretsFromDirectory(dirPath: string, vaultName: string, injectEnvVars: boolean, secrets: Secrets, failOnError: boolean): void {
   // Filter for files and symlinks, but exclude CSI driver internal entries (start with ..)
   const files = readdirSync(dirPath, { withFileTypes: true }).filter((f) => !f.name.startsWith("..") && (f.isFile() || f.isSymbolicLink?.()));
 
   for (const file of files) {
     const secretKey = `${vaultName}.${file.name}`;
-    if (shouldOmit(secretKey, omit)) continue;
 
     try {
       const content = readSecretFile(join(dirPath, file.name));
