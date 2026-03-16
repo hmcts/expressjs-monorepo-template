@@ -18,6 +18,11 @@ expressjs-monorepo-template-web:
   nodejs:
     image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-web:${WEB_IMAGE}"
     ingressHost: "${TEAM_NAME}-{{ .Release.Name }}-web.${ENVIRONMENT}.platform.hmcts.net"
+    keyVaults:
+      dtsse:
+        secrets:
+          - name: redis-url
+            alias: REDIS_URL
 
 # API application configuration
 expressjs-monorepo-template-api:
