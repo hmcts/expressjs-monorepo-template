@@ -21,6 +21,7 @@ expressjs-monorepo-template-web:
     ingressHost: "${TEAM_NAME}-{{ .Release.Name }}-web.preview.platform.hmcts.net"
     environment:
       REDIS_URL: "redis://{{ .Release.Name }}-redis-master:6379"
+      POSTGRES_DATABASE: "{{ .Release.Name }}"
     secrets:
       POSTGRES_HOST:
         secretRef: postgres
@@ -40,13 +41,21 @@ expressjs-monorepo-template-api:
   nodejs:
     image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-api:${API_IMAGE}"
     ingressHost: "${TEAM_NAME}-{{ .Release.Name }}-api.preview.platform.hmcts.net"
-    keyVaults:
-      dtsse:
-        secrets:
-          - name: ExpressJsAppInsightsConnectionString
-            alias: APPLICATION_INSIGHTS_CONNECTION_STRING
-          - name: db-url
-            alias: DATABASE_URL
+    environment:
+      POSTGRES_DATABASE: "{{ .Release.Name }}"
+    secrets:
+      POSTGRES_HOST:
+        secretRef: postgres
+        key: HOST
+      POSTGRES_USER:
+        secretRef: postgres
+        key: USER
+      POSTGRES_PASSWORD:
+        secretRef: postgres
+        key: PASSWORD
+      POSTGRES_PORT:
+        secretRef: postgres
+        key: PORT
 
 # Crons application configuration
 expressjs-monorepo-template-crons:
@@ -55,19 +64,30 @@ expressjs-monorepo-template-crons:
     schedule: "*/5 * * * *"  # Every 5 minutes
     suspend: false
     kind: CronJob
-    keyVaults:
-      dtsse:
-        secrets:
-          - name: ExpressJsAppInsightsConnectionString
-            alias: APPLICATION_INSIGHTS_CONNECTION_STRING
-          - name: db-url
-            alias: DATABASE_URL
+    environment:
+      SCRIPT_NAME: 'example'
+      POSTGRES_DATABASE: "{{ .Release.Name }}"
+    secrets:
+      POSTGRES_HOST:
+        secretRef: postgres
+        key: HOST
+      POSTGRES_USER:
+        secretRef: postgres
+        key: USER
+      POSTGRES_PASSWORD:
+        secretRef: postgres
+        key: PASSWORD
+      POSTGRES_PORT:
+        secretRef: postgres
+        key: PORT
 
 # Postgres Prisma Studio service configuration
 expressjs-monorepo-template-postgres:
   nodejs:
     image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-postgres:${POSTGRES_IMAGE}"
     ingressHost: "${TEAM_NAME}-{{ .Release.Name }}-postgres.preview.platform.hmcts.net"
+    environment:
+      POSTGRES_DATABASE: "{{ .Release.Name }}"
     secrets:
       POSTGRES_HOST:
         secretRef: postgres
