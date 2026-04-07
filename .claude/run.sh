@@ -22,11 +22,12 @@ if [ ! -f "$ENV_FILE" ]; then
     cat > "$ENV_FILE" << EOF
 export CLAUDE_CODE_MAX_OUTPUT_TOKENS=4096
 export MAX_THINKING_TOKENS=1024
-export ANTHROPIC_MODEL='eu.anthropic.claude-sonnet-4-5-20250929-v1:0'
-export ANTHROPIC_SMALL_FAST_MODEL='eu.anthropic.claude-3-haiku-20240307-v1:0'
+export ANTHROPIC_DEFAULT_OPUS_MODEL='eu.anthropic.claude-opus-4-6-v1'
+export ANTHROPIC_DEFAULT_SONNET_MODEL='eu.anthropic.claude-sonnet-4-6'
+export ANTHROPIC_DEFAULT_HAIKU_MODEL='eu.anthropic.claude-haiku-4-5-20251001-v1:0'
 export CLAUDE_CODE_USE_BEDROCK=1
-export AWS_BEARER_TOKEN_BEDROCK=$BEDROCK_TOKEN
 export AWS_REGION=eu-west-1
+export AWS_BEARER_TOKEN_BEDROCK=$BEDROCK_TOKEN
 EOF
 
     echo "Environment file created at $ENV_FILE"
