@@ -28,7 +28,7 @@ jobs:
       - name: Get PR information
         id: get-pr
         if: github.event.issue.pull_request || github.event.pull_request
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const pr = await github.rest.pulls.get({
@@ -171,7 +171,7 @@ jobs:
 
       - name: Post error if template not found
         if: steps.parse.outputs.valid == 'false'
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const fs = require('fs');
