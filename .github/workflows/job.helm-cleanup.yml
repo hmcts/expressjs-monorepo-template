@@ -27,7 +27,7 @@ jobs:
           creds: ${{ secrets.AZURE_CREDENTIALS_CFT_AAT }}
 
       - name: Get AKS Credentials
-        uses: azure/aks-set-context@v4
+        uses: azure/aks-set-context@v5
         with:
           resource-group: cft-aat-00-rg
           cluster-name: cft-aat-00-aks
