@@ -57,7 +57,7 @@ Claude must follow these instructions strictly when contributing code. Rules and
 
 ## Rules
 
-- **TypeScript**: Strict mode enabled, no `any` types without justification
+- **TypeScript**: Strict mode enabled, no `any` types
 - **Formatting**: Use Biome (`yarn format` before commits)
 - **Linting**: Fix all Biome warnings (`yarn lint` or `yarn lint:fix`)
 - **Module System**: Use ES modules exclusively - `"type": "module"` is set in package.json
