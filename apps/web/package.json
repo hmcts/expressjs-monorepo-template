@@ -41,7 +41,7 @@
     "@types/config": "3.3.5",
     "@types/cookie-parser": "1.4.10",
     "@types/express": "5.0.6",
-    "@types/express-session": "1.18.2",
+    "@types/express-session": "1.19.0",
     "@types/govuk-frontend": "5.11.0",
     "@types/nunjucks": "3.2.6",
     "nodemon": "3.1.14",
