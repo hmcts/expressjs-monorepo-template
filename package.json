@@ -42,7 +42,7 @@
   "description": "",
   "devDependencies": {
     "@biomejs/biome": "2.4.12",
-    "@types/node": "24.12.0",
+    "@types/node": "24.12.2",
     "@types/supertest": "7.2.0",
     "@vitest/coverage-v8": "4.1.5",
     "@vitest/ui": "4.1.5",
