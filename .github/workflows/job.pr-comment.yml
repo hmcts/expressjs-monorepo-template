@@ -38,7 +38,7 @@ jobs:
           echo "APPLICATION_NAME=${APPLICATION_NAME}" >> $GITHUB_ENV
 
       - name: Add PR labels for cleanup
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             const teamName = '${{ env.TEAM_NAME }}';
@@ -63,7 +63,7 @@ jobs:
             }
 
       - name: Comment preview URLs
-        uses: actions/github-script@v8
+        uses: actions/github-script@v9
         with:
           script: |
             // Decode base64-encoded URLs
