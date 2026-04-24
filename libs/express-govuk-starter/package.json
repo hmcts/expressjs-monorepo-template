@@ -50,7 +50,7 @@
     "@types/express": "5.0.6",
     "@types/express-session": "1.19.0",
     "@types/nunjucks": "3.2.6",
-    "@types/pg": "8.18.0",
+    "@types/pg": "8.20.0",
     "@types/pg-format": "1.0.5",
     "connect-redis": "9.0.0",
     "express-session": "1.19.0"
