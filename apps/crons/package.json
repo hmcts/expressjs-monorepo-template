@@ -19,6 +19,6 @@
     "config": "4.4.1"
   },
   "devDependencies": {
-    "@types/config": "3.3.5"
+    "@types/config": "4.4.0"
   }
 }
