@@ -8,8 +8,8 @@ import { viteStaticCopy } from "vite-plugin-static-copy";
  * Base Vite configuration for HMCTS applications
  * Provides sensible defaults for building assets with GOV.UK Frontend
  */
-export function createBaseViteConfig(modulesPaths: string[]): UserConfig {
-  const entries = getEntries(modulesPaths);
+export function createBaseViteConfig(assetsPath: string): UserConfig {
+  const entries = getEntries(assetsPath);
   return {
     build: {
       outDir: "dist/assets",
@@ -73,24 +73,19 @@ export function createBaseViteConfig(modulesPaths: string[]): UserConfig {
   };
 }
 
-function getEntries(modulePaths: string[]): Record<string, string> {
-  // Build entries for all modules that have assets
+function getEntries(assetsPath: string): Record<string, string> {
   const entries: Record<string, string> = {};
-  for (const modulePath of modulePaths) {
-    const assetsPath = resolve(modulePath);
+  const resolved = resolve(assetsPath);
 
-    if (existsSync(assetsPath)) {
-      const jsFiles = glob.sync(resolve(assetsPath, "js/*.ts")).filter((f) => !f.endsWith(".d.ts"));
-      const cssFiles = glob.sync(resolve(assetsPath, "css/*.scss"));
-      const moduleAssets = [...jsFiles, ...cssFiles];
+  if (existsSync(resolved)) {
+    const jsFiles = glob.sync(resolve(resolved, "js/*.ts")).filter((f) => !f.endsWith(".d.ts"));
+    const cssFiles = glob.sync(resolve(resolved, "css/*.scss"));
 
-      for (const asset of moduleAssets) {
-        const fileName = asset.split("/").pop()!;
-        const baseName = fileName.replace(/\.(ts|scss)$/, "");
-        const fileType = fileName.endsWith(".ts") ? "js" : "css";
-
-        entries[`${baseName}_${fileType}`] = asset;
-      }
+    for (const asset of [...jsFiles, ...cssFiles]) {
+      const fileName = asset.split("/").pop()!;
+      const baseName = fileName.replace(/\.(ts|scss)$/, "");
+      const fileType = fileName.endsWith(".ts") ? "js" : "css";
+      entries[`${baseName}_${fileType}`] = asset;
     }
   }
 

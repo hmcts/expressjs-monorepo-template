@@ -2,7 +2,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { getPropertiesVolumeSecrets, healthcheck, monitoringMiddleware } from "@hmcts/cloud-native-platform";
-import { apiRoutes as onboardingRoutes } from "@hmcts/onboarding/config";
 import { createSimpleRouter } from "@hmcts/simple-router";
 import compression from "compression";
 import cors from "cors";
@@ -33,9 +32,7 @@ export async function createApp(): Promise<Express> {
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
 
-  const routeMounts = [{ path: `${__dirname}/routes` }, onboardingRoutes];
-
-  app.use(await createSimpleRouter(...routeMounts));
+  app.use(await createSimpleRouter({ path: `${__dirname}/routes` }));
 
   app.use((_req, res) => {
     res.status(404).json({ error: "Not found" });
