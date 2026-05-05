@@ -38,7 +38,11 @@ export function createBaseViteConfig(modulesPaths: string[]): UserConfig {
           loadPaths: ["node_modules"]
         }
       },
-      devSourcemap: true
+      devSourcemap: true,
+      // GOV.UK Frontend contains legacy IE hacks (e.g. @media (min-width: 0\0)) that LightningCSS rejects
+      lightningcss: {
+        errorRecovery: true
+      }
     },
     resolve: {
       extensions: [".ts", ".js", ".scss", ".css"],
