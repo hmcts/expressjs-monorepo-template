@@ -13,13 +13,15 @@
     }
   },
   "scripts": {
-    "build": "tsc && yarn build:nunjucks",
-    "build:nunjucks": "mkdir -p dist/pages && cd src/pages && find . -name '*.njk' -exec sh -c 'mkdir -p ../../dist/pages/$(dirname {}) && cp {} ../../dist/pages/{}' \\;",
+    "build": "tsc",
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest watch",
     "lint": "biome lint src/",
     "format": "biome format src/ --write"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3"
   },
   "peerDependencies": {
     "express": "^5.1.0"

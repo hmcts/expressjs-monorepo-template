@@ -14,7 +14,6 @@ RUN yarn build
 
 # ---- Runtime image ----
 FROM base AS runtime
-COPY --from=build /opt/app/apps/postgres/dist ./apps/postgres/dist
 COPY --chmod=755 apps/postgres/start.sh ./apps/postgres/start.sh
 COPY apps/postgres/health-server.mjs ./apps/postgres/health-server.mjs
 

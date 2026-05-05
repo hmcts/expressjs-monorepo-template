@@ -1,5 +1,8 @@
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { defineConfig, env } from "prisma/config";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Construct DATABASE_URL from individual env vars if available
 if (process.env.POSTGRES_HOST && process.env.POSTGRES_USER && process.env.POSTGRES_PASSWORD && process.env.POSTGRES_PORT && process.env.POSTGRES_DATABASE) {
@@ -13,9 +16,9 @@ process.env.DATABASE_URL ??= "postgresql://hmcts@localhost:5432/postgres";
 console.log(`DATABASE_URL: ${process.env.DATABASE_URL}`);
 
 export default defineConfig({
-  schema: path.join("dist", "schema.prisma"),
+  schema: path.join(__dirname, "../../libs/postgres-prisma/prisma/schema"),
   migrations: {
-    path: path.join("prisma", "migrations")
+    path: path.join(__dirname, "prisma", "migrations")
   },
   datasource: {
     url: env("DATABASE_URL")

@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Express, NextFunction, Request, Response } from "express";
@@ -66,6 +66,17 @@ function addGlobals(env: nunjucks.Environment, globals: Record<string, unknown> 
   });
 }
 
+function collectViewPaths(dir: string): string[] {
+  const subdirs = readdirSync(dir, { withFileTypes: true }).filter((e) => e.isDirectory());
+  const routeGroups = subdirs.filter((e) => /^\(.+\)$/.test(e.name));
+  const regularDirs = subdirs.filter((e) => !/^\(.+\)$/.test(e.name));
+
+  const groupPaths = routeGroups.flatMap((e) => collectViewPaths(path.join(dir, e.name)));
+  const nestedPaths = regularDirs.flatMap((e) => collectViewPaths(path.join(dir, e.name)));
+
+  return [dir, ...groupPaths, ...nestedPaths];
+}
+
 function mergeConfigs(paths: string[]): {
   mergedViewPaths: string[];
   mergedI18nPaths: string[];
@@ -76,8 +87,9 @@ function mergeConfigs(paths: string[]): {
   for (const modulePath of paths) {
     const actualModulePath = process.env.NODE_ENV !== "production" ? modulePath : modulePath.replace("/src", "/dist");
 
-    if (existsSync(path.join(actualModulePath, "pages"))) {
-      mergedViewPaths.push(`${actualModulePath}/pages`);
+    const pagesPath = path.join(actualModulePath, "pages");
+    if (existsSync(pagesPath)) {
+      mergedViewPaths.push(...collectViewPaths(pagesPath));
     }
     if (existsSync(path.join(actualModulePath, "locales"))) {
       mergedI18nPaths.push(`${actualModulePath}/locales`);
