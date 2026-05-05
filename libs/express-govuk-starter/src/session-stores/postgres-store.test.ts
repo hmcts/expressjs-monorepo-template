@@ -103,7 +103,7 @@ describe("PostgresStore", () => {
 
   describe("set", () => {
     it("should upsert session with TTL from cookie maxAge", async () => {
-      const sessionData = { cookie: { maxAge: 7200000 }, userId: "123" };
+      const sessionData = { cookie: { maxAge: 7200000 }, userId: "123" } as any;
       mockClient.query.mockResolvedValue({ rows: [] });
 
       await new Promise<void>((resolve) => {
@@ -121,7 +121,7 @@ describe("PostgresStore", () => {
       mockClient.query.mockRejectedValueOnce(error);
 
       await new Promise<void>((resolve) => {
-        store.set("session123", {}, (err) => {
+        store.set("session123", {} as any, (err) => {
           expect(err).toBe(error);
           resolve();
         });
@@ -145,7 +145,7 @@ describe("PostgresStore", () => {
 
   describe("touch", () => {
     it("should update session expiration", async () => {
-      const sessionData = { cookie: { maxAge: 3600000 } };
+      const sessionData = { cookie: { maxAge: 3600000 } } as any;
       mockClient.query.mockResolvedValue({ rows: [] });
 
       await new Promise<void>((resolve) => {
@@ -167,7 +167,7 @@ describe("PostgresStore", () => {
       vi.clearAllMocks(); // Clear init mocks
 
       await new Promise<void>((resolve) => {
-        touchStore.touch("session123", {}, (err) => {
+        touchStore.touch("session123", {} as any, (err) => {
           expect(err).toBeNull();
           expect(mockClient.query).not.toHaveBeenCalled();
           resolve();

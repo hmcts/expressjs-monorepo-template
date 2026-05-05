@@ -176,7 +176,7 @@ describe("roleSchema", () => {
     const result = roleSchema.safeParse(validData);
     expect(result.success).toBe(true);
     if (result.success) {
-      expect(result.data.roleOther).toBe("Product Manager");
+      expect((result.data as any).roleOther).toBe("Product Manager");
     }
   });
 

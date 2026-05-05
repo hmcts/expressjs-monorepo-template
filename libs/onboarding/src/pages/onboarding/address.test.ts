@@ -26,7 +26,7 @@ describe("address page", () => {
 
   beforeEach(() => {
     mockReq = {
-      session: {},
+      session: {} as any,
       body: {},
       query: {}
     };
@@ -85,12 +85,11 @@ describe("address page", () => {
         {
           code: "too_small",
           minimum: 1,
-          type: "string",
+          origin: "string",
           inclusive: true,
-          exact: false,
           message: "Enter address line 1",
           path: ["addressLine1"]
-        }
+        } as any
       ]);
 
       const errors = {

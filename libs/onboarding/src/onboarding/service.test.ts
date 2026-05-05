@@ -23,11 +23,12 @@ describe("service functions", () => {
     mockSession = {
       id: "test-session",
       cookie: {} as any,
-      regenerate: () => {},
-      destroy: () => {},
-      reload: () => {},
-      save: () => {},
-      touch: () => {}
+      regenerate: vi.fn() as any,
+      destroy: vi.fn() as any,
+      reload: vi.fn() as any,
+      save: vi.fn() as any,
+      touch: vi.fn() as any,
+      resetMaxAge: vi.fn() as any
     };
   });
 
@@ -121,7 +122,7 @@ describe("service functions", () => {
 
       const result = processRoleSubmission(mockSession, formData);
       expect(result.roleType).toBe("other");
-      expect(result.roleOther).toBe("Product Manager");
+      expect((result as any).roleOther).toBe("Product Manager");
     });
 
     it("should throw error for other role without specification", () => {
@@ -322,7 +323,7 @@ describe("service functions", () => {
         }
       } as any;
 
-      const mockSubmission = { id: "submission-456" };
+      const mockSubmission = { id: "submission-456" } as any;
       vi.mocked(createOnboardingSubmission).mockResolvedValue(mockSubmission);
 
       const result = await submitOnboarding(mockSession);

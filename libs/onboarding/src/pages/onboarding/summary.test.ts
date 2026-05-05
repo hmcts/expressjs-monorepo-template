@@ -46,7 +46,7 @@ describe("Summary page controller", () => {
     (formatAddressForDisplay as any).mockReturnValue(["123 Test Street", "London", "SW1A 1AA"]);
     (formatRoleForDisplay as any).mockReturnValue("Frontend Developer");
     (getPreviousPage as any).mockReturnValue("/onboarding/role");
-    (getChangePageRoute as any).mockImplementation((page) => `/onboarding/${page}`);
+    (getChangePageRoute as any).mockImplementation((page: string) => `/onboarding/${page}`);
   });
 
   describe("GET", () => {

@@ -121,12 +121,11 @@ describe("Name page controller", () => {
         {
           code: "too_small",
           minimum: 1,
-          type: "string",
+          origin: "string",
           inclusive: true,
-          exact: false,
           message: "First name is required",
           path: ["firstName"]
-        }
+        } as any
       ]);
 
       const mockErrors = {

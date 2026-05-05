@@ -2,18 +2,17 @@
   "compilerOptions": {
     "module": "nodenext",
     "moduleResolution": "nodenext",
-    "baseUrl": ".",
     "paths": {
-      "@hmcts/api": ["apps/api/src"],
-      "@hmcts/crons": ["apps/crons/src"],
-      "@hmcts/postgres": ["apps/postgres/src"],
-      "@hmcts/postgres-prisma": ["libs/postgres-prisma/src"],
-      "@hmcts/web": ["apps/web/src"],
-      "@hmcts/express-govuk-starter": ["libs/express-govuk-starter/src"],
-      "@hmcts/cloud-native-platform": ["libs/cloud-native-platform/src"],
-      "@hmcts/simple-router": ["libs/simple-router/src"],
-      "@hmcts/footer-pages": ["libs/footer-pages/src"],
-      "@hmcts/onboarding": ["libs/onboarding/src"]
+      "@hmcts/api": ["./apps/api/src"],
+      "@hmcts/crons": ["./apps/crons/src"],
+      "@hmcts/postgres": ["./apps/postgres/src"],
+      "@hmcts/postgres-prisma": ["./libs/postgres-prisma/src"],
+      "@hmcts/web": ["./apps/web/src"],
+      "@hmcts/express-govuk-starter": ["./libs/express-govuk-starter/src"],
+      "@hmcts/cloud-native-platform": ["./libs/cloud-native-platform/src"],
+      "@hmcts/simple-router": ["./libs/simple-router/src"],
+      "@hmcts/footer-pages": ["./libs/footer-pages/src"],
+      "@hmcts/onboarding": ["./libs/onboarding/src"]
     },
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,

@@ -31,7 +31,7 @@ describe("healthcheck middleware", () => {
 
   describe("/health/liveness endpoint", () => {
     it("should return UP when all checks pass", async () => {
-      req.path = "/health/liveness";
+      req = { ...req, path: "/health/liveness" };
 
       const middleware = configure({
         checks: {
@@ -53,7 +53,7 @@ describe("healthcheck middleware", () => {
     });
 
     it("should return DOWN when any check fails", async () => {
-      req.path = "/health/liveness";
+      req = { ...req, path: "/health/liveness" };
 
       const middleware = configure({
         checks: {
@@ -75,7 +75,7 @@ describe("healthcheck middleware", () => {
     });
 
     it("should handle check errors", async () => {
-      req.path = "/liveness";
+      req = { ...req, path: "/liveness" };
 
       const middleware = configure({
         checks: {
@@ -97,7 +97,7 @@ describe("healthcheck middleware", () => {
     });
 
     it("should return UP with empty checks", async () => {
-      req.path = "/liveness";
+      req = { ...req, path: "/liveness" };
 
       const middleware = configure({});
       await middleware(req as Request, res as Response, next);
@@ -112,7 +112,7 @@ describe("healthcheck middleware", () => {
 
   describe("/health and /health/readiness endpoints", () => {
     it("should use readinessChecks when provided", async () => {
-      req.path = "/health/readiness";
+      req = { ...req, path: "/health/readiness" };
 
       const middleware = configure({
         checks: {
@@ -136,7 +136,7 @@ describe("healthcheck middleware", () => {
     });
 
     it("should use checks when readinessChecks not provided", async () => {
-      req.path = "/health";
+      req = { ...req, path: "/health" };
 
       const middleware = configure({
         checks: {
@@ -156,7 +156,7 @@ describe("healthcheck middleware", () => {
     });
 
     it("should handle /readiness path", async () => {
-      req.path = "/readiness";
+      req = { ...req, path: "/readiness" };
 
       const middleware = configure({
         checks: {
@@ -178,7 +178,7 @@ describe("healthcheck middleware", () => {
 
   describe("non-health endpoints", () => {
     it("should call next for other paths", async () => {
-      req.path = "/api/users";
+      req = { ...req, path: "/api/users" };
 
       const middleware = configure({});
       await middleware(req as Request, res as Response, next);

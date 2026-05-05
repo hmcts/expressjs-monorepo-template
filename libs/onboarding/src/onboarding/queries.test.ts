@@ -153,7 +153,7 @@ describe("queries", () => {
         }
       ];
 
-      vi.mocked(prisma.onboardingSubmission.findMany).mockResolvedValue(mockResults);
+      vi.mocked(prisma.onboardingSubmission.findMany).mockResolvedValue(mockResults as any);
 
       const result = await getRecentSubmissions();
 
@@ -172,7 +172,7 @@ describe("queries", () => {
     });
 
     it("should get recent submissions with custom limit", async () => {
-      const mockResults = [];
+      const mockResults: any[] = [];
 
       vi.mocked(prisma.onboardingSubmission.findMany).mockResolvedValue(mockResults);
 

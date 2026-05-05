@@ -26,7 +26,7 @@ describe("date-of-birth page", () => {
 
   beforeEach(() => {
     mockReq = {
-      session: {},
+      session: {} as any,
       body: {},
       query: {}
     };

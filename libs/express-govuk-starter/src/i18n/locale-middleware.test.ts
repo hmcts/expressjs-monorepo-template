@@ -131,7 +131,7 @@ describe("translationMiddleware", () => {
     const req = {} as Request;
     const res = {
       locals: { locale: "en" }
-    } as Response;
+    } as unknown as Response;
     const next = vi.fn();
 
     middleware(req, res, next);
@@ -148,7 +148,7 @@ describe("translationMiddleware", () => {
     const req = {} as Request;
     const res = {
       locals: { locale: "cy" }
-    } as Response;
+    } as unknown as Response;
     const next = vi.fn();
 
     middleware(req, res, next);
@@ -430,7 +430,7 @@ describe("renderInterceptorMiddleware", () => {
     middleware(req, res, next);
 
     // Call the intercepted render with null options
-    res.render("test-view", null);
+    res.render("test-view", null as any);
 
     expect(originalRender).toHaveBeenCalledWith(
       "test-view",

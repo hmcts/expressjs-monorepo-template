@@ -22,7 +22,7 @@ export function deepMerge(target: Config, source: Config): Config {
 /**
  * Get nested property from object using dot notation, replacing Lodash get
  */
-export function getProperty(obj: Config, path: string, defaultValue?: any): any {
+export function getProperty(obj: Config | null | undefined, path: string, defaultValue?: any): any {
   const keys = path.split(".");
   let current = obj;
 

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import type { Session } from "express-session";
 import { getOnboardingSession, setSessionData, clearOnboardingSession, isSessionComplete, getAllSessionData } from "./session.js";
 
@@ -9,11 +9,12 @@ describe("session helpers", () => {
     mockSession = {
       id: "test-session",
       cookie: {} as any,
-      regenerate: () => {},
-      destroy: () => {},
-      reload: () => {},
-      save: () => {},
-      touch: () => {}
+      regenerate: vi.fn() as any,
+      destroy: vi.fn() as any,
+      reload: vi.fn() as any,
+      save: vi.fn() as any,
+      touch: vi.fn() as any,
+      resetMaxAge: vi.fn() as any
     };
   });
 
@@ -29,7 +30,7 @@ describe("session helpers", () => {
       };
 
       const data = getOnboardingSession(mockSession);
-      expect(data.name).toEqual({ firstName: "John", lastName: "Smith" });
+      expect((data as any).name).toEqual({ firstName: "John", lastName: "Smith" });
     });
   });
 

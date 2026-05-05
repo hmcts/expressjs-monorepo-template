@@ -26,7 +26,7 @@ describe("role page", () => {
 
   beforeEach(() => {
     mockReq = {
-      session: {},
+      session: {} as any,
       body: {},
       query: {}
     };
