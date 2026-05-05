@@ -31,14 +31,14 @@ test.describe('Homepage', () => {
       .exclude('.language')
       .exclude('.govuk-back-link')
       .analyze();
-    
+
     if (accessibilityScanResults.violations.length > 0) {
       console.log('Accessibility violations found:');
-      accessibilityScanResults.violations.forEach(violation => {
+      accessibilityScanResults.violations.forEach((violation: { id: string; description: string; impact?: string | null; nodes: { target: unknown[] }[] }) => {
         console.log(`- ${violation.id}: ${violation.description}`);
         console.log(`  Impact: ${violation.impact}`);
         console.log(`  Affected nodes: ${violation.nodes.length}`);
-        violation.nodes.forEach(node => {
+        violation.nodes.forEach((node: { target: unknown[] }) => {
           console.log(`    ${node.target}`);
         });
       });

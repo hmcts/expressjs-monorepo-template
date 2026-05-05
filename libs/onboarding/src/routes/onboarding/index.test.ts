@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { Request, Response } from "express";
 import { POST } from "./index.js";
 
@@ -12,8 +12,8 @@ import { createOnboardingSubmission } from "../../onboarding/queries.js";
 describe("POST /onboarding", () => {
   let mockReq: Partial<Request>;
   let mockRes: Partial<Response>;
-  let jsonMock: Mock;
-  let statusMock: Mock;
+  let jsonMock: ReturnType<typeof vi.fn>;
+  let statusMock: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     jsonMock = vi.fn();
@@ -24,8 +24,8 @@ describe("POST /onboarding", () => {
     };
 
     mockRes = {
-      status: statusMock,
-      json: jsonMock
+      status: statusMock as any,
+      json: jsonMock as any
     };
 
     vi.clearAllMocks();

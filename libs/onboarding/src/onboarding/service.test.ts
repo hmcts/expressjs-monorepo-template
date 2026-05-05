@@ -16,20 +16,13 @@ vi.mock("./queries.js", () => ({
   createOnboardingSubmission: vi.fn()
 }));
 
+const makeSession = (overrides: Record<string, unknown> = {}): Session => ({ id: "test-session", cookie: {} as any, ...overrides }) as unknown as Session;
+
 describe("service functions", () => {
   let mockSession: Session;
 
   beforeEach(() => {
-    mockSession = {
-      id: "test-session",
-      cookie: {} as any,
-      regenerate: vi.fn() as any,
-      destroy: vi.fn() as any,
-      reload: vi.fn() as any,
-      save: vi.fn() as any,
-      touch: vi.fn() as any,
-      resetMaxAge: vi.fn() as any
-    };
+    mockSession = makeSession();
   });
 
   describe("processNameSubmission", () => {
@@ -122,7 +115,7 @@ describe("service functions", () => {
 
       const result = processRoleSubmission(mockSession, formData);
       expect(result.roleType).toBe("other");
-      expect((result as any).roleOther).toBe("Product Manager");
+      expect(result.roleType === "other" ? result.roleOther : undefined).toBe("Product Manager");
     });
 
     it("should throw error for other role without specification", () => {

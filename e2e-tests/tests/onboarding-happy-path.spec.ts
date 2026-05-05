@@ -154,7 +154,7 @@ test.describe('Onboarding Form - Happy Path Journey', () => {
 
       if (accessibilityScanResults.violations.length > 0) {
         console.log(`Accessibility violations found on ${pageUrl}:`);
-        accessibilityScanResults.violations.forEach(violation => {
+        accessibilityScanResults.violations.forEach((violation: { id: string; description: string; impact?: string | null; nodes: unknown[] }) => {
           console.log(`- ${violation.id}: ${violation.description}`);
           console.log(`  Impact: ${violation.impact}`);
           console.log(`  Affected nodes: ${violation.nodes.length}`);

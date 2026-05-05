@@ -87,8 +87,8 @@ describe("getProperty", () => {
   });
 
   it("should handle null and undefined objects", () => {
-    expect(getProperty(null, "a", "default")).toBe("default");
-    expect(getProperty(undefined, "a", "default")).toBe("default");
+    expect(getProperty(null as any, "a", "default")).toBe("default");
+    expect(getProperty(undefined as any, "a", "default")).toBe("default");
   });
 });
 

@@ -107,7 +107,7 @@ describe("PostgresStore", () => {
       mockClient.query.mockResolvedValue({ rows: [] });
 
       await new Promise<void>((resolve) => {
-        store.set("session123", sessionData, (err) => {
+        store.set("session123", sessionData as any, (err) => {
           expect(err).toBeNull();
           expect(mockClient.query).toHaveBeenCalledWith(expect.stringContaining("INSERT INTO"), ["session123", JSON.stringify(sessionData), expect.any(Date)]);
           resolve();
@@ -149,7 +149,7 @@ describe("PostgresStore", () => {
       mockClient.query.mockResolvedValue({ rows: [] });
 
       await new Promise<void>((resolve) => {
-        store.touch("session123", sessionData, (err) => {
+        store.touch("session123", sessionData as any, (err) => {
           expect(err).toBeNull();
           expect(mockClient.query).toHaveBeenCalledWith(expect.stringContaining("UPDATE"), ["session123", expect.any(Date)]);
           resolve();
