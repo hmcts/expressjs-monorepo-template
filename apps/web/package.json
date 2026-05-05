@@ -35,7 +35,7 @@
     "govuk-frontend": "6.1.0",
     "helmet": "8.1.0",
     "nunjucks": "3.2.4",
-    "redis": "5.11.0"
+    "redis": "5.12.1"
   },
   "devDependencies": {
     "@types/config": "3.3.5",
