@@ -67,23 +67,14 @@ function addGlobals(env: nunjucks.Environment, globals: Record<string, unknown> 
 }
 
 function collectViewPaths(dir: string): string[] {
-  const viewPaths: string[] = [dir];
+  const subdirs = readdirSync(dir, { withFileTypes: true }).filter((e) => e.isDirectory());
+  const routeGroups = subdirs.filter((e) => /^\(.+\)$/.test(e.name));
+  const regularDirs = subdirs.filter((e) => !/^\(.+\)$/.test(e.name));
 
-  for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (!entry.isDirectory()) continue;
+  const groupPaths = routeGroups.flatMap((e) => collectViewPaths(path.join(dir, e.name)));
+  const nestedPaths = regularDirs.flatMap((e) => collectViewPaths(path.join(dir, e.name)));
 
-    const fullPath = path.join(dir, entry.name);
-
-    if (/^\(.+\)$/.test(entry.name)) {
-      // Route group — add as a view path and recurse into it
-      viewPaths.push(...collectViewPaths(fullPath));
-    } else {
-      // Regular directory — recurse to find nested route groups
-      viewPaths.push(...collectViewPaths(fullPath).slice(1)); // slice(1) skips re-adding the dir itself
-    }
-  }
-
-  return viewPaths;
+  return [dir, ...groupPaths, ...nestedPaths];
 }
 
 function mergeConfigs(paths: string[]): {
