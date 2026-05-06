@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Express, NextFunction, Request, Response } from "express";
@@ -76,8 +76,15 @@ function mergeConfigs(paths: string[]): {
   for (const modulePath of paths) {
     const actualModulePath = process.env.NODE_ENV !== "production" ? modulePath : modulePath.replace("/src", "/dist");
 
-    if (existsSync(path.join(actualModulePath, "pages"))) {
-      mergedViewPaths.push(`${actualModulePath}/pages`);
+    const pagesPath = path.join(actualModulePath, "pages");
+    if (existsSync(pagesPath)) {
+      mergedViewPaths.push(pagesPath);
+      // Add route group subdirectories so templates resolve without the (group)/ prefix
+      for (const entry of readdirSync(pagesPath, { withFileTypes: true })) {
+        if (entry.isDirectory() && /^\(.+\)$/.test(entry.name)) {
+          mergedViewPaths.push(path.join(pagesPath, entry.name));
+        }
+      }
     }
     if (existsSync(path.join(actualModulePath, "locales"))) {
       mergedI18nPaths.push(`${actualModulePath}/locales`);
