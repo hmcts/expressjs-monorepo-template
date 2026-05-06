@@ -23,5 +23,5 @@ const cy = {
 };
 
 export const GET = async (_req: Request, res: Response) => {
-  res.render("onboarding/start", { en, cy });
+  res.render("start", { en, cy });
 };

@@ -35,7 +35,7 @@ describe("date-of-birth page", () => {
       vi.mocked(getSessionDataForPage).mockReturnValue(undefined);
       await GET(mockReq as Request, mockRes as Response);
 
-      expect(mockRes.render).toHaveBeenCalledWith("onboarding/date-of-birth", {
+      expect(mockRes.render).toHaveBeenCalledWith("date-of-birth", {
         data: undefined,
         backLink: "/onboarding/name",
         en: expect.objectContaining({
@@ -96,7 +96,7 @@ describe("date-of-birth page", () => {
       await POST(mockReq as Request, mockRes as Response);
 
       expect(mockRes.redirect).not.toHaveBeenCalled();
-      expect(mockRes.render).toHaveBeenCalledWith("onboarding/date-of-birth", {
+      expect(mockRes.render).toHaveBeenCalledWith("date-of-birth", {
         errors,
         errorSummary,
         data: mockReq.body,
@@ -136,7 +136,7 @@ describe("date-of-birth page", () => {
       await POST(mockReq as Request, mockRes as Response);
 
       expect(mockRes.redirect).not.toHaveBeenCalled();
-      expect(mockRes.render).toHaveBeenCalledWith("onboarding/date-of-birth", {
+      expect(mockRes.render).toHaveBeenCalledWith("date-of-birth", {
         errors,
         errorSummary,
         data: mockReq.body,

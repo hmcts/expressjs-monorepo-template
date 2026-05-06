@@ -27,7 +27,7 @@ export const GET = async (req: Request, res: Response) => {
     return res.redirect("/onboarding/start");
   }
 
-  res.render("onboarding/confirmation/[confirmationId]", {
+  res.render("[confirmationId]", {
     confirmationId,
     en,
     cy

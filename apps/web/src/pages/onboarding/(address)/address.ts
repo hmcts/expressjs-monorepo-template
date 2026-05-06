@@ -28,7 +28,7 @@ export const GET = async (req: Request, res: Response) => {
   const data = getSessionDataForPage(req.session, "address");
   const backLink = getPreviousPage("address");
 
-  res.render("onboarding/address", {
+  res.render("address", {
     data,
     backLink,
     en,
@@ -53,7 +53,7 @@ export const POST = async (req: Request, res: Response) => {
       const errorSummary = createErrorSummary(errors);
       const backLink = getPreviousPage("address");
 
-      res.render("onboarding/address", {
+      res.render("address", {
         errors,
         errorSummary,
         data: req.body,

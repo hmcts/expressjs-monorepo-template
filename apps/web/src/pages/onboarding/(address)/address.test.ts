@@ -35,7 +35,7 @@ describe("address page", () => {
       vi.mocked(getSessionDataForPage).mockReturnValue(undefined);
       await GET(mockReq as Request, mockRes as Response);
 
-      expect(mockRes.render).toHaveBeenCalledWith("onboarding/address", {
+      expect(mockRes.render).toHaveBeenCalledWith("address", {
         data: undefined,
         backLink: "/onboarding/role",
         en: expect.objectContaining({
@@ -107,7 +107,7 @@ describe("address page", () => {
       await POST(mockReq as Request, mockRes as Response);
 
       expect(mockRes.redirect).not.toHaveBeenCalled();
-      expect(mockRes.render).toHaveBeenCalledWith("onboarding/address", {
+      expect(mockRes.render).toHaveBeenCalledWith("address", {
         errors,
         errorSummary,
         data: mockReq.body,

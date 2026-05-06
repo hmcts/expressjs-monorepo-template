@@ -66,6 +66,26 @@ function addGlobals(env: nunjucks.Environment, globals: Record<string, unknown> 
   });
 }
 
+function collectViewPaths(dir: string): string[] {
+  const viewPaths: string[] = [dir];
+
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (!entry.isDirectory()) continue;
+
+    const fullPath = path.join(dir, entry.name);
+
+    if (/^\(.+\)$/.test(entry.name)) {
+      // Route group — add as a view path and recurse into it
+      viewPaths.push(...collectViewPaths(fullPath));
+    } else {
+      // Regular directory — recurse to find nested route groups
+      viewPaths.push(...collectViewPaths(fullPath).slice(1)); // slice(1) skips re-adding the dir itself
+    }
+  }
+
+  return viewPaths;
+}
+
 function mergeConfigs(paths: string[]): {
   mergedViewPaths: string[];
   mergedI18nPaths: string[];
@@ -78,13 +98,7 @@ function mergeConfigs(paths: string[]): {
 
     const pagesPath = path.join(actualModulePath, "pages");
     if (existsSync(pagesPath)) {
-      mergedViewPaths.push(pagesPath);
-      // Add route group subdirectories so templates resolve without the (group)/ prefix
-      for (const entry of readdirSync(pagesPath, { withFileTypes: true })) {
-        if (entry.isDirectory() && /^\(.+\)$/.test(entry.name)) {
-          mergedViewPaths.push(path.join(pagesPath, entry.name));
-        }
-      }
+      mergedViewPaths.push(...collectViewPaths(pagesPath));
     }
     if (existsSync(path.join(actualModulePath, "locales"))) {
       mergedI18nPaths.push(`${actualModulePath}/locales`);

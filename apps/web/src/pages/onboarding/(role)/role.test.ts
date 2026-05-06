@@ -36,7 +36,7 @@ describe("role page", () => {
       await GET(mockReq as Request, mockRes as Response);
 
       expect(mockRes.render).toHaveBeenCalledWith(
-        "onboarding/role",
+        "role",
         expect.objectContaining({
           en: expect.objectContaining({
             title: "What is your role?",
@@ -97,7 +97,7 @@ describe("role page", () => {
       await POST(mockReq as Request, mockRes as Response);
 
       expect(mockRes.redirect).not.toHaveBeenCalled();
-      expect(mockRes.render).toHaveBeenCalledWith("onboarding/role", {
+      expect(mockRes.render).toHaveBeenCalledWith("role", {
         errors,
         errorSummary,
         data: mockReq.body,

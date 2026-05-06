@@ -75,7 +75,7 @@ describe("Summary page controller", () => {
 
       await GET(req, res);
 
-      expect(res.render).toHaveBeenCalledWith("onboarding/summary", {
+      expect(res.render).toHaveBeenCalledWith("summary", {
         summaryData: {
           name: "John Doe",
           dateOfBirth: "1 January 1990",

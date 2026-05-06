@@ -25,7 +25,7 @@ describe("Start page controller", () => {
 
       await GET(req, res);
 
-      expect(res.render).toHaveBeenCalledWith("onboarding/start", {
+      expect(res.render).toHaveBeenCalledWith("start", {
         en: expect.objectContaining({
           title: "Onboarding form example",
           heading: "Onboarding form example",

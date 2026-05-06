@@ -34,7 +34,7 @@ export const GET = async (req: Request, res: Response) => {
   const data = getSessionDataForPage(req.session, "role");
   const backLink = getPreviousPage("role");
 
-  res.render("onboarding/role", {
+  res.render("role", {
     data,
     backLink,
     en,
@@ -54,7 +54,7 @@ export const POST = async (req: Request, res: Response) => {
       const errorSummary = createErrorSummary(errors);
       const backLink = getPreviousPage("role");
 
-      res.render("onboarding/role", {
+      res.render("role", {
         errors,
         errorSummary,
         data: req.body,

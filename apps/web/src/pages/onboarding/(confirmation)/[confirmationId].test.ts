@@ -26,7 +26,7 @@ describe("confirmation page with dynamic route", () => {
       await GET(mockReq as Request, mockRes as Response);
 
       expect(mockRes.render).toHaveBeenCalledWith(
-        "onboarding/confirmation/[confirmationId]",
+        "[confirmationId]",
         expect.objectContaining({
           confirmationId: "test-id-123",
           en: expect.objectContaining({

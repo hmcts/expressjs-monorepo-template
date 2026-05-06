@@ -62,7 +62,7 @@ export const GET = async (req: Request, res: Response) => {
     role: `${getChangePageRoute("role")}?return=summary`
   };
 
-  res.render("onboarding/summary", {
+  res.render("summary", {
     summaryData,
     changeLinks,
     backLink,

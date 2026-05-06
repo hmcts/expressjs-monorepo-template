@@ -42,7 +42,7 @@ describe("Name page controller", () => {
 
       await GET(req, res);
 
-      expect(res.render).toHaveBeenCalledWith("onboarding/name", {
+      expect(res.render).toHaveBeenCalledWith("name", {
         data: undefined,
         backLink: "/onboarding",
         en: expect.objectContaining({
@@ -69,7 +69,7 @@ describe("Name page controller", () => {
       await GET(req, res);
 
       expect(res.render).toHaveBeenCalledWith(
-        "onboarding/name",
+        "name",
         expect.objectContaining({
           data: { firstName: "John", lastName: "Doe" }
         })
@@ -140,7 +140,7 @@ describe("Name page controller", () => {
       expect(formatZodErrors).toHaveBeenCalledWith(mockZodError);
       expect(createErrorSummary).toHaveBeenCalledWith(mockErrors);
       expect(res.render).toHaveBeenCalledWith(
-        "onboarding/name",
+        "name",
         expect.objectContaining({
           errors: mockErrors,
           errorSummary: mockErrorSummary,
