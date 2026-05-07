@@ -8,7 +8,7 @@ describe("confirmation page with dynamic route", () => {
 
   beforeEach(() => {
     mockReq = {
-      params: {} as any
+      params: {} as Record<string, string>
     };
     mockRes = {
       render: vi.fn(),
@@ -53,7 +53,7 @@ describe("confirmation page with dynamic route", () => {
     });
 
     it("should redirect to start when params is undefined", async () => {
-      mockReq.params = undefined as any;
+      mockReq.params = undefined;
 
       await GET(mockReq as Request, mockRes as Response);
 

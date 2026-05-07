@@ -9,7 +9,7 @@ vi.mock("@hmcts/postgres-prisma", () => ({
 }));
 
 vi.mock("@hmcts/onboarding", async (importOriginal) => {
-  const actual = await importOriginal();
+  const actual = await importOriginal<typeof import("@hmcts/onboarding")>();
   return {
     ...actual,
     createOnboardingSubmission: vi.fn()
@@ -21,8 +21,8 @@ import { createOnboardingSubmission } from "@hmcts/onboarding";
 describe("POST /onboarding", () => {
   let mockReq: Partial<Request>;
   let mockRes: Partial<Response>;
-  let jsonMock: vi.Mock;
-  let statusMock: vi.Mock;
+  let jsonMock: ReturnType<typeof vi.fn>;
+  let statusMock: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     jsonMock = vi.fn();
@@ -35,7 +35,7 @@ describe("POST /onboarding", () => {
     mockRes = {
       status: statusMock,
       json: jsonMock
-    };
+    } as Partial<Response>;
 
     vi.clearAllMocks();
   });

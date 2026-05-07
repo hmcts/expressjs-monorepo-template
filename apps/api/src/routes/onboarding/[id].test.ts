@@ -11,8 +11,8 @@ import { getSubmissionById } from "@hmcts/onboarding";
 describe("GET /onboarding/[id]", () => {
   let mockReq: Partial<Request>;
   let mockRes: Partial<Response>;
-  let jsonMock: vi.Mock;
-  let statusMock: vi.Mock;
+  let jsonMock: ReturnType<typeof vi.fn>;
+  let statusMock: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     jsonMock = vi.fn();
@@ -25,7 +25,7 @@ describe("GET /onboarding/[id]", () => {
     mockRes = {
       status: statusMock,
       json: jsonMock
-    };
+    } as Partial<Response>;
 
     vi.clearAllMocks();
   });

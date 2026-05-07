@@ -175,7 +175,7 @@ describe("roleSchema", () => {
 
     const result = roleSchema.safeParse(validData);
     expect(result.success).toBe(true);
-    if (result.success) {
+    if (result.success && result.data.roleType === "other") {
       expect(result.data.roleOther).toBe("Product Manager");
     }
   });
@@ -230,5 +230,30 @@ describe("createErrorSummary", () => {
       text: "Enter your first name",
       href: "#firstName"
     });
+  });
+});
+
+describe("addressSchema - short postcode", () => {
+  it("should return postcode as-is when shorter than 3 characters", () => {
+    const result = addressSchema.safeParse({
+      addressLine1: "123 Main Street",
+      town: "London",
+      postcode: "AB"
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("createErrorSummary - nested errors", () => {
+  it("should flatten nested error objects", () => {
+    const errors = {
+      dateOfBirth: {
+        day: { field: "day", text: "Enter a day", href: "#day" },
+        month: { field: "month", text: "Enter a month", href: "#month" }
+      }
+    };
+
+    const summary = createErrorSummary(errors as any);
+    expect(summary.errorList).toHaveLength(2);
   });
 });

@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import type { Session } from "express-session";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ZodError } from "zod";
 import { GET, POST } from "./role.js";
@@ -19,7 +20,7 @@ describe("role page", () => {
 
   beforeEach(() => {
     mockReq = {
-      session: {},
+      session: {} as Session,
       body: {},
       query: {}
     };
@@ -63,8 +64,6 @@ describe("role page", () => {
         role: "frontendDeveloper"
       };
 
-      (processRoleSubmission as any).mockImplementation(() => {});
-
       await POST(mockReq as Request, mockRes as Response);
 
       expect(processRoleSubmission).toHaveBeenCalledWith(mockReq.session, mockReq.body);
@@ -83,16 +82,19 @@ describe("role page", () => {
       ]);
 
       const errors = {
-        role: { text: "Select a role" }
+        role: { field: "role", text: "Select a role", href: "#role" }
       };
 
-      const errorSummary = [{ text: "Select a role", href: "#role" }];
+      const errorSummary = {
+        titleText: "There is a problem",
+        errorList: [{ field: "role", text: "Select a role", href: "#role" }]
+      };
 
-      (processRoleSubmission as any).mockImplementation(() => {
+      vi.mocked(processRoleSubmission).mockImplementationOnce(() => {
         throw mockZodError;
       });
-      (formatZodErrors as any).mockReturnValue(errors);
-      (createErrorSummary as any).mockReturnValue(errorSummary);
+      vi.mocked(formatZodErrors).mockReturnValue(errors);
+      vi.mocked(createErrorSummary).mockReturnValue(errorSummary);
 
       await POST(mockReq as Request, mockRes as Response);
 
@@ -107,12 +109,19 @@ describe("role page", () => {
       });
     });
 
+    it("should rethrow non-Zod errors", async () => {
+      const unexpectedError = new Error("Unexpected error");
+      vi.mocked(processRoleSubmission).mockImplementationOnce(() => {
+        throw unexpectedError;
+      });
+
+      await expect(POST(mockReq as Request, mockRes as Response)).rejects.toThrow("Unexpected error");
+    });
+
     it("should handle other role options", async () => {
       mockReq.body = {
         role: "other"
       };
-
-      (processRoleSubmission as any).mockImplementation(() => {});
 
       await POST(mockReq as Request, mockRes as Response);
 

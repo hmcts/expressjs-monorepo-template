@@ -31,8 +31,8 @@ const mockResponse = () => {
 describe("Name page controller", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (getSessionDataForPage as any).mockReturnValue(undefined);
-    (getPreviousPage as any).mockReturnValue("/onboarding");
+    vi.mocked(getSessionDataForPage).mockReturnValue(undefined);
+    vi.mocked(getPreviousPage).mockReturnValue("/onboarding");
   });
 
   describe("GET", () => {
@@ -61,7 +61,7 @@ describe("Name page controller", () => {
 
     it("should render with existing session data", async () => {
       const sessionData = { firstName: "John", lastName: "Doe" };
-      (getSessionDataForPage as any).mockReturnValue(sessionData);
+      vi.mocked(getSessionDataForPage).mockReturnValue(sessionData);
 
       const req = mockRequest();
       const res = mockResponse();
@@ -110,7 +110,7 @@ describe("Name page controller", () => {
         {
           code: "too_small",
           minimum: 1,
-          type: "string",
+          origin: "string",
           inclusive: true,
           exact: false,
           message: "First name is required",
@@ -119,16 +119,19 @@ describe("Name page controller", () => {
       ]);
 
       const mockErrors = {
-        firstName: { text: "First name is required" }
+        firstName: { field: "firstName", text: "First name is required", href: "#firstName" }
       };
 
-      const mockErrorSummary = [{ text: "First name is required", href: "#firstName" }];
+      const mockErrorSummary = {
+        titleText: "There is a problem",
+        errorList: [{ field: "firstName", text: "First name is required", href: "#firstName" }]
+      };
 
-      (processNameSubmission as any).mockImplementation(() => {
+      vi.mocked(processNameSubmission).mockImplementation(() => {
         throw mockZodError;
       });
-      (formatZodErrors as any).mockReturnValue(mockErrors);
-      (createErrorSummary as any).mockReturnValue(mockErrorSummary);
+      vi.mocked(formatZodErrors).mockReturnValue(mockErrors);
+      vi.mocked(createErrorSummary).mockReturnValue(mockErrorSummary);
 
       const req = mockRequest({
         body: { firstName: "", lastName: "Doe" }
@@ -153,7 +156,7 @@ describe("Name page controller", () => {
 
     it("should re-throw non-ZodError exceptions", async () => {
       const generalError = new Error("Database connection failed");
-      (processNameSubmission as any).mockImplementation(() => {
+      vi.mocked(processNameSubmission).mockImplementation(() => {
         throw generalError;
       });
 

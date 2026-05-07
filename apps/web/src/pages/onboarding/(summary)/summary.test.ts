@@ -43,16 +43,16 @@ const mockResponse = () => {
 describe("Summary page controller", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (formatDateForDisplay as any).mockReturnValue("1 January 1990");
-    (formatAddressForDisplay as any).mockReturnValue(["123 Test Street", "London", "SW1A 1AA"]);
-    (formatRoleForDisplay as any).mockReturnValue("Frontend Developer");
-    (getPreviousPage as any).mockReturnValue("/onboarding/role");
-    (getChangePageRoute as any).mockImplementation((page) => `/onboarding/${page}`);
+    vi.mocked(formatDateForDisplay).mockReturnValue("1 January 1990");
+    vi.mocked(formatAddressForDisplay).mockReturnValue(["123 Test Street", "London", "SW1A 1AA"]);
+    vi.mocked(formatRoleForDisplay).mockReturnValue("Frontend Developer");
+    vi.mocked(getPreviousPage).mockReturnValue("/onboarding/role");
+    vi.mocked(getChangePageRoute).mockImplementation((page) => `/onboarding/${page}`);
   });
 
   describe("GET", () => {
     it("should redirect to start if session is incomplete", async () => {
-      (isSessionComplete as any).mockReturnValue(false);
+      vi.mocked(isSessionComplete).mockReturnValue(false);
       const req = mockRequest();
       const res = mockResponse();
 
@@ -61,9 +61,35 @@ describe("Summary page controller", () => {
       expect(res.redirect).toHaveBeenCalledWith("/onboarding/start");
     });
 
+    it("should render summary page with missing optional session data", async () => {
+      vi.mocked(isSessionComplete).mockReturnValue(true);
+      vi.mocked(getAllSessionData).mockReturnValue({
+        name: { firstName: "John", lastName: "Doe" },
+        dateOfBirth: undefined,
+        address: undefined,
+        role: undefined
+      });
+
+      const req = mockRequest();
+      const res = mockResponse();
+
+      await GET(req, res);
+
+      expect(res.render).toHaveBeenCalledWith(
+        "summary",
+        expect.objectContaining({
+          summaryData: expect.objectContaining({
+            dateOfBirth: "",
+            address: [],
+            role: ""
+          })
+        })
+      );
+    });
+
     it("should render summary page with complete session data", async () => {
-      (isSessionComplete as any).mockReturnValue(true);
-      (getAllSessionData as any).mockReturnValue({
+      vi.mocked(isSessionComplete).mockReturnValue(true);
+      vi.mocked(getAllSessionData).mockReturnValue({
         name: { firstName: "John", lastName: "Doe" },
         dateOfBirth: { day: 1, month: 1, year: 1990 },
         address: { addressLine1: "123 Test Street", town: "London", postcode: "SW1A 1AA" },
@@ -97,7 +123,7 @@ describe("Summary page controller", () => {
 
   describe("POST", () => {
     it("should redirect to start if session is incomplete", async () => {
-      (isSessionComplete as any).mockReturnValue(false);
+      vi.mocked(isSessionComplete).mockReturnValue(false);
       const req = mockRequest();
       const res = mockResponse();
 
@@ -107,8 +133,8 @@ describe("Summary page controller", () => {
     });
 
     it("should submit onboarding and redirect to confirmation on success", async () => {
-      (isSessionComplete as any).mockReturnValue(true);
-      (submitOnboarding as any).mockResolvedValue("test-confirmation-id");
+      vi.mocked(isSessionComplete).mockReturnValue(true);
+      vi.mocked(submitOnboarding).mockResolvedValue("test-confirmation-id");
 
       const req = mockRequest();
       const res = mockResponse();
@@ -121,8 +147,8 @@ describe("Summary page controller", () => {
     });
 
     it("should handle submission errors", async () => {
-      (isSessionComplete as any).mockReturnValue(true);
-      (submitOnboarding as any).mockRejectedValue(new Error("Database error"));
+      vi.mocked(isSessionComplete).mockReturnValue(true);
+      vi.mocked(submitOnboarding).mockRejectedValue(new Error("Database error"));
       const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
       const req = mockRequest();

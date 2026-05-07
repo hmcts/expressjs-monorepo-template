@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import type { Session } from "express-session";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ZodError } from "zod";
 import { GET, POST } from "./date-of-birth.js";
@@ -19,7 +20,7 @@ describe("date-of-birth page", () => {
 
   beforeEach(() => {
     mockReq = {
-      session: {},
+      session: {} as Session,
       body: {},
       query: {}
     };
@@ -58,12 +59,27 @@ describe("date-of-birth page", () => {
         dobYear: "1990"
       };
 
-      (processDateOfBirthSubmission as any).mockImplementation(() => {});
-
       await POST(mockReq as Request, mockRes as Response);
 
       expect(processDateOfBirthSubmission).toHaveBeenCalledWith(mockReq.session, mockReq.body);
       expect(mockRes.redirect).toHaveBeenCalledWith("/onboarding/address");
+    });
+
+    it("should redirect to summary when return=summary query param is set", async () => {
+      mockReq.query = { return: "summary" };
+
+      await POST(mockReq as Request, mockRes as Response);
+
+      expect(mockRes.redirect).toHaveBeenCalledWith("/onboarding/summary");
+    });
+
+    it("should rethrow non-Zod errors", async () => {
+      const unexpectedError = new Error("Unexpected error");
+      vi.mocked(processDateOfBirthSubmission).mockImplementation(() => {
+        throw unexpectedError;
+      });
+
+      await expect(POST(mockReq as Request, mockRes as Response)).rejects.toThrow("Unexpected error");
     });
 
     it("should render errors for invalid date", async () => {
@@ -82,16 +98,19 @@ describe("date-of-birth page", () => {
       ]);
 
       const errors = {
-        dateOfBirth: { text: "Date of birth must be a real date" }
+        dateOfBirth: { field: "dateOfBirth", text: "Date of birth must be a real date", href: "#dobDay" }
       };
 
-      const errorSummary = [{ text: "Date of birth must be a real date", href: "#dobDay" }];
+      const errorSummary = {
+        titleText: "There is a problem",
+        errorList: [{ field: "dateOfBirth", text: "Date of birth must be a real date", href: "#dobDay" }]
+      };
 
-      (processDateOfBirthSubmission as any).mockImplementation(() => {
+      vi.mocked(processDateOfBirthSubmission).mockImplementation(() => {
         throw mockZodError;
       });
-      (formatZodErrors as any).mockReturnValue(errors);
-      (createErrorSummary as any).mockReturnValue(errorSummary);
+      vi.mocked(formatZodErrors).mockReturnValue(errors);
+      vi.mocked(createErrorSummary).mockReturnValue(errorSummary);
 
       await POST(mockReq as Request, mockRes as Response);
 
@@ -122,16 +141,19 @@ describe("date-of-birth page", () => {
       ]);
 
       const errors = {
-        dateOfBirth: { text: "Enter your date of birth" }
+        dateOfBirth: { field: "dateOfBirth", text: "Enter your date of birth", href: "#dobDay" }
       };
 
-      const errorSummary = [{ text: "Enter your date of birth", href: "#dobDay" }];
+      const errorSummary = {
+        titleText: "There is a problem",
+        errorList: [{ field: "dateOfBirth", text: "Enter your date of birth", href: "#dobDay" }]
+      };
 
-      (processDateOfBirthSubmission as any).mockImplementation(() => {
+      vi.mocked(processDateOfBirthSubmission).mockImplementation(() => {
         throw mockZodError;
       });
-      (formatZodErrors as any).mockReturnValue(errors);
-      (createErrorSummary as any).mockReturnValue(errorSummary);
+      vi.mocked(formatZodErrors).mockReturnValue(errors);
+      vi.mocked(createErrorSummary).mockReturnValue(errorSummary);
 
       await POST(mockReq as Request, mockRes as Response);
 

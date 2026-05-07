@@ -9,12 +9,12 @@ describe("session helpers", () => {
     mockSession = {
       id: "test-session",
       cookie: {} as any,
-      regenerate: () => {},
-      destroy: () => {},
-      reload: () => {},
-      save: () => {},
-      touch: () => {}
-    };
+      regenerate: () => mockSession,
+      destroy: () => mockSession,
+      reload: () => mockSession,
+      save: () => mockSession,
+      touch: () => mockSession
+    } as unknown as Session;
   });
 
   describe("getOnboardingSession", () => {
@@ -29,7 +29,7 @@ describe("session helpers", () => {
       };
 
       const data = getOnboardingSession(mockSession);
-      expect(data.name).toEqual({ firstName: "John", lastName: "Smith" });
+      expect(data?.name).toEqual({ firstName: "John", lastName: "Smith" });
     });
   });
 

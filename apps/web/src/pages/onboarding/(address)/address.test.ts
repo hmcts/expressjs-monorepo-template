@@ -1,4 +1,5 @@
 import type { Request, Response } from "express";
+import type { Session } from "express-session";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ZodError } from "zod";
 import { GET, POST } from "./address.js";
@@ -19,7 +20,7 @@ describe("address page", () => {
 
   beforeEach(() => {
     mockReq = {
-      session: {},
+      session: {} as Session,
       body: {},
       query: {}
     };
@@ -59,12 +60,26 @@ describe("address page", () => {
         postcode: "SW1A 1AA"
       };
 
-      (processAddressSubmission as any).mockImplementation(() => {});
-
       await POST(mockReq as Request, mockRes as Response);
 
       expect(processAddressSubmission).toHaveBeenCalledWith(mockReq.session, mockReq.body);
       expect(mockRes.redirect).toHaveBeenCalledWith("/onboarding/role");
+    });
+
+    it("should redirect to summary when return=summary query param is set", async () => {
+      mockReq.query = { return: "summary" };
+      await POST(mockReq as Request, mockRes as Response);
+
+      expect(mockRes.redirect).toHaveBeenCalledWith("/onboarding/summary");
+    });
+
+    it("should rethrow non-Zod errors", async () => {
+      const unexpectedError = new Error("Unexpected error");
+      vi.mocked(processAddressSubmission).mockImplementation(() => {
+        throw unexpectedError;
+      });
+
+      await expect(POST(mockReq as Request, mockRes as Response)).rejects.toThrow("Unexpected error");
     });
 
     it("should render errors for invalid address data", async () => {
@@ -78,7 +93,7 @@ describe("address page", () => {
         {
           code: "too_small",
           minimum: 1,
-          type: "string",
+          origin: "string",
           inclusive: true,
           exact: false,
           message: "Enter address line 1",
@@ -87,22 +102,25 @@ describe("address page", () => {
       ]);
 
       const errors = {
-        addressLine1: { text: "Enter address line 1" },
-        town: { text: "Enter town or city" },
-        postcode: { text: "Enter a valid postcode" }
+        addressLine1: { field: "addressLine1", text: "Enter address line 1", href: "#addressLine1" },
+        town: { field: "town", text: "Enter town or city", href: "#town" },
+        postcode: { field: "postcode", text: "Enter a valid postcode", href: "#postcode" }
       };
 
-      const errorSummary = [
-        { text: "Enter address line 1", href: "#addressLine1" },
-        { text: "Enter town or city", href: "#town" },
-        { text: "Enter a valid postcode", href: "#postcode" }
-      ];
+      const errorSummary = {
+        titleText: "There is a problem",
+        errorList: [
+          { field: "addressLine1", text: "Enter address line 1", href: "#addressLine1" },
+          { field: "town", text: "Enter town or city", href: "#town" },
+          { field: "postcode", text: "Enter a valid postcode", href: "#postcode" }
+        ]
+      };
 
-      (processAddressSubmission as any).mockImplementation(() => {
+      vi.mocked(processAddressSubmission).mockImplementation(() => {
         throw mockZodError;
       });
-      (formatZodErrors as any).mockReturnValue(errors);
-      (createErrorSummary as any).mockReturnValue(errorSummary);
+      vi.mocked(formatZodErrors).mockReturnValue(errors);
+      vi.mocked(createErrorSummary).mockReturnValue(errorSummary);
 
       await POST(mockReq as Request, mockRes as Response);
 
