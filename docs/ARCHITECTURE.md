@@ -55,43 +55,33 @@ expressjs-monorepo-template/
 │   ├── postgres/               # Prisma Studio & migration runner
 │   └── web/                    # Web frontend application
 │       └── src/
-│           └── modules.ts      # Module auto-discovery system
-├── libs/                       # Reusable packages (auto-discovered)
+│           ├── pages/          # File-based page routes (auto-discovered)
+│           └── locales/        # App-level translations
+├── libs/                       # Reusable packages
 │   ├── cloud-native-platform/  # Azure integration & monitoring
 │   ├── express-govuk-starter/  # GOV.UK Design System integration
 │   ├── postgres-prisma/        # Prisma client library
 │   ├── simple-router/          # File-based routing system
-│   └── [feature-modules]/      # Feature modules with pages/
+│   └── [feature-module]/       # Feature modules (e.g. onboarding)
 │       └── src/
-│           ├── pages/          # Page routes (auto-registered)
-│           ├── locales/        # Translations (auto-loaded)
-│           ├── views/          # Templates (auto-registered)
-│           └── assets/         # Module assets (auto-compiled)
+│           └── [domain]/       # Reusable functions consumed by apps
 ├── helm/                       # Helm charts
 │   └── expressjs-monorepo-template/  # Umbrella chart
 ├── e2e-tests/                  # Playwright E2E tests
 └── docs/                       # Documentation
 ```
 
-### Module Auto-Discovery System
+### File-Based Routing
 
-The web application features an intelligent module discovery system that automatically integrates feature modules:
+The web application uses Simple Router for automatic route discovery from the `apps/web/src/pages/` directory:
 
-1. **Discovery Process** (`apps/web/src/modules.ts`):
-   - Scans all directories under `libs/*/src`
-   - Identifies modules containing a `pages/` directory
-   - Returns paths for automatic registration
-
-2. **Automatic Integration**:
-   - **Routes**: Pages in `module/src/pages/` are automatically registered with Simple Router
-   - **Views**: Templates in `module/src/pages/` and `module/src/views/` are added to Nunjucks paths
-   - **Locales**: Translation files in `module/src/locales/` are automatically loaded
-   - **Assets**: CSS and JS files in `module/src/assets/` are compiled and served
-
-3. **Zero Configuration**:
-   - No manual registration required
-   - Simply create the module structure and it's automatically discovered
-   - Modules must be added to root `tsconfig.json` paths for TypeScript resolution
+1. **Route Discovery**: All `.ts`/`.js` files under `pages/` are scanned recursively
+2. **URL Mapping**:
+   - `pages/onboarding/name.ts` → `/onboarding/name`
+   - `pages/onboarding/(group)/page.ts` → `/onboarding/page` (parenthetical dirs are route groups — stripped from URL)
+   - `pages/onboarding/confirmation/[id].ts` → `/onboarding/confirmation/:id`
+3. **HTTP Methods**: Files export named functions (`GET`, `POST`) per HTTP method
+4. **Views**: Nunjucks templates co-located with controllers; `(group)` directories are added as view paths so templates remain discoverable
 
 ## Core Components
 
@@ -265,12 +255,10 @@ export const GET = async (req, res) => {
 };
 ```
 
-**Module Integration**:
+**Usage**:
 ```typescript
 // apps/web/src/app.ts
-const modulePaths = getModulePaths(); // Auto-discover modules
-const routeMounts = modulePaths.map((dir) => ({ pagesDir: `${dir}/pages` }));
-app.use(await createSimpleRouter(...routeMounts)); // Mount all module routes
+app.use(await createSimpleRouter({ path: `${__dirname}/pages` }));
 ```
 
 ## Helm Chart Structure
