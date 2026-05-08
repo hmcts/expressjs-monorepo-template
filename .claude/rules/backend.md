@@ -1,17 +1,17 @@
 ---
-paths: [libs/**/src/**/*.ts, apps/api/**/*.ts, libs/**/prisma/*.prisma]
+paths: [libs/**/src/**/*.ts, apps/api/**/*.ts, libs/postgres-prisma/prisma/*.prisma]
 ---
 
 # Backend Development Rules
 
 ## API Route Pattern
 
-Routes live in `src/routes/` directories of `libs` and export named HTTP method functions. Routes are auto-discovered by `createSimpleRouter`.
+Routes live in `apps/api/src/routes/` and export named HTTP method functions. Routes are auto-discovered by `createSimpleRouter`. Business logic is imported from `libs/`.
 
 ### Route Structure
 
 ```typescript
-// libs/[module]/src/routes/[resource].ts
+// apps/api/src/routes/[resource].ts
 import type { Request, Response } from "express";
 
 // GET /api/resource
@@ -37,12 +37,12 @@ export const POST = async (req: Request, res: Response) => {
 Use bracket notation for URL parameters:
 
 ```
-routes/users/[id].ts     → /api/users/:id
-routes/cases/[caseId].ts → /api/cases/:caseId
+apps/api/src/routes/users/[id].ts     → /api/users/:id
+apps/api/src/routes/cases/[caseId].ts → /api/cases/:caseId
 ```
 
 ```typescript
-// routes/users/[id].ts
+// apps/api/src/routes/users/[id].ts
 export const GET = async (req: Request, res: Response) => {
   const { id } = req.params;
   const user = await userService.findById(id);
@@ -618,23 +618,20 @@ res.status(400).json({
 ## File Organization
 
 ```
-libs/my-module/
-├── prisma/
-│   └── schema.prisma           # Database schema
-└── src/
-    ├── config.ts               # Module configuration (apiRoutes, etc.)
-    ├── index.ts                # Business logic exports
-    ├── routes/                 # API route handlers
-    │   ├── resource.ts         # /api/resource
-    │   ├── resource.test.ts
-    │   └── resource/
-    │       ├── [id].ts         # /api/resource/:id
-    │       └── [id].test.ts
-    └── resource/               # Domain logic
-        ├── resource-service.ts
-        ├── resource-service.test.ts
-        ├── resource-queries.ts
-        └── resource-validation.ts
+apps/api/src/routes/
+├── resource.ts                 # /api/resource
+├── resource.test.ts
+└── resource/
+    ├── [id].ts                 # /api/resource/:id
+    └── [id].test.ts
+
+libs/my-module/src/
+├── index.ts                    # Public exports
+└── resource/                   # Domain logic
+    ├── resource-service.ts
+    ├── resource-service.test.ts
+    ├── resource-queries.ts
+    └── resource-validation.ts
 ```
 
 ## Testing API Routes

@@ -110,8 +110,7 @@ The web application uses Simple Router for automatic route discovery from the `a
 - Page-specific content in controllers
 - Shared content in locale files
 - Co-located page templates and controllers
-- Module auto-discovery for seamless integration
-- Automatic asset compilation for modules
+- Business logic imported from `libs/` feature modules
 
 ### 2. REST API (`apps/api`)
 
@@ -146,7 +145,7 @@ The database layer is split into two components:
 
 #### Database Client (`libs/postgres-prisma`)
 - Provides Prisma ORM client for type-safe database queries
-- Collates Prisma schema fragments from multiple modules
+- Owns all Prisma schemas — feature modules do not define their own
 - Exports Prisma client for use across applications
 - Snake_case database naming convention
 - CamelCase TypeScript interface mapping
