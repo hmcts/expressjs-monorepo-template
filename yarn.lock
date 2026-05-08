@@ -898,6 +898,7 @@ __metadata:
     "@prisma/adapter-pg": "npm:7.8.0"
     "@prisma/client": "npm:7.8.0"
     "@types/pg": "npm:8.20.0"
+    nodemon: "npm:3.1.14"
     pg: "npm:8.20.0"
     prisma: "npm:7.8.0"
   languageName: unknown

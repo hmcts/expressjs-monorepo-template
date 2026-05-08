@@ -254,7 +254,7 @@ Add a Prisma model file under `libs/postgres-prisma/prisma/schema/`:
 ```
 libs/postgres-prisma/prisma/schema/my-feature.prisma
 ```
-Prisma's multi-file schema picks it up automatically. Run `yarn db:migrate:dev` to generate the migration and refresh the client.
+Prisma's multi-file schema picks it up automatically. While `yarn dev` is running, saving a `.prisma` file regenerates the Prisma client and triggers an app restart — no manual step needed for the client side. When you're ready to land the schema change, run `yarn db:migrate:dev` to create + apply the migration (this stays a deliberate step so you control the migration name).
 
 #### If the feature needs pages or static assets
 
