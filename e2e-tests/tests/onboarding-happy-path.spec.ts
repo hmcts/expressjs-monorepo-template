@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import { AxeBuilder } from '@axe-core/playwright';
 
 test.describe('Onboarding Form - Happy Path Journey', () => {
   test('should complete the full onboarding journey successfully', async ({ page }) => {

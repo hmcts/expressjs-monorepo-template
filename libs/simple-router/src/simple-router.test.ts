@@ -173,6 +173,21 @@ export const Post = (req, res) => res.send('mixed case post');
       expect(postResponse.text).toBe("mixed case post");
     });
 
+    it("should strip (group) segments from url", async () => {
+      mkdirSync(join(testDir, "(footer)"), { recursive: true });
+      writeFileSync(join(testDir, "(footer)", "privacy-policy.ts"), `export const GET = (req, res) => res.send('Privacy');`);
+
+      const app = express();
+      app.use(await createSimpleRouter({ path: testDir }));
+
+      const response = await request(app).get("/privacy-policy");
+      const groupPath = await request(app).get("/(footer)/privacy-policy");
+
+      expect(response.status).toBe(200);
+      expect(response.text).toBe("Privacy");
+      expect(groupPath.status).toBe(404);
+    });
+
     it("should normalize prefix correctly", async () => {
       writeFileSync(join(testDir, "index.ts"), `export const GET = (req, res) => res.send('Test');`);
 

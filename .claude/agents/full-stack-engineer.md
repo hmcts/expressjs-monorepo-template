@@ -101,115 +101,47 @@ Read @CLAUDE.md and follow the guidelines.
 
 ### Application Structure
 
-Features should be added as libraries under `libs/`. The `apps/` directory is for composing these libraries into deployable applications.
+`libs/` contains reusable business logic consumed by multiple apps. `apps/` composes libs into deployable applications — pages, routes, and templates live in apps.
 
 ```
 apps/
 ├── web/                       # Frontend application
-│   ├── src/
-│   │   ├── pages/             # Page controllers and templates
-│   │   ├── locales/           # Shared i18n translations
-│   │   └── views/             # Shared view templates
+│   └── src/
+│       ├── pages/             # Page controllers and Nunjucks templates
+│       └── locales/           # Shared i18n translations
 └── api/                       # Backend API
     └── src/
-        └── routes/            # API endpoints
+        └── routes/            # API route handlers
 
 libs/
 └── [feature]/
-    ├── package.json           # Module metadata and scripts
-    ├── tsconfig.json          # TypeScript configuration
-    ├── prisma/                # Prisma schema (optional)
+    ├── package.json
+    ├── tsconfig.json
     └── src/
-        ├── routes/            # API route handlers (auto-discovered)
-        ├── pages/             # Page route handlers & templates (auto-discovered)
-        ├── locales/           # i18n translations (auto-loaded)
-        ├── views/             # Shared templates (auto-registered)
-        ├── assets/            # Module-specific frontend assets
-        │   ├── css/           # SCSS/CSS files
-        │   └── js/            # JavaScript/TypeScript files
+        ├── index.ts           # Public exports (services, validation, types)
         └── [domain]/          # Domain-driven structure
-            ├── model.ts       # Data models
             ├── service.ts     # Business logic
-            └── queries.ts     # Database queries
+            ├── service.test.ts
+            ├── validation.ts
+            └── queries.ts     # Database queries (imports from @hmcts/postgres-prisma)
 ```
 
-### Module Registration System
+Prisma schemas live in `libs/postgres-prisma/prisma/` — not in individual feature libs.
 
-The web and API applications use explicit imports to register modules, enabling turborepo to properly track dependencies and optimize builds. Each module exports standardized interfaces for different types of functionality.
+### Using a Lib from an App
 
-**IMPORTANT: Configuration Separation Pattern**
+Import directly from the lib package — no registration step required:
 
-To avoid circular dependencies during Prisma client generation, module configuration MUST be separated from business logic exports:
-
-- **`src/config.ts`** - Module configuration exports (pageRoutes, apiRoutes, prismaSchemas, assets)
-- **`src/index.ts`** - Business logic exports only (services, utilities, types)
-
-**Module configuration structure:**
 ```typescript
-// libs/my-feature/src/config.ts
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Module configuration for app registration
-export const pageRoutes = { path: path.join(__dirname, "pages") };
-export const apiRoutes = { path: path.join(__dirname, "routes") };
-export const prismaSchemas = path.join(__dirname, "../prisma");
-export const assets = path.join(__dirname, "assets/");
+// apps/web/src/pages/onboarding/(name)/name.ts
+import { processNameSubmission, getSessionDataForPage } from "@hmcts/onboarding";
 ```
 
-**Business logic exports:**
 ```typescript
 // libs/my-feature/src/index.ts
-// Business logic exports only
 export * from "./my-feature/service.js";
 export * from "./my-feature/validation.js";
-export * from "./my-feature/queries.js";
 ```
-
-**Package.json exports configuration:**
-```json
-{
-  "exports": {
-    ".": {
-      "production": "./dist/index.js",
-      "default": "./src/index.ts"
-    },
-    "./config": {
-      "production": "./dist/config.js",
-      "default": "./src/config.ts"
-    }
-  }
-}
-```
-
-**Application registration:**
-```typescript
-// apps/web/src/app.ts
-import { pageRoutes as myFeaturePages } from "@hmcts/my-feature/config";
-
-app.use(await createGovukFrontend(app, [myFeaturePages.path], { /* options */ }));
-app.use(await createSimpleRouter(myFeaturePages));
-
-// apps/web/vite.build.ts
-import { assets as myFeatureAssets } from "@hmcts/my-feature/config";
-const baseConfig = createBaseViteConfig([
-  path.join(__dirname, "src"),
-  myFeatureAssets
-]);
-
-// apps/api/src/app.ts
-import { apiRoutes as myFeatureRoutes } from "@hmcts/my-feature/config";
-app.use(await createSimpleRouter(myFeatureRoutes));
-
-// apps/postgres/src/schema-discovery.ts
-import { prismaSchemas as myFeatureSchemas } from "@hmcts/my-feature/config";
-const schemaPaths = [myFeatureSchemas, /* other schemas */];
-```
-
-**NOTE**: By default all pages and routes are mounted at root level. To namespace routes, create subdirectories under `pages/`. E.g. `pages/admin/` for `/admin/*` routes.
 
 ### Implementation Patterns
 
@@ -234,9 +166,9 @@ export async function createUser(request: CreateUserRequest) {
   });
 }
 
-// libs/user-management/src/pages/create-user.ts
+// apps/web/src/pages/user-management/create-user.ts
 import type { Request, Response } from "express";
-import { createUser } from "../user/user-service.js";
+import { createUser } from "@hmcts/user-management";
 
 export const GET = async (_req: Request, res: Response) => {
   res.render("create-user", {
@@ -287,8 +219,6 @@ interface UserSession extends Session {
 
 #### Module Configuration Pattern
 
-Nunjucks templates need to be copied to `dist/` for production. Use a build script in `package.json`:
-
 ```json
 // libs/user-management/package.json
 {
@@ -299,24 +229,16 @@ Nunjucks templates need to be copied to `dist/` for production. Use a build scri
     ".": {
       "production": "./dist/index.js",
       "default": "./src/index.ts"
-    },
-    "./config": {
-      "production": "./dist/config.js",
-      "default": "./src/config.ts"
     }
   },
   "scripts": {
-    "build": "tsc && yarn build:nunjucks",
-    "build:nunjucks": "mkdir -p dist/pages && cd src/pages && find . -name '*.njk' -exec sh -c 'mkdir -p ../../dist/pages/$(dirname {}) && cp {} ../../dist/pages/{}' \\;",
+    "build": "tsc",
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest watch",
     "format": "biome format --write .",
     "lint": "biome check .",
     "lint:fix": "biome check --write ."
-  },
-  "peerDependencies": {
-    "express": "^5.1.0"
   }
 }
 
@@ -330,11 +252,11 @@ Nunjucks templates need to be copied to `dist/` for production. Use a build scri
     "declarationMap": true
   },
   "include": ["src/**/*"],
-  "exclude": ["**/*.test.ts", "dist", "node_modules", "src/assets/"]
+  "exclude": ["**/*.test.ts", "dist", "node_modules"]
 }
 ```
 
-**Important**: Remember to add your module to the root `tsconfig.json`:
+**Important**: Add your module to the root `tsconfig.json`:
 ```json
 {
   "compilerOptions": {
@@ -347,7 +269,7 @@ Nunjucks templates need to be copied to `dist/` for production. Use a build scri
 
 #### Accessible Form Pattern
 ```html
-<!-- libs/user-management/src/pages/create-user.njk -->
+<!-- apps/web/src/pages/user-management/create-user.njk -->
 {% extends "layouts/default.njk" %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
@@ -424,9 +346,8 @@ type CreateUserData = {
 
 #### Module Setup ✅
 - [ ] Module registered in root `tsconfig.json` paths
-- [ ] `package.json` includes build:nunjucks script if needed
 - [ ] `tsconfig.json` configured with proper includes/excludes
-- [ ] Module structure follows convention (pages/, locales/, assets/)
+- [ ] Lib exports business logic only — no pages, no routes, no Prisma schemas
 
 #### Frontend ✅
 - [ ] WCAG 2.2 AA compliance tested
@@ -705,7 +626,7 @@ export function createCacheHelpers(redis: Redis) {
 - **Generic utility files**: Be specific (dates/formatting.ts not utils.ts or date-formatting.ts)
 - **Circular dependencies**: Keep clear dependency graphs
 - **Creating types.ts files**: Types should be next to implementation, DO NOT CREATE types.ts
-- **Changing apps/**: New features should be in libs/, apps/ is for composition only
+- **Business logic in apps/**: Services, validation, and queries belong in libs/ so they can be shared across apps
 
 ## Security Requirements
 

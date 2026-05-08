@@ -91,7 +91,6 @@ expressjs-monorepo-template/
 │   ├── express-gov-uk-starter/ # GOV.UK Frontend integration
 │   ├── postgres-prisma/        # Database client (Prisma)
 │   ├── simple-router/          # Simple Router features
-│   ├── footer-pages/           # Module with example footer pages
 │   └── [your-module]/          # Your feature modules
 │       └── src/
 │           ├── pages/          # Page routes (imported in web app)

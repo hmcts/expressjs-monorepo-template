@@ -130,5 +130,10 @@ describe("navigation helpers", () => {
       const role = { roleType: "other" };
       expect(formatRoleForDisplay(role)).toBe("Other");
     });
+
+    it("should fall back to roleType for unknown role", () => {
+      const role = { roleType: "unknown-role" };
+      expect(formatRoleForDisplay(role as any)).toBe("unknown-role");
+    });
   });
 });

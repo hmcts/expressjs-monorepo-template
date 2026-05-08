@@ -22,7 +22,6 @@
     "@hmcts/cloud-native-platform": "workspace:*",
     "@hmcts/cookie-manager": "1.1.0",
     "@hmcts/express-govuk-starter": "workspace:*",
-    "@hmcts/footer-pages": "workspace:*",
     "@hmcts/onboarding": "workspace:*",
     "@hmcts/postgres-prisma": "workspace:*",
     "@hmcts/simple-router": "workspace:*",

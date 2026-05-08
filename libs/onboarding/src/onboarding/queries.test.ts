@@ -141,15 +141,27 @@ describe("queries", () => {
           id: "test-1",
           firstName: "John",
           lastName: "Doe",
-          submittedAt: new Date("2024-01-15"),
-          roleType: "prosecutor"
+          dateOfBirth: new Date("1990-01-01"),
+          addressLine1: "1 Test St",
+          addressLine2: null,
+          town: "London",
+          postcode: "SW1A 1AA",
+          roleType: "prosecutor",
+          roleOther: null,
+          submittedAt: new Date("2024-01-15")
         },
         {
           id: "test-2",
           firstName: "Jane",
           lastName: "Smith",
-          submittedAt: new Date("2024-01-14"),
-          roleType: "defendant"
+          dateOfBirth: new Date("1985-01-01"),
+          addressLine1: "2 Test St",
+          addressLine2: null,
+          town: "London",
+          postcode: "SW1A 1AA",
+          roleType: "defendant",
+          roleOther: null,
+          submittedAt: new Date("2024-01-14")
         }
       ];
 
@@ -172,7 +184,7 @@ describe("queries", () => {
     });
 
     it("should get recent submissions with custom limit", async () => {
-      const mockResults = [];
+      const mockResults: never[] = [];
 
       vi.mocked(prisma.onboardingSubmission.findMany).mockResolvedValue(mockResults);
 

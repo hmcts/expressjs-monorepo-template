@@ -34,17 +34,12 @@ expressjs-monorepo-template/
 │   └── web/                    # Web frontend (Express 5.x + Nunjucks)
 ├── libs/                       # Modular packages (explicitly registered)
 │   ├── cloud-native-platform/  # Cloud Native Platform features
-│   ├── express-gov-uk-starter/ # GOV.UK Frontend integration
+│   ├── express-govuk-starter/  # GOV.UK Frontend integration
 │   ├── postgres-prisma/        # Database client (Prisma)
 │   ├── simple-router/          # Simple Router features
-│   ├── footer-pages/           # Module with example footer pages
 │   └── [your-module]/          # Your feature modules
 │       └── src/
-│           ├── pages/          # Page routes (imported in web app)
-│           ├── routes/         # API routes (imported in API app)
-│           ├── prisma/         # Prisma schema
-│           ├── locales/        # Translations (loaded by govuk-starter)
-│           └── assets/         # Module assets (compiled by vite)
+│           └── [domain]/       # Reusable functions consumed by apps
 ├── e2e-tests/                  # End-to-end tests (Playwright)
 ├── docs/                       # Documentation and ADRs
 ├── helm/                       # Helm charts for Kubernetes deployment

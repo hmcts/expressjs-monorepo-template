@@ -23,12 +23,12 @@ describe("service functions", () => {
     mockSession = {
       id: "test-session",
       cookie: {} as any,
-      regenerate: () => {},
-      destroy: () => {},
-      reload: () => {},
-      save: () => {},
-      touch: () => {}
-    };
+      regenerate: () => mockSession,
+      destroy: () => mockSession,
+      reload: () => mockSession,
+      save: () => mockSession,
+      touch: () => mockSession
+    } as unknown as Session;
   });
 
   describe("processNameSubmission", () => {
@@ -121,7 +121,9 @@ describe("service functions", () => {
 
       const result = processRoleSubmission(mockSession, formData);
       expect(result.roleType).toBe("other");
-      expect(result.roleOther).toBe("Product Manager");
+      if (result.roleType === "other") {
+        expect(result.roleOther).toBe("Product Manager");
+      }
     });
 
     it("should throw error for other role without specification", () => {
@@ -306,6 +308,11 @@ describe("service functions", () => {
     });
   });
 
+  it("should throw when required session data is missing", async () => {
+    const mockSession = { id: "session-123", onboarding: { name: { firstName: "John", lastName: "Doe" } } } as any;
+    await expect(submitOnboarding(mockSession)).rejects.toThrow("Session data incomplete - cannot submit");
+  });
+
   describe("submitOnboarding", () => {
     it("should submit onboarding data and return confirmation ID", async () => {
       const mockSession = {
@@ -322,7 +329,19 @@ describe("service functions", () => {
         }
       } as any;
 
-      const mockSubmission = { id: "submission-456" };
+      const mockSubmission = {
+        id: "submission-456",
+        firstName: "John",
+        lastName: "Doe",
+        dateOfBirth: new Date(1990, 5, 15),
+        addressLine1: "123 Test Street",
+        addressLine2: null,
+        town: "London",
+        postcode: "SW1A 1AA",
+        roleType: "prosecutor",
+        roleOther: null,
+        submittedAt: new Date()
+      };
       vi.mocked(createOnboardingSubmission).mockResolvedValue(mockSubmission);
 
       const result = await submitOnboarding(mockSession);

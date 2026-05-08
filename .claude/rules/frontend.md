@@ -1,5 +1,5 @@
 ---
-paths: libs/**/src/pages/**/*.ts, libs/**/src/pages/**/*.njk, apps/web/**/*.ts
+paths: [apps/web/src/pages/**/*.ts, apps/web/src/pages/**/*.njk, apps/web/**/*.ts]
 ---
 
 # Frontend Development Rules
@@ -97,12 +97,12 @@ Components are reusable parts of the user interface.
 
 ## Page Controller Pattern
 
-Controllers live in the `src/pages/` folder of modules in `libs/` with `GET` and `POST` exports. Routes are auto-generated from file names.
+Controllers live in `apps/web/src/pages/` with `GET` and `POST` exports. Routes are auto-generated from file names.
 
 ### Controller Structure
 
 ```typescript
-// libs/[module]/src/pages/[page-name].ts
+// apps/web/src/pages/[feature]/[page-name].ts
 import type { Request, Response } from "express";
 
 const en = {
@@ -392,15 +392,15 @@ const sessionData = (req.session as MyModuleSession).myModule;
 ## File Organization
 
 ```
-libs/my-module/src/pages/
+apps/web/src/pages/[feature]/
 ├── form-step-one.ts       # Controller
 ├── form-step-one.njk      # Template
 ├── form-step-one.test.ts  # Tests
 ├── form-step-two.ts
 ├── form-step-two.njk
-└── admin/                 # Nested route: /admin/*
-    ├── dashboard.ts
-    └── dashboard.njk
+└── (group)/               # Route group — dir stripped from URL
+    ├── page.ts
+    └── page.njk
 ```
 
 ## Anti-Patterns to Avoid

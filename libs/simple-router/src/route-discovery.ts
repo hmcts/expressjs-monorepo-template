@@ -43,6 +43,7 @@ function isRouteFile(entry: Dirent): boolean {
 
 function filePathToUrlPath(filePath: string): string {
   const normalizedPath = `/${filePath}`
+    .replace(/\/\([^)]+\)/g, "") // strip (group) segments from URL
     .replace(/\/index\.(ts|js)$/, "/") // remove the /index from paths
     .replace(/\.(ts|js)$/, "") // remove the .ts from the paths
     .replace(/\[([a-zA-Z0-9_]+)\]/g, ":$1"); // convert [param] to :param

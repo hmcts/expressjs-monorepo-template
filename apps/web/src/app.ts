@@ -10,8 +10,6 @@ import {
   expressSessionRedis,
   notFoundHandler
 } from "@hmcts/express-govuk-starter";
-import { pageRoutes as footerPages } from "@hmcts/footer-pages/config";
-import { pageRoutes as onboardingPages } from "@hmcts/onboarding/config";
 import { createSimpleRouter } from "@hmcts/simple-router";
 import cookieParser from "cookie-parser";
 import type { Express } from "express";
@@ -52,7 +50,7 @@ export async function createApp(): Promise<Express> {
     })
   );
 
-  const modulePaths = [__dirname, `${onboardingPages.path}/../`, `${footerPages.path}/../`];
+  const modulePaths = [__dirname];
 
   await configureGovuk(app, modulePaths, {
     nunjucksGlobals: {
@@ -72,7 +70,7 @@ export async function createApp(): Promise<Express> {
     }
   });
 
-  app.use(await createSimpleRouter({ path: `${__dirname}/pages` }, onboardingPages, footerPages));
+  app.use(await createSimpleRouter({ path: `${__dirname}/pages` }));
   app.use(notFoundHandler());
   app.use(errorHandler());
 
