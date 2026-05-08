@@ -12,6 +12,11 @@
       "outputs": ["dist/**", "build/**"],
       "inputs": ["**/*.ts", "**/*.tsx", "**/*.prisma", "package.json"]
     },
+    "dev": {
+      "cache": false,
+      "persistent": true,
+      "dependsOn": ["^build"]
+    },
     "test": {
       "outputs": ["coverage/**"],
       "inputs": ["package.json", "**/*.ts", "**/*.tsx", "**/*.prisma"],

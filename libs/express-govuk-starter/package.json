@@ -2,15 +2,14 @@
   "name": "@hmcts/express-govuk-starter",
   "version": "1.0.0",
   "type": "module",
-  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
-      "production": "./dist/index.js",
-      "default": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     },
     "./src/assets/vite-config.js": {
-      "production": "./dist/assets/vite-config.js",
-      "default": "./src/assets/vite-config.ts"
+      "types": "./dist/assets/vite-config.d.ts",
+      "default": "./dist/assets/vite-config.js"
     }
   },
   "scripts": {

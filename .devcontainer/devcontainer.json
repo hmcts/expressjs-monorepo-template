@@ -31,11 +31,22 @@
   },
 
   "postCreateCommand": "bash .devcontainer/setup.sh",
+  "postStartCommand": "sudo sysctl -w fs.inotify.max_user_instances=512 fs.inotify.max_user_watches=524288 >/dev/null 2>&1 || true",
 
   "customizations": {
     "vscode": {
       "settings": {
-        "files.autoSave": "onFocusChange"
+        "files.autoSave": "onFocusChange",
+        "files.watcherExclude": {
+          "**/node_modules/**": true,
+          "**/dist/**": true,
+          "**/build/**": true,
+          "**/.yarn/**": true,
+          "**/.turbo/**": true,
+          "**/coverage/**": true,
+          "**/.git/objects/**": true,
+          "**/.git/subtree-cache/**": true
+        }
       },
       "extensions": [
         "ms-azuretools.vscode-docker",

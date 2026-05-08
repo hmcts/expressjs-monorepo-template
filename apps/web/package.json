@@ -5,10 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently -r \"yarn:dev:watch\" \"yarn:build:dev:watch\"",
-    "dev:watch": "mkdir -p dist/assets; nodemon -w yarn.lock -w dist/assets -w src -w ../../libs -e 'json,ts,scss,js,css' -x tsx src/server.ts",
+    "dev:watch": "mkdir -p dist/assets; nodemon -w yarn.lock -w dist/assets -w src -w '../../libs/*/dist' -e 'json,ts,scss,js,css' --delay 200ms -x tsx src/server.ts",
     "dev:nowatch": "yarn build:dev && tsx src/server.ts",
     "build:dev:watch": "yarn build:dev --watch",
-    "build:dev": "NODE_OPTIONS='--import tsx' vite build --config vite.build.ts",
+    "build:dev": "vite build --config vite.build.ts --configLoader runner",
     "build": "tsc && vite build --config vite.build.ts --configLoader runner",
     "clean": "rm -rf dist",
     "start": "node dist/server.js",

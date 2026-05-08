@@ -158,16 +158,15 @@ yarn db:drop                    # Drop all tables and reset the database
 
 ### Creating a New Feature Module
 
-1. **Create module structure**:
+Feature libs under `libs/` hold **pure domain logic** — services, queries, validation, navigation. Pages, route handlers, and assets live in the consuming apps (`apps/web/src/pages/`, `apps/api/src/routes/`, `apps/web/src/assets/`). Prisma schemas live in `libs/postgres-prisma/prisma/schema/`. There is no per-module registration metadata; apps import named functions directly.
+
+1. **Create the lib**:
 ```bash
-mkdir -p libs/my-feature/src/pages      # Page controllers and templates
-mkdir -p libs/my-feature/src/locales    # Translation files (optional)
-mkdir -p libs/my-feature/src/assets/css # Module styles (optional)
-mkdir -p libs/my-feature/src/assets/js  # Module scripts (optional)
+mkdir -p libs/my-feature/src/my-feature
 cd libs/my-feature
 ```
 
-2. **Initialize package.json**:
+2. **`package.json`**:
 ```json
 {
   "name": "@hmcts/my-feature",
@@ -175,17 +174,12 @@ cd libs/my-feature
   "type": "module",
   "exports": {
     ".": {
-      "production": "./dist/index.js",
-      "default": "./src/index.ts"
-    },
-    "./config": {
-      "production": "./dist/config.js",
-      "default": "./src/config.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     }
   },
   "scripts": {
-    "build": "tsc && yarn build:nunjucks",
-    "build:nunjucks": "mkdir -p dist/pages && cd src/pages && find . -name '*.njk' -exec sh -c 'mkdir -p ../../dist/pages/$(dirname {}) && cp {} ../../dist/pages/{}' \\;",
+    "build": "tsc",
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest watch",
@@ -198,9 +192,8 @@ cd libs/my-feature
   }
 }
 ```
-**Note**: The `build:nunjucks` script is required if your module contains Nunjucks templates.
 
-3. **Create tsconfig.json**:
+3. **`tsconfig.json`**:
 ```json
 {
   "extends": "../../tsconfig.json",
@@ -211,72 +204,66 @@ cd libs/my-feature
     "declarationMap": true
   },
   "include": ["src/**/*"],
-  "exclude": ["**/*.test.ts", "**/*.spec.ts", "dist", "node_modules", "src/assets/"]
+  "exclude": ["**/*.test.ts", "dist", "node_modules"]
 }
 ```
 
-4. **Register module in root tsconfig.json**:
+4. **Add a path mapping in the root `tsconfig.json`** (used by IDE/tsserver):
 ```json
 {
   "compilerOptions": {
     "paths": {
-      // ... existing paths ...
       "@hmcts/my-feature": ["libs/my-feature/src"]
     }
   }
 }
 ```
 
-5. **Create src/config.ts for module configuration**:
+5. **Write the domain code** under `src/my-feature/` — typically `service.ts`, `queries.ts`, `validation.ts`, with co-located `*.test.ts` files. Re-export from `src/index.ts`:
 ```typescript
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// Module configuration for app registration
-export const pageRoutes = { path: path.join(__dirname, "pages") };
-export const apiRoutes = { path: path.join(__dirname, "routes") };
-export const prismaSchemas = path.join(__dirname, "../prisma");
-export const assets = path.join(__dirname, "assets/");
-```
-
-**Create src/index.ts for business logic exports**:
-```typescript
-// Business logic exports only
 export * from "./my-feature/service.js";
+export * from "./my-feature/queries.js";
 export * from "./my-feature/validation.js";
 ```
 
-**IMPORTANT**: Config exports (pageRoutes, apiRoutes, prismaSchemas, assets) must be in a separate `config.ts` file to avoid circular dependencies during Prisma client generation. Apps import config using the `/config` path (e.g., `@hmcts/my-feature/config`).
+6. **Add the lib as a dependency** of each consuming app:
+```jsonc
+// apps/web/package.json (or apps/api/package.json)
+"dependencies": {
+  "@hmcts/my-feature": "workspace:*"
+}
+```
+Then run `yarn install` from the repo root.
 
-6. **Register module in applications**:
-
+7. **Use it from the apps** with named imports:
 ```typescript
-// apps/web/src/app.ts
-import { pageRoutes as myFeaturePages } from "@hmcts/my-feature/config";
+// apps/api/src/routes/my-feature/index.ts
+import { createMyFeature } from "@hmcts/my-feature";
 
-app.use(await createGovukFrontend(app, [myFeaturePages.path], { /* options */ }));
-app.use(await createSimpleRouter(myFeaturePages));
-
-// apps/web/vite.config.ts
-import { assets as myFeatureAssets } from "@hmcts/my-feature/config";
-const baseConfig = createBaseViteConfig([
-  path.join(__dirname, "src"),
-  myFeatureAssets
-]);
-
-// apps/api/src/app.ts
-import { apiRoutes as myFeatureRoutes } from "@hmcts/my-feature/config";
-app.use(await createSimpleRouter(myFeatureRoutes));
-
-// libs/postgres-prisma/src/schema-discovery.ts
-import { prismaSchemas as myFeatureSchemas } from "@hmcts/my-feature/config";
-const schemaPaths = [myFeatureSchemas, /* other schemas */];
+export const POST = async (req, res) => {
+  const result = await createMyFeature(req.body);
+  res.status(201).json(result);
+};
 ```
 
-   - **Add dependency** to relevant app package.json files: `"@hmcts/my-feature": "workspace:*"`
+That's it — no further wiring. `turbo run dev` picks the new lib up automatically and runs its `tsc --watch`; the apps' nodemon watches `../../libs/*/dist` so they restart whenever the lib emits.
+
+#### If the feature needs database tables
+
+Add a Prisma model file under `libs/postgres-prisma/prisma/schema/`:
+```
+libs/postgres-prisma/prisma/schema/my-feature.prisma
+```
+Prisma's multi-file schema picks it up automatically. Run `yarn db:migrate:dev` to generate the migration and refresh the client.
+
+#### If the feature needs pages or static assets
+
+Pages, templates, and assets are **app-scoped**, not lib-scoped:
+- **Web pages** — `apps/web/src/pages/my-feature/(group)/page.{ts,njk}`. `simple-router` discovers them; `(group)` segments don't appear in the URL.
+- **API routes** — `apps/api/src/routes/my-feature/[id].ts` (dynamic) or `apps/api/src/routes/my-feature/index.ts`.
+- **SCSS/JS bundles** — `apps/web/src/assets/css/my-feature.scss`, `apps/web/src/assets/js/my-feature.ts`. Vite picks them up from `apps/web/src/assets/`.
+
+Each handler imports its lib's domain functions directly (`import { … } from "@hmcts/my-feature"`).
 
 ## 🧪 Testing Strategy
 

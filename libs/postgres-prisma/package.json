@@ -5,12 +5,13 @@
   "type": "module",
   "exports": {
     ".": {
-      "production": "./dist/index.js",
-      "default": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     }
   },
   "scripts": {
     "build": "prisma generate --no-hints && tsc",
+    "dev": "tsc --watch",
     "generate": "prisma generate --no-hints",
     "test": "vitest run",
     "test:watch": "vitest watch",

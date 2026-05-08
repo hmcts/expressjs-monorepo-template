@@ -19,7 +19,6 @@ COPY --from=build /opt/app/libs ./libs
 
 RUN yarn workspaces focus @hmcts/crons --production
 ENV NODE_ENV=production
-ENV NODE_OPTIONS='--conditions=production'
 
 WORKDIR /opt/app/apps/crons
 CMD ["node", "dist/index.js"]

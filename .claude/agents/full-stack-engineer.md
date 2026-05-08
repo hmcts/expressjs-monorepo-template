@@ -227,8 +227,8 @@ interface UserSession extends Session {
   "type": "module",
   "exports": {
     ".": {
-      "production": "./dist/index.js",
-      "default": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     }
   },
   "scripts": {
