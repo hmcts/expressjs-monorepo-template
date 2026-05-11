@@ -208,7 +208,7 @@ cd libs/my-feature
 }
 ```
 
-4. **Add a path mapping in the root `tsconfig.json`** (used by IDE/tsserver):
+4. **Add a path mapping in the root `tsconfig.json`** — used by IDE/tsserver and by `vitest` (via `vite-tsconfig-paths`) to resolve `@hmcts/my-feature` to `src/` before `dist/` exists:
 ```json
 {
   "compilerOptions": {
