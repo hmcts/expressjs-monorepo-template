@@ -43,7 +43,7 @@
   "devDependencies": {
     "@biomejs/biome": "2.4.15",
     "@changesets/cli": "2.27.10",
-    "@types/node": "24.12.2",
+    "@types/node": "24.12.3",
     "@types/supertest": "7.2.0",
     "@vitest/coverage-v8": "4.1.5",
     "@vitest/ui": "4.1.5",
