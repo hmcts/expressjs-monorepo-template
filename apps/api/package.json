@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "nodemon --watch src --exec tsx src/server.ts",
+    "dev": "nodemon --watch src --watch '../../libs/*/dist' --ext 'ts,js,json' --delay 200ms --exec tsx src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
     "test": "vitest run",

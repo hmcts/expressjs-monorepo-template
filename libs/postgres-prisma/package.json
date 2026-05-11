@@ -5,12 +5,13 @@
   "type": "module",
   "exports": {
     ".": {
-      "production": "./dist/index.js",
-      "default": "./src/index.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     }
   },
   "scripts": {
     "build": "prisma generate --no-hints && tsc",
+    "dev": "concurrently -n tsc,prisma -r \"tsc --watch\" \"nodemon --watch prisma --ext prisma --exec 'prisma generate --no-hints && mkdir -p dist && touch dist/.prisma-generated'\"",
     "generate": "prisma generate --no-hints",
     "test": "vitest run",
     "test:watch": "vitest watch",
@@ -25,6 +26,7 @@
   },
   "devDependencies": {
     "@types/pg": "8.20.0",
+    "nodemon": "3.1.14",
     "prisma": "7.8.0"
   }
 }

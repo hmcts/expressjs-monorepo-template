@@ -4,12 +4,8 @@
   "type": "module",
   "exports": {
     ".": {
-      "production": "./dist/index.js",
-      "default": "./src/index.ts"
-    },
-    "./config": {
-      "production": "./dist/config.js",
-      "default": "./src/config.ts"
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
     }
   },
   "scripts": {
