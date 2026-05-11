@@ -31,7 +31,10 @@
     "db:migrate:dev": "yarn workspace @hmcts/postgres run migrate:dev",
     "db:generate": "yarn workspace @hmcts/postgres-prisma run generate",
     "db:studio": "yarn workspace @hmcts/postgres run studio",
-    "db:drop": "yarn workspace @hmcts/postgres run migrate:reset"
+    "db:drop": "yarn workspace @hmcts/postgres run migrate:reset",
+    "changeset": "changeset",
+    "version-packages": "changeset version && yarn install --mode=update-lockfile",
+    "release": "yarn build && changeset publish"
   },
   "keywords": [],
   "author": "HMCTS",
@@ -39,6 +42,7 @@
   "description": "",
   "devDependencies": {
     "@biomejs/biome": "2.4.15",
+    "@changesets/cli": "2.27.10",
     "@types/node": "24.12.2",
     "@types/supertest": "7.2.0",
     "@vitest/coverage-v8": "4.1.5",

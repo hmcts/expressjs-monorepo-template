@@ -1,6 +1,15 @@
 {
   "name": "@hmcts/simple-router",
   "version": "1.0.0",
+  "description": "Lightweight file-system router for Express, inspired by Next.js routing.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hmcts/expressjs-monorepo-template.git",
+    "directory": "libs/simple-router"
+  },
+  "homepage": "https://github.com/hmcts/expressjs-monorepo-template/tree/master/libs/simple-router#readme",
+  "bugs": "https://github.com/hmcts/expressjs-monorepo-template/issues",
   "type": "module",
   "files": [
     "dist",
@@ -11,6 +20,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
   },
   "scripts": {
     "build": "tsc",
