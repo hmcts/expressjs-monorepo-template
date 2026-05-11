@@ -42,7 +42,6 @@ on:
 env:
   CHANGE_ID: ${{ inputs.change-id }}
   REGISTRY: hmctsprod.azurecr.io
-  REGISTRY_NAME: hmctsprod
 
 jobs:
   helm-deploy:
@@ -91,7 +90,7 @@ jobs:
           allow-no-subscriptions: true
 
       - name: ACR login
-        run: az acr login --name ${{ env.REGISTRY_NAME }}
+        run: az acr login --name "${REGISTRY%.azurecr.io}"
 
       - name: Deploy to preview
         if: inputs.environment == 'preview'

@@ -18,7 +18,6 @@ on:
 
 env:
   REGISTRY: hmctsprod.azurecr.io
-  REGISTRY_NAME: hmctsprod
 
 jobs:
   promote:
@@ -71,7 +70,7 @@ jobs:
           allow-no-subscriptions: true
 
       - name: ACR login
-        run: az acr login --name ${{ env.REGISTRY_NAME }}
+        run: az acr login --name "${REGISTRY%.azurecr.io}"
 
       - name: Promote image to prod and latest
         run: |

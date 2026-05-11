@@ -10,7 +10,6 @@ on:
 
 env:
   REGISTRY: hmctsprod.azurecr.io
-  REGISTRY_NAME: hmctsprod
 
 jobs:
   publish:
@@ -37,7 +36,7 @@ jobs:
           allow-no-subscriptions: true
 
       - name: ACR login
-        run: az acr login --name ${{ env.REGISTRY_NAME }}
+        run: az acr login --name "${REGISTRY%.azurecr.io}"
 
       - name: Add Bitnami repo
         run: helm repo add bitnami https://charts.bitnami.com/bitnami
