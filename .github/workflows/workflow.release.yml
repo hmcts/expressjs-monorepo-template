@@ -1,0 +1,19 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - master
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    uses: hmcts/cnp-githubactions-library/.github/workflows/npm-changesets-release.yaml@main
+    with:
+      node-version-file: '.nvmrc'
+      version-command: 'yarn version-packages'
+      publish-command: 'yarn release'
+    secrets: inherit
