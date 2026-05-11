@@ -39,6 +39,6 @@ helm/expressjs-monorepo-template/     (umbrella)
 
 ## Registry
 
-- **Registry**: `hmctspublic.azurecr.io`
-- **Chart location**: `oci://hmctspublic.azurecr.io/helm/expressjs-monorepo-template`
-- **Pull example**: `helm pull oci://hmctspublic.azurecr.io/helm/expressjs-monorepo-template --version 0.0.1-abc1234`
+- **Registry**: `hmctsprod.azurecr.io`
+- **Chart location**: `oci://hmctsprod.azurecr.io/helm/expressjs-monorepo-template`
+- **Pull example**: `helm pull oci://hmctsprod.azurecr.io/helm/expressjs-monorepo-template --version 0.0.1-abc1234`

@@ -870,7 +870,7 @@ __metadata:
     nunjucks: ^3.2.4
     sass: ^1.90.0
     vite: ^7.0.0 || ^8.0.0
-    vite-plugin-static-copy: ^3.1.0
+    vite-plugin-static-copy: ^3.1.0 || ^4.0.0
   peerDependenciesMeta:
     connect-redis:
       optional: true
@@ -955,7 +955,7 @@ __metadata:
     redis: "npm:5.12.1"
     sass: "npm:1.99.0"
     vite: "npm:8.0.11"
-    vite-plugin-static-copy: "npm:3.4.0"
+    vite-plugin-static-copy: "npm:4.1.0"
   languageName: unknown
   linkType: soft
 
@@ -2573,44 +2573,44 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@turbo/darwin-64@npm:2.9.10":
-  version: 2.9.10
-  resolution: "@turbo/darwin-64@npm:2.9.10"
+"@turbo/darwin-64@npm:2.9.12":
+  version: 2.9.12
+  resolution: "@turbo/darwin-64@npm:2.9.12"
   conditions: os=darwin & cpu=x64
   languageName: node
   linkType: hard
 
-"@turbo/darwin-arm64@npm:2.9.10":
-  version: 2.9.10
-  resolution: "@turbo/darwin-arm64@npm:2.9.10"
+"@turbo/darwin-arm64@npm:2.9.12":
+  version: 2.9.12
+  resolution: "@turbo/darwin-arm64@npm:2.9.12"
   conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
-"@turbo/linux-64@npm:2.9.10":
-  version: 2.9.10
-  resolution: "@turbo/linux-64@npm:2.9.10"
+"@turbo/linux-64@npm:2.9.12":
+  version: 2.9.12
+  resolution: "@turbo/linux-64@npm:2.9.12"
   conditions: os=linux & cpu=x64
   languageName: node
   linkType: hard
 
-"@turbo/linux-arm64@npm:2.9.10":
-  version: 2.9.10
-  resolution: "@turbo/linux-arm64@npm:2.9.10"
+"@turbo/linux-arm64@npm:2.9.12":
+  version: 2.9.12
+  resolution: "@turbo/linux-arm64@npm:2.9.12"
   conditions: os=linux & cpu=arm64
   languageName: node
   linkType: hard
 
-"@turbo/windows-64@npm:2.9.10":
-  version: 2.9.10
-  resolution: "@turbo/windows-64@npm:2.9.10"
+"@turbo/windows-64@npm:2.9.12":
+  version: 2.9.12
+  resolution: "@turbo/windows-64@npm:2.9.12"
   conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
-"@turbo/windows-arm64@npm:2.9.10":
-  version: 2.9.10
-  resolution: "@turbo/windows-arm64@npm:2.9.10"
+"@turbo/windows-arm64@npm:2.9.12":
+  version: 2.9.12
+  resolution: "@turbo/windows-arm64@npm:2.9.12"
   conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
@@ -4204,7 +4204,7 @@ __metadata:
     concurrently: "npm:9.2.1"
     supertest: "npm:7.2.2"
     tsx: "npm:4.21.0"
-    turbo: "npm:2.9.10"
+    turbo: "npm:2.9.12"
     typescript: "npm:6.0.3"
     vite-tsconfig-paths: "npm:6.1.1"
     vitest: "npm:4.1.5"
@@ -6949,16 +6949,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"turbo@npm:2.9.10":
-  version: 2.9.10
-  resolution: "turbo@npm:2.9.10"
+"turbo@npm:2.9.12":
+  version: 2.9.12
+  resolution: "turbo@npm:2.9.12"
   dependencies:
-    "@turbo/darwin-64": "npm:2.9.10"
-    "@turbo/darwin-arm64": "npm:2.9.10"
-    "@turbo/linux-64": "npm:2.9.10"
-    "@turbo/linux-arm64": "npm:2.9.10"
-    "@turbo/windows-64": "npm:2.9.10"
-    "@turbo/windows-arm64": "npm:2.9.10"
+    "@turbo/darwin-64": "npm:2.9.12"
+    "@turbo/darwin-arm64": "npm:2.9.12"
+    "@turbo/linux-64": "npm:2.9.12"
+    "@turbo/linux-arm64": "npm:2.9.12"
+    "@turbo/windows-64": "npm:2.9.12"
+    "@turbo/windows-arm64": "npm:2.9.12"
   dependenciesMeta:
     "@turbo/darwin-64":
       optional: true
@@ -6974,7 +6974,7 @@ __metadata:
       optional: true
   bin:
     turbo: bin/turbo
-  checksum: 10c0/8548c62645f24ae0f4c57d99ef0fa168218e39643b2fbef32f0c5280303d6024218391997d78169ae6d4864e0517f53276fd1e5b56e2a993014419a4c81ba719
+  checksum: 10c0/55844cdfaa12e96eb904334803146a93654020773681fcf8f1668074f00f77f4e35e2a156b6ae54dc53de227cb3e215985454e1317a0e2ba7552885314708ee8
   languageName: node
   linkType: hard
 
@@ -7099,17 +7099,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-plugin-static-copy@npm:3.4.0":
-  version: 3.4.0
-  resolution: "vite-plugin-static-copy@npm:3.4.0"
+"vite-plugin-static-copy@npm:4.1.0":
+  version: 4.1.0
+  resolution: "vite-plugin-static-copy@npm:4.1.0"
   dependencies:
     chokidar: "npm:^3.6.0"
     p-map: "npm:^7.0.4"
     picocolors: "npm:^1.1.1"
     tinyglobby: "npm:^0.2.15"
   peerDependencies:
-    vite: ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0
-  checksum: 10c0/bf23c1fbd307562f6337ad2ddc1e0d9219da0ca554c9f963fe16c1c1a8ea2c6f404fb15c0a50e922fe1db38393c0c091a4742ee05ef5414d5b77443bdbd3cca0
+    vite: ^6.0.0 || ^7.0.0 || ^8.0.0
+  checksum: 10c0/60b7cb1dfe24eff3a262849ca886129f20641edd5e27425f61acf7e405140ba172b5a7e15bfc6177768446be2cfa13899e519e386b1bd78116ab9c037ada3b9d
   languageName: node
   linkType: hard
 

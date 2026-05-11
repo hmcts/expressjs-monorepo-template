@@ -3,7 +3,7 @@ nodejs:
   applicationPort: 5555
   aadIdentityName: dtsse
   ingressHost: expressjs-monorepo-template-postgres.{{ .Values.global.environment }}.platform.hmcts.net
-  image: 'hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-postgres:latest'
+  image: 'hmctsprod.azurecr.io/dtsse/expressjs-monorepo-template-postgres:latest'
   environment:
     POSTGRES_DATABASE: expressjs-monorepo-template
   keyVaults:

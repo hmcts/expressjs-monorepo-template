@@ -28,7 +28,7 @@ if [ -d "/mnt/secrets" ]; then
 fi 
 
 echo "Running database migrations..."
-npx prisma migrate deploy --schema=./dist/schema.prisma
+npx prisma migrate deploy --config=./prisma.config.ts
 
 if [ $? -eq 0 ]; then
   echo "Migrations completed successfully"
