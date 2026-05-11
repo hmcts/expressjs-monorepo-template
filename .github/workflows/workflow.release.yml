@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   release:
-    uses: hmcts/cnp-githubactions-library/.github/workflows/npm-changesets-release.yaml@main
+    uses: hmcts/cnp-githubactions-library/.github/workflows/npm-changesets-release.yaml@fix/npm-token-optional
     with:
       node-version-file: '.nvmrc'
       version-command: 'yarn version-packages'
