@@ -22,7 +22,7 @@ Detects which applications have been affected by code changes using Turborepo, t
 |------|----------|-------------|
 | `CHANGE_ID` | Auto | PR number (set from `inputs.change-id`) |
 | `SHORT_SHA` | Auto | Git SHA (set automatically from `github.sha`) |
-| `REGISTRY` | Auto | Container registry URL (`hmctspublic.azurecr.io`) |
+| `REGISTRY` | Auto | Container registry URL (`hmctsprod.azurecr.io`) |
 
 ## Secrets
 

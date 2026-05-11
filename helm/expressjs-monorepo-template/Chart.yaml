@@ -29,5 +29,5 @@ dependencies:
     condition: redis.enabled
   - name: postgresql
     version: 1.1.0
-    repository: oci://hmctspublic.azurecr.io/helm
+    repository: oci://hmctsprod.azurecr.io/helm
     condition: postgresql.enabled

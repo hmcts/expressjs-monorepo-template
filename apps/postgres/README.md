@@ -104,7 +104,7 @@ Configure via Flux/ArgoCD to:
 nodejs:
   releaseNameOverride: "{{ .Release.Name }}-postgres"
   applicationPort: 5555  # Health proxy port (proxies to Studio on 5556)
-  image: hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-postgres:latest
+  image: hmctsprod.azurecr.io/dtsse/expressjs-monorepo-template-postgres:latest
   ingressHost: expressjs-monorepo-template-postgres.{{ .Values.global.environment }}.platform.hmcts.net
   # Uses default HTTP health checks provided by nodejs chart
 ```

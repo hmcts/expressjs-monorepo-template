@@ -9,7 +9,7 @@ on:
         description: "Short git SHA for chart version suffix"
 
 env:
-  REGISTRY: hmctspublic.azurecr.io
+  REGISTRY: hmctsprod.azurecr.io
 
 jobs:
   publish:
