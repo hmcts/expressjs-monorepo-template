@@ -34,7 +34,7 @@
     "db:drop": "yarn workspace @hmcts/postgres run migrate:reset",
     "changeset": "changeset",
     "version-packages": "changeset version && yarn install --mode=update-lockfile",
-    "release": "yarn build && changeset publish"
+    "release": "yarn test && yarn build && changeset publish"
   },
   "keywords": [],
   "author": "HMCTS",
