@@ -10,6 +10,7 @@ on:
 
 env:
   REGISTRY: hmctsprod.azurecr.io
+  REGISTRY_NAME: hmctsprod
 
 jobs:
   publish:
@@ -17,6 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      id-token: write
 
     steps:
       - name: Checkout code
@@ -27,11 +29,15 @@ jobs:
         with:
           version: 'v3.14.0'
 
-      - name: Login to Helm OCI registry
-        run: |
-          echo "${{ secrets.REGISTRY_PASSWORD }}" | \
-            helm registry login ${{ env.REGISTRY }} \
-              --username "${{ secrets.REGISTRY_USERNAME }}" --password-stdin
+      - name: Azure login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
+      - name: ACR login
+        run: az acr login --name ${{ env.REGISTRY_NAME }}
 
       - name: Add Bitnami repo
         run: helm repo add bitnami https://charts.bitnami.com/bitnami

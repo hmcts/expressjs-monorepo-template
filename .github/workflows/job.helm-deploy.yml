@@ -42,6 +42,7 @@ on:
 env:
   CHANGE_ID: ${{ inputs.change-id }}
   REGISTRY: hmctsprod.azurecr.io
+  REGISTRY_NAME: hmctsprod
 
 jobs:
   helm-deploy:
@@ -84,6 +85,16 @@ jobs:
             '${{ inputs.timestamp }}' \
             "${APPLICATION_NAME}"
 
+      - name: Azure login for ACR (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
+      - name: ACR login
+        run: az acr login --name ${{ env.REGISTRY_NAME }}
+
       - name: Deploy to preview
         if: inputs.environment == 'preview'
         id: deploy-preview
@@ -98,9 +109,6 @@ jobs:
           chart: helm/${{ env.APPLICATION_NAME }}
           values-template: helm/${{ env.APPLICATION_NAME }}/values.preview.template.yaml
           subchart-paths: apps/*/helm
-          oci-registry: ${{ env.REGISTRY }}
-          oci-username: ${{ secrets.REGISTRY_USERNAME }}
-          oci-password: ${{ secrets.REGISTRY_PASSWORD }}
 
       - name: Deploy to AAT
         if: inputs.environment == 'aat'
@@ -116,9 +124,6 @@ jobs:
           chart: helm/${{ env.APPLICATION_NAME }}
           values-template: helm/${{ env.APPLICATION_NAME }}/values.template.yaml
           subchart-paths: apps/*/helm
-          oci-registry: ${{ env.REGISTRY }}
-          oci-username: ${{ secrets.REGISTRY_USERNAME }}
-          oci-password: ${{ secrets.REGISTRY_PASSWORD }}
 
       - name: Register DNS for AAT
         if: inputs.environment == 'aat'
