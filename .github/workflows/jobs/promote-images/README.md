@@ -67,11 +67,11 @@ Promote Stage:   prod-{sha}   (immutable, for traceability/rollback)
 ```
 Promote Stage:   Package umbrella chart as 0.0.1-{sha}
                       |
-                 Push to oci://hmctspublic.azurecr.io/helm
+                 Push to oci://hmctsprod.azurecr.io/helm
 ```
 
 ## Registry
 
-- **Registry**: `hmctspublic.azurecr.io`
+- **Registry**: `hmctsprod.azurecr.io`
 - **Image Format**: `{team}/{app-name}:{tag}`
-- **Chart Format**: `oci://hmctspublic.azurecr.io/helm/expressjs-monorepo-template:{version}`
+- **Chart Format**: `oci://hmctsprod.azurecr.io/helm/expressjs-monorepo-template:{version}`

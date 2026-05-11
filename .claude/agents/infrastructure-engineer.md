@@ -202,7 +202,7 @@ dependencies:
   # Preview environment dependencies
   - name: postgresql
     version: 1.1.0
-    repository: oci://hmctspublic.azurecr.io/helm
+    repository: oci://hmctsprod.azurecr.io/helm
     condition: postgresql.enabled
   - name: redis
     version: 24.1.2
@@ -218,13 +218,13 @@ App subcharts depend on HMCTS base charts from the OCI registry:
 dependencies:
   - name: nodejs
     version: 3.2.0
-    repository: 'oci://hmctspublic.azurecr.io/helm'
+    repository: 'oci://hmctsprod.azurecr.io/helm'
 
 # apps/crons/helm/Chart.yaml - Cron jobs and migrations
 dependencies:
   - name: job
     version: 2.2.0
-    repository: 'oci://hmctspublic.azurecr.io/helm'
+    repository: 'oci://hmctsprod.azurecr.io/helm'
 ```
 
 ### Subchart Values Configuration
@@ -235,7 +235,7 @@ nodejs:
   applicationPort: 3000
   aadIdentityName: dtsse
   ingressHost: expressjs-monorepo-template-web.{{ .Values.global.environment }}.platform.hmcts.net
-  image: 'hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-web:latest'
+  image: 'hmctsprod.azurecr.io/dtsse/expressjs-monorepo-template-web:latest'
   environment:
     REDIS_URL: 'redis://dtsse-{{ .Values.global.environment }}.redis.cache.windows.net:6379'
   keyVaults:
@@ -263,7 +263,7 @@ api:
 
 expressjs-monorepo-template-web:
   nodejs:
-    image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-web:${WEB_IMAGE}"
+    image: "hmctsprod.azurecr.io/dtsse/expressjs-monorepo-template-web:${WEB_IMAGE}"
     ingressHost: "${TEAM_NAME}-expressjs-monorepo-template-web.${ENVIRONMENT}.platform.hmcts.net"
     secrets:
       POSTGRES_HOST:
@@ -284,7 +284,7 @@ global:
 
 expressjs-monorepo-template-web:
   nodejs:
-    image: "hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-web:${WEB_IMAGE}"
+    image: "hmctsprod.azurecr.io/dtsse/expressjs-monorepo-template-web:${WEB_IMAGE}"
     ingressHost: "${TEAM_NAME}-{{ .Release.Name }}-web.preview.platform.hmcts.net"
     environment:
       REDIS_URL: "redis://{{ .Release.Name }}-redis-master:6379"
@@ -371,7 +371,7 @@ Deployments use `hmcts/cnp-githubactions-library/helm-deploy`:
     chart: helm/${{ env.APPLICATION_NAME }}
     values-template: helm/${{ env.APPLICATION_NAME }}/values.template.yaml
     subchart-paths: apps/*/helm
-    oci-registry: hmctspublic.azurecr.io
+    oci-registry: hmctsprod.azurecr.io
 ```
 
 ## Pod Diagnostics and Troubleshooting
@@ -475,7 +475,7 @@ terraform output
 az login
 az account set --subscription "DCD-CNP-DEV"
 az aks get-credentials --resource-group <rg> --name <cluster>
-az acr login --name hmctspublic
+az acr login --name hmctsprod
 az keyvault secret list --vault-name <vault>
 az keyvault secret show --vault-name <vault> --name <secret>
 

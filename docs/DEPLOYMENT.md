@@ -17,7 +17,7 @@ The application is deployed to Azure Kubernetes Service (AKS) using Helm charts.
 
 - **Azure Portal**: Access to HMCTS Azure subscription
 - **AKS Cluster**: kubectl credentials for target cluster
-- **Container Registry**: Push access to `hmctspublic.azurecr.io`
+- **Container Registry**: Push access to `hmctsprod.azurecr.io`
 - **GitHub**: Repository write access for workflow triggers
 
 ### Tools Required
@@ -67,7 +67,7 @@ apps/{app}/helm/
 | `expressjs-monorepo-template-api` | Local (`apps/api/helm`) | REST API |
 | `expressjs-monorepo-template-crons` | Local (`apps/crons/helm`) | Scheduled jobs |
 | `expressjs-monorepo-template-postgres` | Local (`apps/postgres/helm`) | Database migrations |
-| `postgresql` | `oci://hmctspublic.azurecr.io/helm` | PostgreSQL database |
+| `postgresql` | `oci://hmctsprod.azurecr.io/helm` | PostgreSQL database |
 | `redis` | Bitnami | Cache layer |
 
 ## Environment Configuration
@@ -279,11 +279,11 @@ If automated deployment fails:
 
 ```bash
 # 1. Build image locally
-docker build -t hmctspublic.azurecr.io/dtsse/app:manual \
+docker build -t hmctsprod.azurecr.io/dtsse/app:manual \
   -f apps/web/Dockerfile .
 
 # 2. Push to registry
-docker push hmctspublic.azurecr.io/dtsse/app:manual
+docker push hmctsprod.azurecr.io/dtsse/app:manual
 
 # 3. Deploy with Helm
 cd helm/expressjs-monorepo-template
@@ -291,7 +291,7 @@ helm dependency update
 helm upgrade --install {release-name} . \
   --namespace {namespace} \
   --values values.yaml \
-  --set web.nodejs.image=hmctspublic.azurecr.io/dtsse/app:manual \
+  --set web.nodejs.image=hmctsprod.azurecr.io/dtsse/app:manual \
   --wait \
   --timeout 10m
 ```
@@ -348,7 +348,7 @@ If a specific image version needs to be reverted:
 # Update image tag
 helm upgrade {release-name} . \
   --namespace {namespace} \
-  --set web.nodejs.image=hmctspublic.azurecr.io/dtsse/app:previous-tag \
+  --set web.nodejs.image=hmctsprod.azurecr.io/dtsse/app:previous-tag \
   --reuse-values
 ```
 

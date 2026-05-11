@@ -381,7 +381,7 @@ Automated preview environments are created for each pull request, allowing teams
 **Shared Resources**:
 - Azure Flexible PostgreSQL Server: `dtsse-preview`
 - AKS Cluster: `cft-preview-01-aks`
-- Azure Container Registry: `hmctspublic.azurecr.io`
+- Azure Container Registry: `hmctsprod.azurecr.io`
 
 ### Cleanup
 

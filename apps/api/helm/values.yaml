@@ -3,7 +3,7 @@ nodejs:
   applicationPort: 3001
   aadIdentityName: dtsse
   ingressHost: expressjs-monorepo-template-api.{{ .Values.global.environment }}.platform.hmcts.net
-  image: 'hmctspublic.azurecr.io/dtsse/expressjs-monorepo-template-api:latest'
+  image: 'hmctsprod.azurecr.io/dtsse/expressjs-monorepo-template-api:latest'
   environment:
     EXAMPLE_ENV: example
   keyVaults:
