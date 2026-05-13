@@ -1,0 +1,7 @@
+{
+  "libs/simple-router": "2.0.0",
+  "libs/cloud-native-platform": "2.0.0",
+  "libs/express-govuk-starter": "0.1.0",
+  "libs/express-session-postgres": "0.1.0",
+  "libs/express-session-redis": "0.1.1"
+}
