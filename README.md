@@ -174,15 +174,17 @@ The release plumbing lives in [`hmcts/cnp-githubactions-library`](https://github
 
 #### Installing the published library in another repo
 
-```ini
-# .npmrc
-@hmcts-cft:registry=https://pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/npm/registry/
-//pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/npm/registry/:username=hmcts
-//pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/npm/registry/:_password=${AZURE_DEVOPS_ARTIFACT_TOKEN_BASE64}
-//pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/npm/registry/:email=npm@hmcts.net
+Add the following to your `.yarnrc.yml` so Yarn routes the `@hmcts-cft` scope to the Azure Artifacts feed and authenticates with a fresh Azure AD access token from your local `az` CLI session:
+
+```yaml
+npmScopes:
+  hmcts-cft:
+    npmRegistryServer: "https://pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/npm/registry/"
+    npmAlwaysAuth: true
+    npmAuthToken: "exec:az account get-access-token --resource 499b84ac-1321-427f-aa17-267ca6975798 --query accessToken -o tsv"
 ```
 
-`AZURE_DEVOPS_ARTIFACT_TOKEN_BASE64` is the base64 encoding of a PAT with `Packaging (Read)` on the `hmcts-lib` feed (`printf %s "$PAT" | base64`).
+Then run `az login` once before `yarn install`. The `exec:` form re-runs `az` per request so the token is always fresh, no `.npmrc` and no long-lived PAT to manage. The GUID `499b84ac-1321-427f-aa17-267ca6975798` is the Azure DevOps resource ID.
 
 Other libraries (`cloud-native-platform`, `express-govuk-starter`, `onboarding`) are marked `private: true` and are workspace-only today. To publish one, drop the `"private": true` flag, rename it under the `@hmcts-cft` scope, add the same `publishConfig.registry` / `files` / `license` / `repository` fields to its `package.json` as `simple-router` has, and create a changeset for it.
 
