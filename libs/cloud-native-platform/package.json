@@ -1,13 +1,28 @@
 {
-  "name": "@hmcts/cloud-native-platform",
+  "name": "@hmcts-cft/cloud-native-platform",
   "version": "1.0.0",
-  "private": true,
+  "description": "HMCTS cloud-native-platform helpers for Express: health checks, Application Insights monitoring middleware, exception tracking, and properties-volume / Azure Key Vault secret loading.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hmcts/expressjs-monorepo-template.git",
+    "directory": "libs/cloud-native-platform"
+  },
+  "homepage": "https://github.com/hmcts/expressjs-monorepo-template/tree/master/libs/cloud-native-platform#readme",
+  "bugs": "https://github.com/hmcts/expressjs-monorepo-template/issues",
   "type": "module",
+  "files": [
+    "dist",
+    "README.md"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     }
+  },
+  "publishConfig": {
+    "registry": "https://pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/npm/registry/"
   },
   "scripts": {
     "build": "tsc",

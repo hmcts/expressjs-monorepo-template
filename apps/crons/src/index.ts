@@ -1,6 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { getPropertiesVolumeSecrets } from "@hmcts/cloud-native-platform";
+import { getPropertiesVolumeSecrets } from "@hmcts-cft/cloud-native-platform";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

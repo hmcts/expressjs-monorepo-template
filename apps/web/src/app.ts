@@ -1,6 +1,6 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { getPropertiesVolumeSecrets, hc, healthcheck, monitoringMiddleware } from "@hmcts/cloud-native-platform";
+import { getPropertiesVolumeSecrets, hc, healthcheck, monitoringMiddleware } from "@hmcts-cft/cloud-native-platform";
 import { configureCookieManager, configureGovuk, configureHelmet, configureNonce, errorHandler, notFoundHandler } from "@hmcts-cft/express-govuk-starter";
 import { expressSessionRedis } from "@hmcts-cft/express-session-redis";
 import { createSimpleRouter } from "@hmcts-cft/simple-router";

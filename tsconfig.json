@@ -11,7 +11,7 @@
       "@hmcts-cft/express-govuk-starter": ["./libs/express-govuk-starter/src"],
       "@hmcts-cft/express-session-redis": ["./libs/express-session-redis/src"],
       "@hmcts-cft/express-session-postgres": ["./libs/express-session-postgres/src"],
-      "@hmcts/cloud-native-platform": ["./libs/cloud-native-platform/src"],
+      "@hmcts-cft/cloud-native-platform": ["./libs/cloud-native-platform/src"],
       "@hmcts-cft/simple-router": ["./libs/simple-router/src"],
       "@hmcts/onboarding": ["./libs/onboarding/src"]
     },
