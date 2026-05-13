@@ -5,6 +5,7 @@ import { PostgresStore } from "./postgres-store.js";
 
 export function expressSessionPostgres(options: ExpressSessionPostgresOptions): RequestHandler {
   const { pgConnection, sessionOptions = {}, storeOptions = {} } = options;
+  const secret = sessionOptions.secret || process.env.SESSION_SECRET || "default-secret-change-in-production";
 
   const store = new PostgresStore({
     pool: pgConnection,
@@ -12,7 +13,7 @@ export function expressSessionPostgres(options: ExpressSessionPostgresOptions): 
   });
 
   const defaultSessionOptions: SessionOptions = {
-    secret: process.env.SESSION_SECRET || "default-secret-change-in-production",
+    secret,
     resave: false,
     saveUninitialized: false,
     cookie: {

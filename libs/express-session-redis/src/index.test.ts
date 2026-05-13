@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { expressSessionRedis } from "./redis-store.js";
+import { expressSessionRedis } from "./index.js";
 
 vi.mock("connect-redis", () => ({
   // biome-ignore lint/complexity/useArrowFunction: Vitest 4 requires function keyword for constructors
@@ -22,7 +22,20 @@ describe("expressSessionRedis", () => {
     delete process.env.NODE_ENV;
   });
 
+  it("should use default secret when none is provided", () => {
+    const mockRedisClient = { connect: vi.fn() };
+
+    const middleware = expressSessionRedis({ redisConnection: mockRedisClient });
+
+    expect(middleware).toEqual({
+      sessionOptions: expect.objectContaining({
+        secret: "default-secret-change-in-production"
+      })
+    });
+  });
+
   it("should create session middleware with default options", () => {
+    process.env.SESSION_SECRET = "test-secret";
     const mockRedisClient = { connect: vi.fn() };
 
     const middleware = expressSessionRedis({
@@ -31,7 +44,7 @@ describe("expressSessionRedis", () => {
 
     expect(middleware).toEqual({
       sessionOptions: expect.objectContaining({
-        secret: "default-secret-change-in-production",
+        secret: "test-secret",
         resave: false,
         saveUninitialized: false,
         cookie: expect.objectContaining({
@@ -65,6 +78,7 @@ describe("expressSessionRedis", () => {
   });
 
   it("should set secure cookie in production", () => {
+    process.env.SESSION_SECRET = "test-secret";
     process.env.NODE_ENV = "production";
     const mockRedisClient = { connect: vi.fn() };
 
@@ -75,13 +89,14 @@ describe("expressSessionRedis", () => {
     expect(middleware).toEqual({
       sessionOptions: expect.objectContaining({
         cookie: expect.objectContaining({
-          secure: false // temporarily disabled
+          secure: true
         })
       })
     });
   });
 
   it("should allow custom store options", () => {
+    process.env.SESSION_SECRET = "test-secret";
     const mockRedisClient = { connect: vi.fn() };
 
     const middleware = expressSessionRedis({
@@ -135,7 +150,8 @@ describe("expressSessionRedis", () => {
   });
 
   it("should work with any Redis client implementation", () => {
-    // Test with ioredis-like client
+    process.env.SESSION_SECRET = "test-secret";
+
     const ioredisClient = {
       connect: vi.fn(),
       set: vi.fn(),
@@ -148,7 +164,6 @@ describe("expressSessionRedis", () => {
 
     expect(middleware1).toBeDefined();
 
-    // Test with node-redis-like client
     const nodeRedisClient = {
       connect: vi.fn().mockResolvedValue(undefined),
       quit: vi.fn()

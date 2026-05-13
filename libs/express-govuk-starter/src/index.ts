@@ -10,9 +10,3 @@ export type { LocaleMiddlewareOptions } from "./i18n/locale-middleware.js";
 export { localeMiddleware, translationMiddleware } from "./i18n/locale-middleware.js";
 export type { Translations } from "./i18n/translation-loader.js";
 export { getTranslation, loadTranslations } from "./i18n/translation-loader.js";
-export type { ExpressSessionPostgresOptions } from "./session-stores/postgres-session.js";
-export { expressSessionPostgres } from "./session-stores/postgres-session.js";
-export { PostgresStore } from "./session-stores/postgres-store.js";
-// Session stores - these have optional peer dependencies
-export type { ExpressSessionRedisOptions } from "./session-stores/redis-store.js";
-export { expressSessionRedis } from "./session-stores/redis-store.js";

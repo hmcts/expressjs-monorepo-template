@@ -1,14 +1,14 @@
 {
-  "name": "@hmcts-cft/express-govuk-starter",
+  "name": "@hmcts-cft/express-session-postgres",
   "version": "0.1.0",
-  "description": "GOV.UK Frontend integration for Express 5 — Nunjucks, Helmet CSP, i18n, cookie consent, and error handlers with sensible defaults.",
+  "description": "Express session store backed by PostgreSQL with auto table creation and background expiry cleanup.",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hmcts/expressjs-monorepo-template.git",
-    "directory": "libs/express-govuk-starter"
+    "directory": "libs/express-session-postgres"
   },
-  "homepage": "https://github.com/hmcts/expressjs-monorepo-template/tree/master/libs/express-govuk-starter#readme",
+  "homepage": "https://github.com/hmcts/expressjs-monorepo-template/tree/master/libs/express-session-postgres#readme",
   "bugs": "https://github.com/hmcts/expressjs-monorepo-template/issues",
   "type": "module",
   "exports": {
@@ -22,7 +22,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsc && cp -r src/govuk-frontend/views dist/govuk-frontend/ && cp -r src/cookies/views dist/cookies/",
+    "build": "tsc",
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest watch",
@@ -30,15 +30,19 @@
     "lint": "biome check .",
     "lint:fix": "biome check --write ."
   },
+  "dependencies": {
+    "pg": "8.20.0",
+    "pg-format": "1.0.4"
+  },
   "peerDependencies": {
-    "@hmcts/cookie-manager": "^1.1.0",
     "express": "^5.1.0",
-    "govuk-frontend": "^6.0.0",
-    "helmet": "^8.0.0",
-    "nunjucks": "^3.2.4"
+    "express-session": "^1.18.2"
   },
   "devDependencies": {
     "@types/express": "5.0.6",
-    "@types/nunjucks": "3.2.6"
+    "@types/express-session": "1.19.0",
+    "@types/pg": "8.20.0",
+    "@types/pg-format": "1.0.5",
+    "express-session": "1.19.0"
   }
 }

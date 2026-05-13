@@ -1,12 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import type { Translations } from "./translation-loader.js";
 
-declare module "express-session" {
-  interface SessionData {
-    locale?: string;
-  }
-}
-
 export interface LocaleMiddlewareOptions {
   supportedLocales?: string[];
   defaultLocale?: string;
@@ -19,20 +13,21 @@ export function localeMiddleware(options: LocaleMiddlewareOptions = {}) {
 
   return (req: Request, res: Response, next: NextFunction) => {
     let locale = defaultLocale;
+    const session = (req as Request & { session?: { locale?: string } }).session;
 
     if (req.query[queryParam] && typeof req.query[queryParam] === "string") {
       const queryLocale = req.query[queryParam];
       if (supportedLocales.includes(queryLocale)) {
         locale = queryLocale;
       }
-    } else if (req.session?.locale && supportedLocales.includes(req.session.locale)) {
-      locale = req.session.locale;
+    } else if (session?.locale && supportedLocales.includes(session.locale)) {
+      locale = session.locale;
     } else if (req.cookies?.[cookieName] && supportedLocales.includes(req.cookies[cookieName])) {
       locale = req.cookies[cookieName];
     }
 
-    if (req.session) {
-      req.session.locale = locale;
+    if (session) {
+      session.locale = locale;
     }
 
     if (req.cookies) {

@@ -1,14 +1,14 @@
 {
-  "name": "@hmcts-cft/express-govuk-starter",
+  "name": "@hmcts-cft/express-session-redis",
   "version": "0.1.0",
-  "description": "GOV.UK Frontend integration for Express 5 — Nunjucks, Helmet CSP, i18n, cookie consent, and error handlers with sensible defaults.",
+  "description": "Express session middleware backed by Redis with sensible defaults.",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/hmcts/expressjs-monorepo-template.git",
-    "directory": "libs/express-govuk-starter"
+    "directory": "libs/express-session-redis"
   },
-  "homepage": "https://github.com/hmcts/expressjs-monorepo-template/tree/master/libs/express-govuk-starter#readme",
+  "homepage": "https://github.com/hmcts/expressjs-monorepo-template/tree/master/libs/express-session-redis#readme",
   "bugs": "https://github.com/hmcts/expressjs-monorepo-template/issues",
   "type": "module",
   "exports": {
@@ -22,7 +22,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsc && cp -r src/govuk-frontend/views dist/govuk-frontend/ && cp -r src/cookies/views dist/cookies/",
+    "build": "tsc",
     "dev": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest watch",
@@ -31,14 +31,14 @@
     "lint:fix": "biome check --write ."
   },
   "peerDependencies": {
-    "@hmcts/cookie-manager": "^1.1.0",
+    "connect-redis": "^9.0.0",
     "express": "^5.1.0",
-    "govuk-frontend": "^6.0.0",
-    "helmet": "^8.0.0",
-    "nunjucks": "^3.2.4"
+    "express-session": "^1.18.2"
   },
   "devDependencies": {
     "@types/express": "5.0.6",
-    "@types/nunjucks": "3.2.6"
+    "@types/express-session": "1.19.0",
+    "connect-redis": "9.0.0",
+    "express-session": "1.19.0"
   }
 }
