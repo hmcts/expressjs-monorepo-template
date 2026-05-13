@@ -28,10 +28,11 @@ export function web(url: string, timeout = 10000): HealthCheck {
   };
 }
 
-export function raw(check: () => Promise<HealthStatus> | HealthStatus): HealthCheck {
+export function raw(check: () => Promise<unknown> | unknown): HealthCheck {
   return async () => {
     try {
-      return await check();
+      const result = await check();
+      return result === "UP" || result === "DOWN" ? result : "UP";
     } catch {
       return "DOWN";
     }

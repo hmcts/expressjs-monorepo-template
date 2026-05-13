@@ -45,10 +45,7 @@ export async function createApp(): Promise<Express> {
   app.use(
     healthcheck({
       checks: {
-        redis: hc.raw(async () => {
-          await redisConnection.ping();
-          return "UP" as const;
-        })
+        redis: hc.raw(() => redisConnection.ping())
       }
     })
   );
