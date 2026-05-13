@@ -1032,14 +1032,24 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@hmcts-cft/simple-router@workspace:*, @hmcts-cft/simple-router@workspace:libs/simple-router":
+  version: 0.0.0-use.local
+  resolution: "@hmcts-cft/simple-router@workspace:libs/simple-router"
+  dependencies:
+    "@types/express": "npm:5.0.6"
+  peerDependencies:
+    express: ^5.1.0
+  languageName: unknown
+  linkType: soft
+
 "@hmcts/api@workspace:apps/api":
   version: 0.0.0-use.local
   resolution: "@hmcts/api@workspace:apps/api"
   dependencies:
+    "@hmcts-cft/simple-router": "workspace:*"
     "@hmcts/cloud-native-platform": "workspace:*"
     "@hmcts/onboarding": "workspace:*"
     "@hmcts/postgres-prisma": "workspace:*"
-    "@hmcts/simple-router": "workspace:*"
     "@types/compression": "npm:1.8.1"
     "@types/config": "npm:4.4.0"
     "@types/cors": "npm:2.8.19"
@@ -1156,26 +1166,16 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@hmcts/simple-router@workspace:*, @hmcts/simple-router@workspace:libs/simple-router":
-  version: 0.0.0-use.local
-  resolution: "@hmcts/simple-router@workspace:libs/simple-router"
-  dependencies:
-    "@types/express": "npm:5.0.6"
-  peerDependencies:
-    express: ^5.1.0
-  languageName: unknown
-  linkType: soft
-
 "@hmcts/web@workspace:apps/web":
   version: 0.0.0-use.local
   resolution: "@hmcts/web@workspace:apps/web"
   dependencies:
+    "@hmcts-cft/simple-router": "workspace:*"
     "@hmcts/cloud-native-platform": "workspace:*"
     "@hmcts/cookie-manager": "npm:1.1.0"
     "@hmcts/express-govuk-starter": "workspace:*"
     "@hmcts/onboarding": "workspace:*"
     "@hmcts/postgres-prisma": "workspace:*"
-    "@hmcts/simple-router": "workspace:*"
     "@types/config": "npm:4.4.0"
     "@types/cookie-parser": "npm:1.4.10"
     "@types/express": "npm:5.0.6"

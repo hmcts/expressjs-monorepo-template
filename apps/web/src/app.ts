@@ -10,7 +10,7 @@ import {
   expressSessionRedis,
   notFoundHandler
 } from "@hmcts/express-govuk-starter";
-import { createSimpleRouter } from "@hmcts/simple-router";
+import { createSimpleRouter } from "@hmcts-cft/simple-router";
 import cookieParser from "cookie-parser";
 import type { Express } from "express";
 import express from "express";
