@@ -22,10 +22,16 @@ describe("expressSessionRedis", () => {
     delete process.env.NODE_ENV;
   });
 
-  it("should throw if no session secret is provided", () => {
+  it("should use default secret when none is provided", () => {
     const mockRedisClient = { connect: vi.fn() };
 
-    expect(() => expressSessionRedis({ redisConnection: mockRedisClient })).toThrow("Session secret is required");
+    const middleware = expressSessionRedis({ redisConnection: mockRedisClient });
+
+    expect(middleware).toEqual({
+      sessionOptions: expect.objectContaining({
+        secret: "default-secret-change-in-production"
+      })
+    });
   });
 
   it("should create session middleware with default options", () => {
@@ -83,7 +89,7 @@ describe("expressSessionRedis", () => {
     expect(middleware).toEqual({
       sessionOptions: expect.objectContaining({
         cookie: expect.objectContaining({
-          secure: false // temporarily disabled
+          secure: true
         })
       })
     });

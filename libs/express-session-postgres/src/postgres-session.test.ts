@@ -25,8 +25,14 @@ describe("expressSessionPostgres", () => {
     delete process.env.NODE_ENV;
   });
 
-  it("should throw if no session secret is provided", () => {
-    expect(() => expressSessionPostgres({ pgConnection: mockPool as any })).toThrow("Session secret is required");
+  it("should use default secret when none is provided", () => {
+    const middleware = expressSessionPostgres({ pgConnection: mockPool as any });
+
+    expect(middleware).toEqual({
+      sessionOptions: expect.objectContaining({
+        secret: "default-secret-change-in-production"
+      })
+    });
   });
 
   it("should create session middleware with default options", () => {

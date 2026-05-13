@@ -4,11 +4,7 @@ import session, { type SessionOptions } from "express-session";
 
 export function expressSessionRedis(options: ExpressSessionRedisOptions): RequestHandler {
   const { redisConnection, sessionOptions = {}, storeOptions = {} } = options;
-  const secret = sessionOptions.secret || process.env.SESSION_SECRET;
-
-  if (!secret) {
-    throw new Error("Session secret is required. Set SESSION_SECRET environment variable or pass sessionOptions.secret.");
-  }
+  const secret = sessionOptions.secret || process.env.SESSION_SECRET || "default-secret-change-in-production";
 
   const defaultSessionOptions: SessionOptions = {
     store: new RedisStore({
@@ -20,7 +16,7 @@ export function expressSessionRedis(options: ExpressSessionRedisOptions): Reques
     resave: false,
     saveUninitialized: false,
     cookie: {
-      secure: false, // disabled until https preview is working process.env.NODE_ENV === "production",
+      secure: process.env.NODE_ENV === "production",
       httpOnly: true,
       maxAge: options.cookieMaxAge || 1000 * 60 * 60 * 4 // 4 hours
     }
