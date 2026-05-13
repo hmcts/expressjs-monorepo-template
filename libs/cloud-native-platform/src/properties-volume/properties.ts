@@ -1,6 +1,8 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { load as yamlLoad } from "js-yaml";
 import { addFromAzureVault } from "./azure-vault.js";
+import { deepSearch } from "./utils.js";
 
 const DEFAULT_MOUNT_POINT = "/mnt/secrets";
 
@@ -8,44 +10,110 @@ export async function getPropertiesVolumeSecrets(options: GetSecretsOptions = {}
   const isProd = process.env.NODE_ENV === "production";
   const { mountPoint = DEFAULT_MOUNT_POINT, failOnError = isProd, injectEnvVars = true, chartPath, omit = [] } = options;
 
-  if (chartPath && !isProd && existsSync(chartPath)) {
-    try {
-      return await loadFromAzureVault(chartPath, injectEnvVars, omit);
-    } catch (error) {
-      if (failOnError) {
-        throw new Error(`Failed to load secrets from Azure Vault: ${error}`);
-      }
-      console.warn(`Warning: Failed to load secrets from Azure Vault: ${error}`);
-    }
+  const azureResult = await tryLoadFromAzureVault(chartPath, isProd, injectEnvVars, omit, failOnError);
+  if (azureResult) {
+    return azureResult;
   }
 
   if (!existsSync(mountPoint)) {
-    const message = `Mount point ${mountPoint} does not exist`;
-    if (failOnError) throw new Error(message);
-    console.warn(`Warning: ${message}`);
-    return {};
+    return handleMissingMountPoint(mountPoint, failOnError);
   }
 
+  const aliasMap = chartPath ? buildAliasMap(chartPath) : new Map<string, string>();
+  return loadSecretsFromMountPoint(mountPoint, injectEnvVars, failOnError, aliasMap);
+}
+
+function buildAliasMap(chartPath: string): Map<string, string> {
+  const aliasMap = new Map<string, string>();
+  try {
+    const helmChartContent = readFileSync(chartPath, "utf8");
+    const helmChart = yamlLoad(helmChartContent) as any;
+    const keyVaultsList = deepSearch(helmChart, "keyVaults");
+    for (const keyVaultsObj of keyVaultsList) {
+      if (keyVaultsObj && typeof keyVaultsObj === "object") {
+        for (const vaultConfig of Object.values(keyVaultsObj) as any[]) {
+          if (vaultConfig?.secrets && Array.isArray(vaultConfig.secrets)) {
+            for (const secret of vaultConfig.secrets) {
+              if (secret?.name && secret?.alias) {
+                aliasMap.set(secret.name, secret.alias);
+              }
+            }
+          }
+        }
+      }
+    }
+  } catch {
+    // If chart can't be read, proceed without alias mapping
+  }
+  return aliasMap;
+}
+
+async function tryLoadFromAzureVault(
+  chartPath: string | undefined,
+  isProd: boolean,
+  injectEnvVars: boolean,
+  omit: string[],
+  failOnError: boolean
+): Promise<Secrets | null> {
+  if (!chartPath || isProd || !existsSync(chartPath)) {
+    return null;
+  }
+
+  try {
+    return await loadFromAzureVault(chartPath, injectEnvVars, omit);
+  } catch (error) {
+    if (failOnError) {
+      throw new Error(`Failed to load secrets from Azure Vault: ${error}`);
+    }
+    console.warn(`Warning: Failed to load secrets from Azure Vault: ${error}`);
+    return null;
+  }
+}
+
+function handleMissingMountPoint(mountPoint: string, failOnError: boolean): Secrets {
+  const message = `Mount point ${mountPoint} does not exist`;
+  if (failOnError) {
+    throw new Error(message);
+  }
+  console.warn(`Warning: ${message}`);
+  return {};
+}
+
+function loadSecretsFromMountPoint(mountPoint: string, injectEnvVars: boolean, failOnError: boolean, aliasMap: Map<string, string>): Secrets {
   const secrets: Secrets = {};
   const entries = readdirSync(mountPoint, { withFileTypes: true });
 
   for (const entry of entries) {
     const path = join(mountPoint, entry.name);
-
-    try {
-      if (entry.isDirectory()) {
-        readSecretsFromDirectory(path, entry.name, injectEnvVars, secrets, failOnError);
-      } else if (entry.isFile() || entry.isSymbolicLink?.()) {
-        const content = readSecretFile(path);
-        processSecret(entry.name, content, injectEnvVars, secrets);
-      }
-    } catch (error) {
-      if (failOnError) throw new Error(`Failed to load secrets from ${mountPoint}: ${error}`);
-      console.warn(`Warning: Failed to process ${path}: ${error}`);
-    }
+    processEntry(entry, path, injectEnvVars, secrets, failOnError, mountPoint, aliasMap);
   }
 
   return secrets;
+}
+
+function processEntry(
+  entry: { name: string; isDirectory: () => boolean; isFile: () => boolean; isSymbolicLink?: () => boolean },
+  path: string,
+  injectEnvVars: boolean,
+  secrets: Secrets,
+  failOnError: boolean,
+  mountPoint: string,
+  aliasMap: Map<string, string>
+): void {
+  try {
+    if (entry.isDirectory()) {
+      readSecretsFromDirectory(path, entry.name, injectEnvVars, secrets, failOnError, aliasMap);
+    } else if (entry.isFile() || entry.isSymbolicLink?.()) {
+      const content = readSecretFile(path);
+      const alias = aliasMap.get(entry.name);
+      processSecret(entry.name, content, injectEnvVars, secrets, alias);
+    }
+  } catch (error) {
+    if (failOnError) {
+      throw new Error(`Failed to load secrets from ${mountPoint}: ${error}`);
+    }
+    console.warn(`Warning: Failed to process ${path}: ${error}`);
+  }
 }
 
 async function loadFromAzureVault(chartPath: string, injectEnvVars: boolean, omit: string[]): Promise<Secrets> {
@@ -64,16 +132,24 @@ async function loadFromAzureVault(chartPath: string, injectEnvVars: boolean, omi
   return secrets;
 }
 
-function readSecretsFromDirectory(dirPath: string, vaultName: string, injectEnvVars: boolean, secrets: Secrets, failOnError: boolean): void {
+function readSecretsFromDirectory(
+  dirPath: string,
+  vaultName: string,
+  injectEnvVars: boolean,
+  secrets: Secrets,
+  failOnError: boolean,
+  aliasMap: Map<string, string>
+): void {
   // Filter for files and symlinks, but exclude CSI driver internal entries (start with ..)
   const files = readdirSync(dirPath, { withFileTypes: true }).filter((f) => !f.name.startsWith("..") && (f.isFile() || f.isSymbolicLink?.()));
 
   for (const file of files) {
     const secretKey = `${vaultName}.${file.name}`;
+    const alias = aliasMap.get(file.name);
 
     try {
       const content = readSecretFile(join(dirPath, file.name));
-      processSecret(secretKey, content, injectEnvVars, secrets);
+      processSecret(secretKey, content, injectEnvVars, secrets, alias);
     } catch (error) {
       if (failOnError) throw error;
       console.warn(`Warning: Failed to read ${join(dirPath, file.name)}: ${error}`);
@@ -85,11 +161,10 @@ function readSecretFile(path: string): string {
   return readFileSync(path, "utf8").trim();
 }
 
-function processSecret(key: string, value: string, injectEnvVars: boolean, secrets: Secrets): void {
+function processSecret(key: string, value: string, injectEnvVars: boolean, secrets: Secrets, alias?: string): void {
   secrets[key] = value;
   if (injectEnvVars) {
-    const parts = key.split(".");
-    const envKey = parts[parts.length - 1];
+    const envKey = alias ?? key.split(".").at(-1) ?? key;
     process.env[envKey] = value;
   }
 }
@@ -97,15 +172,8 @@ function processSecret(key: string, value: string, injectEnvVars: boolean, secre
 function shouldOmit(key: string, omit: string[]): boolean {
   if (omit.length === 0) return false;
 
-  for (const omitKey of omit) {
-    if (key === omitKey) return true;
-
-    const parts = key.split(".");
-    const lastName = parts[parts.length - 1];
-    if (lastName === omitKey) return true;
-  }
-
-  return false;
+  const lastName = key.split(".").at(-1) ?? key;
+  return omit.includes(key) || omit.includes(lastName);
 }
 
 export interface GetSecretsOptions {
