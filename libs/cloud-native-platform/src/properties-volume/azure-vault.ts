@@ -1,9 +1,8 @@
-import { readFileSync } from "node:fs";
 import { DefaultAzureCredential } from "@azure/identity";
 import { SecretClient } from "@azure/keyvault-secrets";
-import { load as yamlLoad } from "js-yaml";
+import { parseVaultsFromHelmChart, type SecretDefinition, type VaultDefinition } from "./helm-chart.js";
 import type { Config } from "./properties.js";
-import { deepMerge, deepSearch, normalizeSecretName } from "./utils.js";
+import { deepMerge, normalizeSecretName } from "./utils.js";
 
 export interface AzureVaultOptions {
   pathToHelmChart: string;
@@ -11,13 +10,6 @@ export interface AzureVaultOptions {
 }
 
 const DEFAULT_VAULT_URI_SUFFIX = "aat";
-
-export interface StructuredSecret {
-  alias: string;
-  name: string;
-}
-
-export type StructuredOrUnstructuredSecret = string | StructuredSecret;
 
 /**
  * Adds secrets from Azure Key Vault to configuration object
@@ -27,66 +19,37 @@ export async function addFromAzureVault(config: Config, options: AzureVaultOptio
   const { pathToHelmChart, vaultUriSuffix = DEFAULT_VAULT_URI_SUFFIX } = options;
 
   try {
-    // Load and parse Helm chart YAML
-    const helmChartContent = readFileSync(pathToHelmChart, "utf8");
-    const helmChart = yamlLoad(helmChartContent) as any;
+    const { vaults, hasKeyVaultsKey, invalidVaultNames } = parseVaultsFromHelmChart(pathToHelmChart);
 
-    // Find all keyVaults in the Helm chart
-    const keyVaults = deepSearch(helmChart, "keyVaults");
-
-    if (!keyVaults.length) {
+    if (!hasKeyVaultsKey) {
       console.warn("Azure Vault: No keyVaults found in Helm chart");
       return;
     }
 
-    // Process each keyVaults object found
-    for (const keyVaultsObj of keyVaults) {
-      if (keyVaultsObj && typeof keyVaultsObj === "object") {
-        // keyVaultsObj should be an object with vault names as keys
-        for (const [vaultName, vaultConfig] of Object.entries(keyVaultsObj)) {
-          const vault = { name: vaultName };
-          if (vaultConfig && typeof vaultConfig === "object") {
-            Object.assign(vault, vaultConfig);
-          }
-          await processVault(config, vault, vaultUriSuffix);
-        }
-      }
+    for (const _ of invalidVaultNames) {
+      console.warn("Azure Vault: Invalid vault configuration, missing name or secrets");
+    }
+
+    for (const vault of vaults) {
+      await processVault(config, vault, vaultUriSuffix);
     }
   } catch (error: any) {
-    // Provide cleaner error message
-    const message = error.message || error;
-    throw new Error(`Azure Key Vault: ${message}`);
+    throw new Error(`Azure Key Vault: ${error.message || error}`);
   }
 }
 
-/**
- * Process a single vault configuration
- */
-async function processVault(config: Config, vault: any, vaultUriSuffix: string): Promise<void> {
+async function processVault(config: Config, vault: VaultDefinition, vaultUriSuffix: string): Promise<void> {
   const { name: vaultName, secrets } = vault;
-
-  if (!vaultName || !secrets) {
-    console.warn("Azure Vault: Invalid vault configuration, missing name or secrets");
-    return;
-  }
 
   const vaultUri = `https://${vaultName}-${vaultUriSuffix}.vault.azure.net/`;
   const credential = new DefaultAzureCredential();
   const client = new SecretClient(vaultUri, credential);
-  const secretPromises = secrets.map((secret: StructuredOrUnstructuredSecret) => processSecret(client, secret));
 
   try {
-    const secretResults = await Promise.all(secretPromises);
-
-    // Merge all secrets into config
-    const secretsConfig: Config = {};
-    for (const { key, value } of secretResults) {
-      secretsConfig[key] = value;
-    }
-
+    const secretResults = await Promise.all(secrets.map((secret) => processSecret(client, secret)));
+    const secretsConfig: Config = Object.fromEntries(secretResults.map(({ key, value }) => [key, value]));
     Object.assign(config, deepMerge(config, secretsConfig));
   } catch (error: any) {
-    // Re-throw with vault context if not already included
     if (error.message && !error.message.includes(vaultName)) {
       throw new Error(`Vault '${vaultName}': ${error.message}`);
     }
@@ -94,34 +57,17 @@ async function processVault(config: Config, vault: any, vaultUriSuffix: string):
   }
 }
 
-/**
- * Process a single secret from the vault
- */
-async function processSecret(client: SecretClient, secret: StructuredOrUnstructuredSecret): Promise<{ key: string; value: string }> {
-  let secretName: string;
-  let configKey: string;
-
-  if (typeof secret === "string") {
-    secretName = secret;
-    configKey = normalizeSecretName(secret);
-  } else {
-    secretName = secret.name;
-    configKey = secret.alias || normalizeSecretName(secret.name);
-  }
+async function processSecret(client: SecretClient, secret: SecretDefinition): Promise<{ key: string; value: string }> {
+  const { name: secretName } = secret;
+  const configKey = secret.alias ?? normalizeSecretName(secretName);
 
   try {
     const secretResponse = await client.getSecret(secretName);
-
     if (!secretResponse.value) {
       throw new Error(`Secret ${secretName} has no value`);
     }
-
-    return {
-      key: configKey,
-      value: secretResponse.value
-    };
+    return { key: configKey, value: secretResponse.value };
   } catch (error: any) {
-    // Extract cleaner error message for common Azure Key Vault permission issues
     if (error?.statusCode === 403 || error?.message?.includes("does not have secrets get permission")) {
       throw new Error(`Could not load secret '${secretName}'. Check it exists and you have access to it.`);
     }

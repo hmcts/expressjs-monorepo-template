@@ -1,8 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { load as yamlLoad } from "js-yaml";
 import { addFromAzureVault } from "./azure-vault.js";
-import { deepSearch } from "./utils.js";
+import { parseVaultsFromHelmChart } from "./helm-chart.js";
 
 const DEFAULT_MOUNT_POINT = "/mnt/secrets";
 
@@ -25,27 +24,13 @@ export async function getPropertiesVolumeSecrets(options: GetSecretsOptions = {}
 
 function buildAliasMap(chartPath: string): Map<string, string> {
   try {
-    const chart = yamlLoad(readFileSync(chartPath, "utf8"));
-    const aliasedSecrets = deepSearch(chart, "keyVaults").flatMap(extractAliasedSecrets);
-    return new Map(aliasedSecrets.map(({ name, alias }) => [name, alias]));
+    const aliases = parseVaultsFromHelmChart(chartPath)
+      .vaults.flatMap((vault) => vault.secrets)
+      .filter((secret): secret is Required<typeof secret> => secret.alias !== undefined);
+    return new Map(aliases.map(({ name, alias }) => [name, alias]));
   } catch {
     return new Map();
   }
-}
-
-function extractAliasedSecrets(vaults: unknown): AliasedSecret[] {
-  if (!isRecord(vaults)) return [];
-  return Object.values(vaults)
-    .flatMap((vault) => (isRecord(vault) && Array.isArray(vault.secrets) ? vault.secrets : []))
-    .filter(isAliasedSecret);
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-
-function isAliasedSecret(value: unknown): value is AliasedSecret {
-  return isRecord(value) && typeof value.name === "string" && typeof value.alias === "string";
 }
 
 async function tryLoadFromAzureVault(
@@ -192,9 +177,4 @@ export interface Secrets {
 
 export interface Config {
   [key: string]: any;
-}
-
-interface AliasedSecret {
-  name: string;
-  alias: string;
 }
