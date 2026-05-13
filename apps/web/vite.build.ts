@@ -19,7 +19,7 @@ function getEntries(assetsPath: string): Record<string, string> {
     const cssFiles = glob.sync(path.resolve(resolved, "css/*.scss"));
 
     for (const asset of [...jsFiles, ...cssFiles]) {
-      const fileName = asset.split("/").pop()!;
+      const fileName = path.basename(asset);
       const baseName = fileName.replace(/\.(ts|scss)$/, "");
       const fileType = fileName.endsWith(".ts") ? "js" : "css";
       entries[`${baseName}_${fileType}`] = asset;
@@ -86,8 +86,8 @@ const baseConfig: UserConfig = {
           src: "src/pages/**/*.{njk,html}",
           dest: "../pages",
           rename: (_fileName, _fileExtension, fullPath) => {
-            const relativePath = fullPath.split("src/pages/")[1];
-            return relativePath;
+            const pagesRoot = path.resolve(__dirname, "src/pages");
+            return path.relative(pagesRoot, fullPath).split(path.sep).join("/");
           }
         },
         {

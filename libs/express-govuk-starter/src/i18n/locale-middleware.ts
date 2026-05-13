@@ -13,7 +13,7 @@ export function localeMiddleware(options: LocaleMiddlewareOptions = {}) {
 
   return (req: Request, res: Response, next: NextFunction) => {
     let locale = defaultLocale;
-    const session = (req as any).session as { locale?: string } | undefined;
+    const session = (req as Request & { session?: { locale?: string } }).session;
 
     if (req.query[queryParam] && typeof req.query[queryParam] === "string") {
       const queryLocale = req.query[queryParam];
