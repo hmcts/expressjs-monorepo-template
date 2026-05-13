@@ -1,6 +1,5 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { getPropertiesVolumeSecrets, hc, healthcheck, monitoringMiddleware } from "@hmcts/cloud-native-platform";
 import {
   configureCookieManager,
   configureGovuk,
@@ -10,6 +9,7 @@ import {
   expressSessionRedis,
   notFoundHandler
 } from "@hmcts/express-govuk-starter";
+import { getPropertiesVolumeSecrets, hc, healthcheck, monitoringMiddleware } from "@hmcts-cft/cloud-native-platform";
 import { createSimpleRouter } from "@hmcts-cft/simple-router";
 import cookieParser from "cookie-parser";
 import type { Express } from "express";

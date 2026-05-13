@@ -1,7 +1,7 @@
 // API Application Entry Point
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { getPropertiesVolumeSecrets, healthcheck, monitoringMiddleware } from "@hmcts/cloud-native-platform";
+import { getPropertiesVolumeSecrets, healthcheck, monitoringMiddleware } from "@hmcts-cft/cloud-native-platform";
 import { createSimpleRouter } from "@hmcts-cft/simple-router";
 import compression from "compression";
 import cors from "cors";

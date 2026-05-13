@@ -14,8 +14,8 @@
     "lint:fix": "biome check --write ."
   },
   "dependencies": {
+    "@hmcts-cft/cloud-native-platform": "workspace:*",
     "@hmcts-cft/simple-router": "workspace:*",
-    "@hmcts/cloud-native-platform": "workspace:*",
     "@hmcts/onboarding": "workspace:*",
     "@hmcts/postgres-prisma": "workspace:*",
     "compression": "1.8.1",
