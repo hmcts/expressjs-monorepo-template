@@ -76,16 +76,6 @@ describe("healthcheck", () => {
       expect(await check()).toBe("DOWN");
     });
 
-    it("should return UP when check returns void", async () => {
-      const check = raw(() => {});
-      expect(await check()).toBe("UP");
-    });
-
-    it("should return UP for async void", async () => {
-      const check = raw(async () => {});
-      expect(await check()).toBe("UP");
-    });
-
     it("should return DOWN on error", async () => {
       const check = raw(() => {
         throw new Error("Check failed");

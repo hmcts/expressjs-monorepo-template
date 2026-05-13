@@ -7,7 +7,10 @@ import { deepMerge, deepSearch, normalizeSecretName } from "./utils.js";
 
 export interface AzureVaultOptions {
   pathToHelmChart: string;
+  vaultUriSuffix?: string;
 }
+
+const DEFAULT_VAULT_URI_SUFFIX = "aat";
 
 export interface StructuredSecret {
   alias: string;
@@ -21,7 +24,7 @@ export type StructuredOrUnstructuredSecret = string | StructuredSecret;
  * Matches the API of @hmcts/properties-volume addFromAzureVault function
  */
 export async function addFromAzureVault(config: Config, options: AzureVaultOptions): Promise<void> {
-  const { pathToHelmChart } = options;
+  const { pathToHelmChart, vaultUriSuffix = DEFAULT_VAULT_URI_SUFFIX } = options;
 
   try {
     // Load and parse Helm chart YAML
@@ -45,7 +48,7 @@ export async function addFromAzureVault(config: Config, options: AzureVaultOptio
           if (vaultConfig && typeof vaultConfig === "object") {
             Object.assign(vault, vaultConfig);
           }
-          await processVault(config, vault);
+          await processVault(config, vault, vaultUriSuffix);
         }
       }
     }
@@ -59,7 +62,7 @@ export async function addFromAzureVault(config: Config, options: AzureVaultOptio
 /**
  * Process a single vault configuration
  */
-async function processVault(config: Config, vault: any): Promise<void> {
+async function processVault(config: Config, vault: any, vaultUriSuffix: string): Promise<void> {
   const { name: vaultName, secrets } = vault;
 
   if (!vaultName || !secrets) {
@@ -67,7 +70,7 @@ async function processVault(config: Config, vault: any): Promise<void> {
     return;
   }
 
-  const vaultUri = `https://${vaultName}-aat.vault.azure.net/`;
+  const vaultUri = `https://${vaultName}-${vaultUriSuffix}.vault.azure.net/`;
   const credential = new DefaultAzureCredential();
   const client = new SecretClient(vaultUri, credential);
   const secretPromises = secrets.map((secret: StructuredOrUnstructuredSecret) => processSecret(client, secret));

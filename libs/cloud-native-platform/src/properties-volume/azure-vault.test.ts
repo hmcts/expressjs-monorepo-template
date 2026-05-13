@@ -81,6 +81,24 @@ describe("addFromAzureVault", () => {
     });
   });
 
+  it("should use custom vault URI suffix when provided", async () => {
+    const helmChart = {
+      keyVaults: {
+        "my-app": {
+          secrets: ["secret1"]
+        }
+      }
+    };
+
+    mockReadFileSync.mockReturnValue("helm-chart-content");
+    mockYamlLoad.mockReturnValue(helmChart);
+    mockClient.getSecret.mockResolvedValueOnce({ value: "secret-value" });
+
+    await addFromAzureVault(config, { pathToHelmChart: "/path/to/chart.yaml", vaultUriSuffix: "stg" });
+
+    expect(mockSecretClient).toHaveBeenCalledWith("https://my-app-stg.vault.azure.net/", expect.any(Object));
+  });
+
   it("should handle multiple vaults", async () => {
     const helmChart = {
       keyVaults: {

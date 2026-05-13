@@ -8,9 +8,9 @@ const DEFAULT_MOUNT_POINT = "/mnt/secrets";
 
 export async function getPropertiesVolumeSecrets(options: GetSecretsOptions = {}): Promise<Secrets> {
   const isProd = process.env.NODE_ENV === "production";
-  const { mountPoint = DEFAULT_MOUNT_POINT, failOnError = isProd, injectEnvVars = true, chartPath, omit = [] } = options;
+  const { mountPoint = DEFAULT_MOUNT_POINT, failOnError = isProd, injectEnvVars = true, chartPath, omit = [], vaultUriSuffix } = options;
 
-  const azureResult = await tryLoadFromAzureVault(chartPath, isProd, injectEnvVars, omit, failOnError);
+  const azureResult = await tryLoadFromAzureVault(chartPath, isProd, injectEnvVars, omit, failOnError, vaultUriSuffix);
   if (azureResult) {
     return azureResult;
   }
@@ -24,28 +24,28 @@ export async function getPropertiesVolumeSecrets(options: GetSecretsOptions = {}
 }
 
 function buildAliasMap(chartPath: string): Map<string, string> {
-  const aliasMap = new Map<string, string>();
   try {
-    const helmChartContent = readFileSync(chartPath, "utf8");
-    const helmChart = yamlLoad(helmChartContent) as any;
-    const keyVaultsList = deepSearch(helmChart, "keyVaults");
-    for (const keyVaultsObj of keyVaultsList) {
-      if (keyVaultsObj && typeof keyVaultsObj === "object") {
-        for (const vaultConfig of Object.values(keyVaultsObj) as any[]) {
-          if (vaultConfig?.secrets && Array.isArray(vaultConfig.secrets)) {
-            for (const secret of vaultConfig.secrets) {
-              if (secret?.name && secret?.alias) {
-                aliasMap.set(secret.name, secret.alias);
-              }
-            }
-          }
-        }
-      }
-    }
+    const chart = yamlLoad(readFileSync(chartPath, "utf8"));
+    const aliasedSecrets = deepSearch(chart, "keyVaults").flatMap(extractAliasedSecrets);
+    return new Map(aliasedSecrets.map(({ name, alias }) => [name, alias]));
   } catch {
-    // If chart can't be read, proceed without alias mapping
+    return new Map();
   }
-  return aliasMap;
+}
+
+function extractAliasedSecrets(vaults: unknown): AliasedSecret[] {
+  if (!isRecord(vaults)) return [];
+  return Object.values(vaults)
+    .flatMap((vault) => (isRecord(vault) && Array.isArray(vault.secrets) ? vault.secrets : []))
+    .filter(isAliasedSecret);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isAliasedSecret(value: unknown): value is AliasedSecret {
+  return isRecord(value) && typeof value.name === "string" && typeof value.alias === "string";
 }
 
 async function tryLoadFromAzureVault(
@@ -53,14 +53,15 @@ async function tryLoadFromAzureVault(
   isProd: boolean,
   injectEnvVars: boolean,
   omit: string[],
-  failOnError: boolean
+  failOnError: boolean,
+  vaultUriSuffix: string | undefined
 ): Promise<Secrets | null> {
   if (!chartPath || isProd || !existsSync(chartPath)) {
     return null;
   }
 
   try {
-    return await loadFromAzureVault(chartPath, injectEnvVars, omit);
+    return await loadFromAzureVault(chartPath, injectEnvVars, omit, vaultUriSuffix);
   } catch (error) {
     if (failOnError) {
       throw new Error(`Failed to load secrets from Azure Vault: ${error}`);
@@ -116,9 +117,9 @@ function processEntry(
   }
 }
 
-async function loadFromAzureVault(chartPath: string, injectEnvVars: boolean, omit: string[]): Promise<Secrets> {
+async function loadFromAzureVault(chartPath: string, injectEnvVars: boolean, omit: string[], vaultUriSuffix: string | undefined): Promise<Secrets> {
   const config: Config = {};
-  await addFromAzureVault(config, { pathToHelmChart: chartPath });
+  await addFromAzureVault(config, { pathToHelmChart: chartPath, vaultUriSuffix });
 
   const secrets: Secrets = {};
   for (const [key, value] of Object.entries(config)) {
@@ -182,6 +183,7 @@ export interface GetSecretsOptions {
   injectEnvVars?: boolean;
   chartPath?: string;
   omit?: string[];
+  vaultUriSuffix?: string;
 }
 
 export interface Secrets {
@@ -190,4 +192,9 @@ export interface Secrets {
 
 export interface Config {
   [key: string]: any;
+}
+
+interface AliasedSecret {
+  name: string;
+  alias: string;
 }
