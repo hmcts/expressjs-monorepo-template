@@ -11,7 +11,7 @@ concurrency:
 
 jobs:
   release:
-    uses: hmcts/cnp-githubactions-library/.github/workflows/npm-publish-library.yaml@feat/release-please
+    uses: hmcts/cnp-githubactions-library/.github/workflows/npm-publish-library.yaml@main
     with:
       node-version-file: '.nvmrc'
       build-command: 'yarn test && yarn build'
