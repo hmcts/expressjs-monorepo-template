@@ -15,3 +15,5 @@ nodejs:
           alias: REDIS_URL
         - name: postgres-url
           alias: DATABASE_URL
+        - name: session-secret
+          alias: SESSION_SECRET

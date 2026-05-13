@@ -22,6 +22,7 @@ expressjs-monorepo-template-web:
     environment:
       REDIS_URL: "redis://{{ .Release.Name }}-redis-master:6379"
       POSTGRES_DATABASE: "{{ .Release.Name }}"
+      SESSION_SECRET: "preview-session-secret-{{ .Release.Name }}"
     secrets:
       POSTGRES_HOST:
         secretRef: postgres
