@@ -2,7 +2,7 @@
 
 This repository uses [Changesets](https://github.com/changesets/changesets) to manage versioning and publishing of libraries to the HMCTS Azure Artifacts `hmcts-lib` feed.
 
-Currently the only library published from this monorepo is **`@hmcts-cft/simple-router`**. Other libraries under `libs/` are workspace-only — see the `ignore` list in `config.json` for the current scope.
+Libraries published from this monorepo: **`@hmcts-cft/simple-router`**, **`@hmcts-cft/cloud-native-platform`**. Other libraries under `libs/` are workspace-only (marked `"private": true` in their `package.json`).
 
 ## Releasing a change
 
@@ -26,9 +26,9 @@ On merge to `master`:
 
 ## Onboarding a new library
 
-To start publishing a library currently in the `ignore` list:
+To start publishing a workspace-only library:
 
-1. Remove its package name from `ignore` in `config.json`.
+1. Remove `"private": true` from its `package.json`.
 2. Make sure the library's `package.json` has: `description`, `license`, `repository` (with `directory`), `files`, `exports`, and `publishConfig: { "registry": "https://pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/npm/registry/" }` — see `libs/simple-router/package.json` for the canonical shape.
 3. Rename it under the `@hmcts-cft` scope (the public `@hmcts` scope on npmjs.org is unrelated and not used here).
 4. Create the first changeset for it and merge.

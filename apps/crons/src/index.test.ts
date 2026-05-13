@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mockGetPropertiesVolumeSecrets = vi.fn();
 const mockConfigGet = vi.fn();
 
-vi.mock("@hmcts/cloud-native-platform", () => ({
+vi.mock("@hmcts-cft/cloud-native-platform", () => ({
   getPropertiesVolumeSecrets: mockGetPropertiesVolumeSecrets
 }));
 
