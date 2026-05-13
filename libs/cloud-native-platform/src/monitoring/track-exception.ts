@@ -8,9 +8,9 @@ import * as appInsights from "applicationinsights";
  * @param error - The error to track
  * @param properties - Optional contextual properties to include with the exception
  */
-export function trackException(error: Error, properties?: Record<string, any>): void {
+export function trackException(error: Error, properties?: Record<string, unknown>): void {
   if (appInsights.defaultClient) {
-    console.error(error.message, { error, ...properties });
+    console.error(error.message, { ...properties, error });
 
     appInsights.defaultClient.trackException({
       exception: error,

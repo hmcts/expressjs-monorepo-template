@@ -26,15 +26,15 @@ export async function addFromAzureVault(config: Config, options: AzureVaultOptio
       return;
     }
 
-    for (const _ of invalidVaultNames) {
-      console.warn("Azure Vault: Invalid vault configuration, missing name or secrets");
+    for (const vaultName of invalidVaultNames) {
+      console.warn(`Azure Vault: Invalid vault configuration for '${vaultName}', missing secrets`);
     }
 
     for (const vault of vaults) {
       await processVault(config, vault, vaultUriSuffix);
     }
-  } catch (error: any) {
-    throw new Error(`Azure Key Vault: ${error.message || error}`);
+  } catch (error: unknown) {
+    throw new Error(`Azure Key Vault: ${errorMessage(error)}`);
   }
 }
 
@@ -49,9 +49,10 @@ async function processVault(config: Config, vault: VaultDefinition, vaultUriSuff
     const secretResults = await Promise.all(secrets.map((secret) => processSecret(client, secret)));
     const secretsConfig: Config = Object.fromEntries(secretResults.map(({ key, value }) => [key, value]));
     Object.assign(config, deepMerge(config, secretsConfig));
-  } catch (error: any) {
-    if (error.message && !error.message.includes(vaultName)) {
-      throw new Error(`Vault '${vaultName}': ${error.message}`);
+  } catch (error: unknown) {
+    const message = errorMessage(error);
+    if (message && !message.includes(vaultName)) {
+      throw new Error(`Vault '${vaultName}': ${message}`);
     }
     throw error;
   }
@@ -67,10 +68,21 @@ async function processSecret(client: SecretClient, secret: SecretDefinition): Pr
       throw new Error(`Secret ${secretName} has no value`);
     }
     return { key: configKey, value: secretResponse.value };
-  } catch (error: any) {
-    if (error?.statusCode === 403 || error?.message?.includes("does not have secrets get permission")) {
+  } catch (error: unknown) {
+    if (isPermissionDenied(error)) {
       throw new Error(`Could not load secret '${secretName}'. Check it exists and you have access to it.`);
     }
-    throw new Error(`Failed to retrieve secret ${secretName}: ${error.message || error}`);
+    throw new Error(`Failed to retrieve secret ${secretName}: ${errorMessage(error)}`);
   }
+}
+
+function errorMessage(error: unknown): string {
+  if (error instanceof Error) return error.message;
+  return String(error);
+}
+
+function isPermissionDenied(error: unknown): boolean {
+  if (typeof error !== "object" || error === null) return false;
+  const e = error as { statusCode?: number; message?: string };
+  return e.statusCode === 403 || (typeof e.message === "string" && e.message.includes("does not have secrets get permission"));
 }

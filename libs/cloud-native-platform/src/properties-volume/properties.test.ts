@@ -26,6 +26,13 @@ function fileEntry(name: string, isSymlink = false) {
   return dirEntry(name, false, isSymlink);
 }
 
+function restoreEnv(original: NodeJS.ProcessEnv) {
+  for (const key of Object.keys(process.env)) {
+    if (!(key in original)) delete process.env[key];
+  }
+  Object.assign(process.env, original);
+}
+
 describe("getPropertiesVolumeSecrets", () => {
   let consoleWarnSpy: ReturnType<typeof vi.spyOn>;
   const originalEnv = { ...process.env };
@@ -33,12 +40,12 @@ describe("getPropertiesVolumeSecrets", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
-    process.env = { ...originalEnv };
+    restoreEnv(originalEnv);
   });
 
   afterEach(() => {
     consoleWarnSpy.mockRestore();
-    process.env = originalEnv;
+    restoreEnv(originalEnv);
   });
 
   it("should read vault subdirectories with prefixed keys", async () => {

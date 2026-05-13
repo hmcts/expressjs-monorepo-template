@@ -13,7 +13,7 @@ vi.mock("applicationinsights", () => {
 });
 
 describe("trackException", () => {
-  let consoleErrorSpy: any;
+  let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
 
   beforeEach(() => {
     vi.clearAllMocks();

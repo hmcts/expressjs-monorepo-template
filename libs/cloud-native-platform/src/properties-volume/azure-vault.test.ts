@@ -153,7 +153,7 @@ describe("addFromAzureVault", () => {
 
     await addFromAzureVault(config, { pathToHelmChart: "/path/to/chart.yaml" });
 
-    expect(consoleWarnSpy).toHaveBeenCalledWith("Azure Vault: Invalid vault configuration, missing name or secrets");
+    expect(consoleWarnSpy).toHaveBeenCalledWith("Azure Vault: Invalid vault configuration for 'incomplete-vault', missing secrets");
     expect(config).toEqual({
       existing: "value",
       secret1: "value1"
@@ -316,7 +316,7 @@ describe("addFromAzureVault", () => {
 
     await addFromAzureVault(config, { pathToHelmChart: "/path/to/chart.yaml" });
 
-    expect(consoleWarnSpy).toHaveBeenCalledWith("Azure Vault: Invalid vault configuration, missing name or secrets");
+    expect(consoleWarnSpy).toHaveBeenCalledWith("Azure Vault: Invalid vault configuration for 'vault-name', missing secrets");
     expect(config).toEqual({ existing: "value" });
   });
 

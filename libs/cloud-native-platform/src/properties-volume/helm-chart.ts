@@ -2,22 +2,6 @@ import { readFileSync } from "node:fs";
 import { load as yamlLoad } from "js-yaml";
 import { deepSearch } from "./utils.js";
 
-export interface VaultDefinition {
-  name: string;
-  secrets: SecretDefinition[];
-}
-
-export interface SecretDefinition {
-  name: string;
-  alias?: string;
-}
-
-export interface ParsedHelmChart {
-  vaults: VaultDefinition[];
-  hasKeyVaultsKey: boolean;
-  invalidVaultNames: string[];
-}
-
 export function parseVaultsFromHelmChart(chartPath: string): ParsedHelmChart {
   const chart = yamlLoad(readFileSync(chartPath, "utf8"));
   const keyVaultsEntries = deepSearch(chart, "keyVaults");
@@ -53,4 +37,20 @@ function parseSecret(secret: unknown): SecretDefinition | null {
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+export interface VaultDefinition {
+  name: string;
+  secrets: SecretDefinition[];
+}
+
+export interface SecretDefinition {
+  name: string;
+  alias?: string;
+}
+
+export interface ParsedHelmChart {
+  vaults: VaultDefinition[];
+  hasKeyVaultsKey: boolean;
+  invalidVaultNames: string[];
 }
