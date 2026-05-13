@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { expressSessionRedis } from "./redis-store.js";
+import { expressSessionRedis } from "./index.js";
 
 vi.mock("connect-redis", () => ({
   // biome-ignore lint/complexity/useArrowFunction: Vitest 4 requires function keyword for constructors
@@ -135,7 +135,6 @@ describe("expressSessionRedis", () => {
   });
 
   it("should work with any Redis client implementation", () => {
-    // Test with ioredis-like client
     const ioredisClient = {
       connect: vi.fn(),
       set: vi.fn(),
@@ -148,7 +147,6 @@ describe("expressSessionRedis", () => {
 
     expect(middleware1).toBeDefined();
 
-    // Test with node-redis-like client
     const nodeRedisClient = {
       connect: vi.fn().mockResolvedValue(undefined),
       quit: vi.fn()

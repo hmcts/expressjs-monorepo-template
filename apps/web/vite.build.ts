@@ -1,35 +1,102 @@
+import { existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { createBaseViteConfig } from "@hmcts/express-govuk-starter/src/assets/vite-config.js";
-import { defineConfig, mergeConfig } from "vite";
+import { glob } from "glob";
+import { defineConfig, type UserConfig } from "vite";
 import { viteStaticCopy } from "vite-plugin-static-copy";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const baseConfig = createBaseViteConfig(path.join(__dirname, "src", "assets"));
+const assetsPath = path.join(__dirname, "src", "assets");
 
-export default defineConfig(
-  mergeConfig(baseConfig, {
-    plugins: [
-      viteStaticCopy({
-        targets: [
-          {
-            src: "src/pages/**/*.{njk,html}",
-            dest: "../pages",
-            rename: (_fileName, _fileExtension, fullPath) => {
-              // Preserve directory structure by extracting path after 'src/pages/'
-              const relativePath = fullPath.split("src/pages/")[1];
-              return relativePath;
-            }
-          },
-          {
-            // Copy app-specific images
-            src: "src/assets/images/**/*",
-            dest: "images"
+function getEntries(assetsPath: string): Record<string, string> {
+  const entries: Record<string, string> = {};
+  const resolved = path.resolve(assetsPath);
+
+  if (existsSync(resolved)) {
+    const jsFiles = glob.sync(path.resolve(resolved, "js/*.ts")).filter((f) => !f.endsWith(".d.ts"));
+    const cssFiles = glob.sync(path.resolve(resolved, "css/*.scss"));
+
+    for (const asset of [...jsFiles, ...cssFiles]) {
+      const fileName = asset.split("/").pop()!;
+      const baseName = fileName.replace(/\.(ts|scss)$/, "");
+      const fileType = fileName.endsWith(".ts") ? "js" : "css";
+      entries[`${baseName}_${fileType}`] = asset;
+    }
+  }
+
+  return entries;
+}
+
+const baseConfig: UserConfig = {
+  build: {
+    outDir: "dist/assets",
+    emptyOutDir: true,
+    rollupOptions: {
+      input: getEntries(assetsPath),
+      output: {
+        entryFileNames: "js/[name]-[hash].js",
+        chunkFileNames: "js/[name]-[hash].js",
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name?.endsWith(".css")) {
+            return "css/[name]-[hash][extname]";
           }
-        ]
-      })
-    ]
-  })
-);
+          return "assets/[name]-[hash][extname]";
+        }
+      }
+    },
+    sourcemap: process.env.NODE_ENV !== "production",
+    minify: process.env.NODE_ENV === "production",
+    manifest: true
+  },
+  css: {
+    preprocessorOptions: {
+      scss: {
+        quietDeps: true,
+        loadPaths: ["node_modules"]
+      }
+    },
+    devSourcemap: true,
+    lightningcss: {
+      errorRecovery: true
+    }
+  },
+  resolve: {
+    extensions: [".ts", ".js", ".scss", ".css"],
+    preserveSymlinks: true
+  },
+  publicDir: false,
+  plugins: [
+    viteStaticCopy({
+      targets: [
+        {
+          src: "../../node_modules/govuk-frontend/dist/govuk/assets/fonts/*",
+          dest: "fonts"
+        },
+        {
+          src: "../../node_modules/govuk-frontend/dist/govuk/assets/images/*",
+          dest: "images"
+        },
+        {
+          src: "../../node_modules/govuk-frontend/dist/govuk/assets/manifest.json",
+          dest: "."
+        },
+        {
+          src: "src/pages/**/*.{njk,html}",
+          dest: "../pages",
+          rename: (_fileName, _fileExtension, fullPath) => {
+            const relativePath = fullPath.split("src/pages/")[1];
+            return relativePath;
+          }
+        },
+        {
+          src: "src/assets/images/**/*",
+          dest: "images"
+        }
+      ]
+    })
+  ]
+};
+
+export default defineConfig(baseConfig);

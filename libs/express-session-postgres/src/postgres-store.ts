@@ -41,7 +41,6 @@ export class PostgresStore extends Store {
   private async initTable(): Promise<void> {
     const client = await this.pool.connect();
     try {
-      // Create table if it doesn't exist
       const createTableQuery = format(
         "CREATE TABLE IF NOT EXISTS %I.%I (sid VARCHAR(255) PRIMARY KEY, sess JSONB NOT NULL, expire TIMESTAMPTZ NOT NULL)",
         this.schemaName,
@@ -49,7 +48,6 @@ export class PostgresStore extends Store {
       );
       await client.query(createTableQuery);
 
-      // Create index on expire column for cleanup queries
       const createIndexQuery = format("CREATE INDEX IF NOT EXISTS %I ON %I.%I (expire)", `idx_${this.tableName}_expire`, this.schemaName, this.tableName);
       await client.query(createIndexQuery);
 
@@ -66,7 +64,6 @@ export class PostgresStore extends Store {
       });
     }, this.cleanupInterval);
 
-    // Unref the timer so it doesn't keep the process alive
     if (this.cleanupTimer.unref) {
       this.cleanupTimer.unref();
     }
@@ -234,7 +231,6 @@ export class PostgresStore extends Store {
     }
   }
 
-  // Clean up timer when store is no longer needed
   stopCleanup(): void {
     if (this.cleanupTimer) {
       clearInterval(this.cleanupTimer);

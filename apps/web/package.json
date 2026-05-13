@@ -19,10 +19,11 @@
     "lint:fix": "biome check --write ."
   },
   "dependencies": {
+    "@hmcts-cft/express-govuk-starter": "workspace:*",
+    "@hmcts-cft/express-session-redis": "workspace:*",
     "@hmcts-cft/simple-router": "workspace:*",
     "@hmcts/cloud-native-platform": "workspace:*",
     "@hmcts/cookie-manager": "1.1.0",
-    "@hmcts/express-govuk-starter": "workspace:*",
     "@hmcts/onboarding": "workspace:*",
     "@hmcts/postgres-prisma": "workspace:*",
     "config": "4.4.1",

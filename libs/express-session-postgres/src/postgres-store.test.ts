@@ -48,8 +48,6 @@ describe("PostgresStore", () => {
     });
 
     it("should initialize table on construction", async () => {
-      // Wait for the promise to resolve
-
       expect(mockClient.query).toHaveBeenCalledWith(expect.stringContaining("CREATE TABLE IF NOT EXISTS"));
       expect(mockClient.query).toHaveBeenCalledWith(expect.stringContaining("CREATE INDEX IF NOT EXISTS"));
     });
@@ -59,7 +57,6 @@ describe("PostgresStore", () => {
     it("should retrieve session from database", async () => {
       const sessionData = { cookie: { maxAge: 3600000 }, userId: "123" };
 
-      // Mocks already set in beforeEach
       mockClient.query.mockResolvedValueOnce({
         rows: [{ sess: sessionData }]
       });
@@ -75,7 +72,6 @@ describe("PostgresStore", () => {
     });
 
     it("should return null for non-existent session", async () => {
-      // Mocks already set in beforeEach
       mockClient.query.mockResolvedValueOnce({ rows: [] });
 
       await new Promise<void>((resolve) => {
@@ -89,7 +85,6 @@ describe("PostgresStore", () => {
 
     it("should handle errors", async () => {
       const error = new Error("Database error");
-      // Mocks already set in beforeEach
       mockClient.query.mockRejectedValueOnce(error);
 
       await new Promise<void>((resolve) => {
@@ -117,7 +112,6 @@ describe("PostgresStore", () => {
 
     it("should handle errors", async () => {
       const error = new Error("Database error");
-      // Mocks already set in beforeEach
       mockClient.query.mockRejectedValueOnce(error);
 
       await new Promise<void>((resolve) => {
@@ -164,7 +158,7 @@ describe("PostgresStore", () => {
         cleanupInterval: 0
       });
 
-      vi.clearAllMocks(); // Clear init mocks
+      vi.clearAllMocks();
 
       await new Promise<void>((resolve) => {
         touchStore.touch("session123", {}, (err) => {
@@ -194,7 +188,6 @@ describe("PostgresStore", () => {
 
   describe("length", () => {
     it("should return number of sessions", async () => {
-      // Mocks already set in beforeEach
       mockClient.query.mockResolvedValueOnce({ rows: [{ count: "10" }] });
 
       await new Promise<void>((resolve) => {
@@ -209,7 +202,6 @@ describe("PostgresStore", () => {
 
   describe("all", () => {
     it("should return all non-expired sessions", async () => {
-      // Mocks already set in beforeEach
       mockClient.query.mockResolvedValueOnce({
         rows: [
           { sid: "sess1", sess: { userId: "1" } },
@@ -230,7 +222,6 @@ describe("PostgresStore", () => {
     });
 
     it("should return empty object when no sessions", async () => {
-      // Mocks already set in beforeEach
       mockClient.query.mockResolvedValueOnce({ rows: [] });
 
       await new Promise<void>((resolve) => {
