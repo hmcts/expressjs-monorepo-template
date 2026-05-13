@@ -10,7 +10,7 @@
       "@hmcts/web": ["./apps/web/src"],
       "@hmcts/express-govuk-starter": ["./libs/express-govuk-starter/src"],
       "@hmcts/cloud-native-platform": ["./libs/cloud-native-platform/src"],
-      "@hmcts/simple-router": ["./libs/simple-router/src"],
+      "@hmcts-cft/simple-router": ["./libs/simple-router/src"],
       "@hmcts/onboarding": ["./libs/onboarding/src"]
     },
     "esModuleInterop": true,

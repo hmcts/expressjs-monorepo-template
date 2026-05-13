@@ -19,12 +19,12 @@
     "lint:fix": "biome check --write ."
   },
   "dependencies": {
+    "@hmcts-cft/simple-router": "workspace:*",
     "@hmcts/cloud-native-platform": "workspace:*",
     "@hmcts/cookie-manager": "1.1.0",
     "@hmcts/express-govuk-starter": "workspace:*",
     "@hmcts/onboarding": "workspace:*",
     "@hmcts/postgres-prisma": "workspace:*",
-    "@hmcts/simple-router": "workspace:*",
     "config": "4.4.1",
     "connect-redis": "9.0.0",
     "cookie-parser": "1.4.7",

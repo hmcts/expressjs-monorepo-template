@@ -1,5 +1,5 @@
 {
-  "name": "@hmcts/simple-router",
+  "name": "@hmcts-cft/simple-router",
   "version": "1.0.0",
   "description": "Lightweight file-system router for Express, inspired by Next.js routing.",
   "license": "MIT",
@@ -22,7 +22,7 @@
     }
   },
   "publishConfig": {
-    "access": "public"
+    "registry": "https://pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/npm/registry/"
   },
   "scripts": {
     "build": "tsc",

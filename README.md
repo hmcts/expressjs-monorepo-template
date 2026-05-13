@@ -159,20 +159,32 @@ yarn db:drop                    # Drop all tables and reset the database
 yarn changeset                  # Declare a version bump for a published library
 ```
 
-### Releasing a library to npm
+### Releasing a library
 
-`@hmcts/simple-router` is published to npm. To ship a change:
+`@hmcts-cft/simple-router` is published to the HMCTS Azure Artifacts `hmcts-lib` feed (the same feed Gradle artifacts publish to). To ship a change:
 
 1. Make your code change in `libs/simple-router/`.
 2. Run `yarn changeset` and follow the prompts (pick the package, bump type, write a one-line summary).
 3. Commit the generated `.changeset/*.md` file alongside your code change.
 4. Open and merge your PR as usual.
 
-The Release workflow (`.github/workflows/workflow.release.yml`) opens a "Version Packages" PR collecting pending changesets. Merging that PR publishes to npm with provenance attestation and creates a GitHub release.
+The Release workflow (`.github/workflows/workflow.release.yml`) opens a "Version Packages" PR collecting pending changesets. Merging that PR publishes to Azure Artifacts and creates a GitHub release.
 
-The release plumbing lives in [`hmcts/cnp-githubactions-library`](https://github.com/hmcts/cnp-githubactions-library) (`npm-changesets-release`) — this repo just invokes the reusable workflow with `secrets: inherit`.
+The release plumbing lives in [`hmcts/cnp-githubactions-library`](https://github.com/hmcts/cnp-githubactions-library) (`npm-changesets-release`) — this repo just invokes the reusable workflow with `secrets: inherit`. Auth uses the org-level `AZURE_DEVOPS_ARTIFACT_USERNAME` / `AZURE_DEVOPS_ARTIFACT_TOKEN` pair (same pair Gradle publishes use).
 
-Other libraries (`cloud-native-platform`, `express-govuk-starter`, `onboarding`) are marked `private: true` and are workspace-only today. To publish one, drop the `"private": true` flag, add the same `publishConfig` / `files` / `license` / `repository` fields to its `package.json` as `simple-router` has, and create a changeset for it.
+#### Installing the published library in another repo
+
+```ini
+# .npmrc
+@hmcts-cft:registry=https://pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/npm/registry/
+//pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/npm/registry/:username=hmcts
+//pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/npm/registry/:_password=${AZURE_DEVOPS_ARTIFACT_TOKEN_BASE64}
+//pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/npm/registry/:email=npm@hmcts.net
+```
+
+`AZURE_DEVOPS_ARTIFACT_TOKEN_BASE64` is the base64 encoding of a PAT with `Packaging (Read)` on the `hmcts-lib` feed (`printf %s "$PAT" | base64`).
+
+Other libraries (`cloud-native-platform`, `express-govuk-starter`, `onboarding`) are marked `private: true` and are workspace-only today. To publish one, drop the `"private": true` flag, rename it under the `@hmcts-cft` scope, add the same `publishConfig.registry` / `files` / `license` / `repository` fields to its `package.json` as `simple-router` has, and create a changeset for it.
 
 ### Creating a New Feature Module
 
