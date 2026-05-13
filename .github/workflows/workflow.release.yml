@@ -16,4 +16,5 @@ jobs:
       node-version-file: '.nvmrc'
       version-command: 'yarn version-packages'
       publish-command: 'yarn release'
+      npm-scope: '@hmcts-cft'
     secrets: inherit
