@@ -11,10 +11,9 @@ concurrency:
 
 jobs:
   release:
-    uses: hmcts/cnp-githubactions-library/.github/workflows/npm-changesets-release.yaml@main
+    uses: hmcts/cnp-githubactions-library/.github/workflows/npm-publish-library.yaml@feat/release-please
     with:
       node-version-file: '.nvmrc'
-      version-command: 'yarn version-packages'
-      publish-command: 'yarn release'
+      build-command: 'yarn test && yarn build'
       npm-scope: '@hmcts-cft'
     secrets: inherit

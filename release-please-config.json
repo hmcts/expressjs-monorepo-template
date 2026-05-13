@@ -1,0 +1,25 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "release-type": "node",
+  "separate-pull-requests": false,
+  "include-component-in-tag": true,
+  "bump-minor-pre-major": true,
+  "bump-patch-for-minor-pre-major": true,
+  "packages": {
+    "libs/simple-router": {
+      "package-name": "@hmcts-cft/simple-router"
+    },
+    "libs/cloud-native-platform": {
+      "package-name": "@hmcts-cft/cloud-native-platform"
+    },
+    "libs/express-govuk-starter": {
+      "package-name": "@hmcts-cft/express-govuk-starter"
+    },
+    "libs/express-session-postgres": {
+      "package-name": "@hmcts-cft/express-session-postgres"
+    },
+    "libs/express-session-redis": {
+      "package-name": "@hmcts-cft/express-session-redis"
+    }
+  }
+}

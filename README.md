@@ -155,22 +155,27 @@ yarn db:generate                # Generate the Prisma client
 yarn db:studio                  # Open Prisma Studio
 yarn db:drop                    # Drop all tables and reset the database
 
-# Releasing libraries
-yarn changeset                  # Declare a version bump for a published library
 ```
 
 ### Releasing a library
 
-`@hmcts-cft/simple-router` is published to the HMCTS Azure Artifacts `hmcts-lib` feed (the same feed Gradle artifacts publish to). To ship a change:
+Published libraries (currently `@hmcts-cft/simple-router`, `@hmcts-cft/cloud-native-platform`, `@hmcts-cft/express-govuk-starter`, `@hmcts-cft/express-session-postgres`, `@hmcts-cft/express-session-redis`) ship to the HMCTS Azure Artifacts `hmcts-lib` feed via [release-please](https://github.com/googleapis/release-please). Versioning and changelogs are derived from [Conventional Commits](https://www.conventionalcommits.org/).
 
-1. Make your code change in `libs/simple-router/`.
-2. Run `yarn changeset` and follow the prompts (pick the package, bump type, write a one-line summary).
-3. Commit the generated `.changeset/*.md` file alongside your code change.
-4. Open and merge your PR as usual.
+To ship a change:
 
-The Release workflow (`.github/workflows/workflow.release.yml`) opens a "Version Packages" PR collecting pending changesets. Merging that PR publishes to Azure Artifacts and creates a GitHub release.
+1. Make your code change in `libs/<package>/`.
+2. Commit with a Conventional Commit message:
+   - `fix(<package>): …` → patch bump
+   - `feat(<package>): …` → minor bump
+   - `feat(<package>)!: …` or a `BREAKING CHANGE:` footer → major bump
+   - `chore:`, `docs:`, `refactor:`, `test:` etc → no release
+3. Open and merge your PR as usual.
 
-The release plumbing lives in [`hmcts/cnp-githubactions-library`](https://github.com/hmcts/cnp-githubactions-library) (`npm-changesets-release`) — this repo just invokes the reusable workflow with `secrets: inherit`. Auth uses the org-level `AZURE_DEVOPS_ARTIFACT_USERNAME` / `AZURE_DEVOPS_ARTIFACT_TOKEN` pair (same pair Gradle publishes use).
+The Release workflow (`.github/workflows/workflow.release.yml`) opens (or updates) a single **release PR** that bumps the affected `package.json` versions and appends to each `CHANGELOG.md`. Merging that PR publishes to Azure Artifacts, pushes per-package git tags, and creates GitHub releases.
+
+The release plumbing lives in [`hmcts/cnp-githubactions-library`](https://github.com/hmcts/cnp-githubactions-library) (`npm-publish-library`) — this repo just invokes the reusable workflow with `secrets: inherit`. Auth uses the org-level `AZURE_DEVOPS_ARTIFACT_USERNAME` / `AZURE_DEVOPS_ARTIFACT_TOKEN` pair (same pair Gradle publishes use).
+
+Per-package configuration lives in [`release-please-config.json`](release-please-config.json); current versions are tracked in [`.release-please-manifest.json`](.release-please-manifest.json) — release-please updates the manifest each release.
 
 #### Installing the published library in another repo
 
@@ -186,7 +191,7 @@ npmScopes:
 
 Then run `az login` once before `yarn install`. The `exec:` form re-runs `az` per request so the token is always fresh, no `.npmrc` and no long-lived PAT to manage. The GUID `499b84ac-1321-427f-aa17-267ca6975798` is the Azure DevOps resource ID.
 
-Other libraries (`cloud-native-platform`, `express-govuk-starter`, `onboarding`) are marked `private: true` and are workspace-only today. To publish one, drop the `"private": true` flag, rename it under the `@hmcts-cft` scope, add the same `publishConfig.registry` / `files` / `license` / `repository` fields to its `package.json` as `simple-router` has, and create a changeset for it.
+To publish a library currently marked `private: true` (e.g. `onboarding`, `postgres-prisma`), drop the `"private": true` flag, rename it under the `@hmcts-cft` scope, add the same `publishConfig.registry` / `files` / `license` / `repository` fields to its `package.json` as `simple-router` has, register its path in `release-please-config.json` and seed its current version in `.release-please-manifest.json`.
 
 ### Creating a New Feature Module
 
