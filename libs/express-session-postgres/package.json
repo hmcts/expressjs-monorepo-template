@@ -1,6 +1,6 @@
 {
   "name": "@hmcts-cft/express-session-postgres",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Express session store backed by PostgreSQL with auto table creation and background expiry cleanup.",
   "license": "MIT",
   "repository": {
