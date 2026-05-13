@@ -4,6 +4,11 @@ import session, { type SessionOptions } from "express-session";
 
 export function expressSessionRedis(options: ExpressSessionRedisOptions): RequestHandler {
   const { redisConnection, sessionOptions = {}, storeOptions = {} } = options;
+  const secret = sessionOptions.secret || process.env.SESSION_SECRET;
+
+  if (!secret) {
+    throw new Error("Session secret is required. Set SESSION_SECRET environment variable or pass sessionOptions.secret.");
+  }
 
   const defaultSessionOptions: SessionOptions = {
     store: new RedisStore({
@@ -11,7 +16,7 @@ export function expressSessionRedis(options: ExpressSessionRedisOptions): Reques
       prefix: "sess:",
       ...storeOptions
     }),
-    secret: process.env.SESSION_SECRET || "default-secret-change-in-production",
+    secret,
     resave: false,
     saveUninitialized: false,
     cookie: {

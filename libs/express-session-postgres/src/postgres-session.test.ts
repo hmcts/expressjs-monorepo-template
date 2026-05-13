@@ -25,14 +25,20 @@ describe("expressSessionPostgres", () => {
     delete process.env.NODE_ENV;
   });
 
+  it("should throw if no session secret is provided", () => {
+    expect(() => expressSessionPostgres({ pgConnection: mockPool as any })).toThrow("Session secret is required");
+  });
+
   it("should create session middleware with default options", () => {
+    process.env.SESSION_SECRET = "test-secret";
+
     const middleware = expressSessionPostgres({
       pgConnection: mockPool as any
     });
 
     expect(middleware).toEqual({
       sessionOptions: expect.objectContaining({
-        secret: "default-secret-change-in-production",
+        secret: "test-secret",
         resave: false,
         saveUninitialized: false,
         cookie: expect.objectContaining({
@@ -64,6 +70,7 @@ describe("expressSessionPostgres", () => {
   });
 
   it("should set secure cookie in production", () => {
+    process.env.SESSION_SECRET = "test-secret";
     process.env.NODE_ENV = "production";
 
     const middleware = expressSessionPostgres({
@@ -80,6 +87,8 @@ describe("expressSessionPostgres", () => {
   });
 
   it("should allow custom store options", () => {
+    process.env.SESSION_SECRET = "test-secret";
+
     const middleware = expressSessionPostgres({
       pgConnection: mockPool as any,
       storeOptions: {
@@ -104,6 +113,8 @@ describe("expressSessionPostgres", () => {
   });
 
   it("should allow custom cookie maxAge", () => {
+    process.env.SESSION_SECRET = "test-secret";
+
     const middleware = expressSessionPostgres({
       pgConnection: mockPool as any,
       cookieMaxAge: 1000 * 60 * 60 * 2
@@ -114,6 +125,21 @@ describe("expressSessionPostgres", () => {
         cookie: expect.objectContaining({
           maxAge: 1000 * 60 * 60 * 2
         })
+      })
+    });
+  });
+
+  it("should accept secret via sessionOptions without env var", () => {
+    const middleware = expressSessionPostgres({
+      pgConnection: mockPool as any,
+      sessionOptions: {
+        secret: "options-secret"
+      }
+    });
+
+    expect(middleware).toEqual({
+      sessionOptions: expect.objectContaining({
+        secret: "options-secret"
       })
     });
   });
