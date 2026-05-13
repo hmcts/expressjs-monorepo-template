@@ -21,6 +21,9 @@
     "dist",
     "README.md"
   ],
+  "publishConfig": {
+    "registry": "https://pkgs.dev.azure.com/hmcts/Artifacts/_packaging/hmcts-lib/npm/registry/"
+  },
   "scripts": {
     "build": "tsc && cp -r src/govuk-frontend/views dist/govuk-frontend/ && cp -r src/cookies/views dist/cookies/",
     "dev": "tsc --watch",
