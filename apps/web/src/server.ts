@@ -14,18 +14,10 @@ async function startServer() {
 
 const server = await startServer();
 
-process.on("SIGTERM", () => {
-  console.log("SIGTERM signal received: closing HTTP server...");
-  server.close(() => {
-    console.log("HTTP server closed");
-    process.exit(0);
-  });
-});
+function shutdown() {
+  server.close(() => process.exit(0));
+  setTimeout(() => process.exit(0), 1000).unref();
+}
 
-process.on("SIGINT", () => {
-  console.log("SIGINT signal received: closing HTTP server...");
-  server.close(() => {
-    console.log("HTTP server closed");
-    process.exit(0);
-  });
-});
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);

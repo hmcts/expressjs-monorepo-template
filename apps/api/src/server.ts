@@ -15,22 +15,12 @@ async function startServer() {
   return server;
 }
 
-const serverPromise = startServer();
+const server = await startServer();
 
-process.on("SIGTERM", async () => {
-  console.log("SIGTERM signal received: closing HTTP server");
-  const server = await serverPromise;
-  server.close(() => {
-    console.log("HTTP server closed");
-    process.exit(0);
-  });
-});
+function shutdown() {
+  server.close(() => process.exit(0));
+  setTimeout(() => process.exit(0), 1000).unref();
+}
 
-process.on("SIGINT", async () => {
-  console.log("SIGINT signal received: closing HTTP server");
-  const server = await serverPromise;
-  server.close(() => {
-    console.log("HTTP server closed");
-    process.exit(0);
-  });
-});
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);
