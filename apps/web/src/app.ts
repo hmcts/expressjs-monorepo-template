@@ -12,6 +12,7 @@ import { createClient } from "redis";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const chartPath = path.join(__dirname, "../helm/values.yaml");
+const isDev = process.env.NODE_ENV !== "production" && process.env.VITE_MIDDLEWARE !== "false";
 
 export async function createApp(): Promise<Express> {
   await getPropertiesVolumeSecrets({ chartPath, omit: ["DATABASE_URL", "REDIS_URL"] });
@@ -26,14 +27,6 @@ export async function createApp(): Promise<Express> {
   app.use(monitoringMiddleware(config.get("applicationInsights")));
   app.use(configureNonce());
   app.use(configureHelmet());
-  app.use(
-    "/assets",
-    express.static(path.join(__dirname, "../dist/assets"), {
-      setHeaders: (res) => {
-        res.removeHeader("Content-Length");
-      }
-    })
-  );
   app.use(expressSessionRedis({ redisConnection }));
   app.use(
     healthcheck({
@@ -43,16 +36,26 @@ export async function createApp(): Promise<Express> {
     })
   );
 
-  const modulePaths = [__dirname];
+  const assetOptions = isDev
+    ? {
+        entries: {
+          index_js: "/src/assets/js/index.ts",
+          index_css: "/src/assets/css/index.scss",
+          footer_js: "/src/assets/js/footer.ts",
+          footer_css: "/src/assets/css/footer.scss",
+          onboarding_js: "/src/assets/js/onboarding.ts",
+          onboarding_css: "/src/assets/css/onboarding.scss"
+        },
+        viteConfigFile: path.join(__dirname, "../vite.build.ts")
+      }
+    : { distPath: path.join(__dirname, "../dist") };
 
-  await configureGovuk(app, modulePaths, {
+  await configureGovuk(app, [__dirname], {
     nunjucksGlobals: {
       gtm: config.get("gtm"),
       dynatrace: config.get("dynatrace")
     },
-    assetOptions: {
-      distPath: path.join(__dirname, "../dist")
-    }
+    assetOptions
   });
 
   await configureCookieManager(app, {

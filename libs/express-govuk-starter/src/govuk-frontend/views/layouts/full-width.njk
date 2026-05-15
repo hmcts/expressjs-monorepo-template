@@ -1,6 +1,9 @@
 {% extends "govuk/template.njk" %}
 
 {% block head %}
+  {% if not isProduction %}
+    <script type="module" src="/@vite/client"></script>
+  {% endif %}
   <link href="{{ index_css }}" rel="stylesheet">
 
   {% include "components/head-analytics.njk" %}
