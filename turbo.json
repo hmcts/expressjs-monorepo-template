@@ -10,16 +10,18 @@
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**", "build/**"],
-      "inputs": ["**/*.ts", "**/*.tsx", "**/*.prisma", "package.json"]
+      "inputs": ["**/*.ts", "**/*.njk", "**/*.prisma", "package.json"]
     },
     "dev": {
       "cache": false,
       "persistent": true,
-      "dependsOn": ["^build"]
+      "interruptible": true,
+      "dependsOn": ["^build"],
+      "inputs": ["src/**/*.ts", "config/**", "package.json"]
     },
     "test": {
       "outputs": ["coverage/**"],
-      "inputs": ["package.json", "**/*.ts", "**/*.tsx", "**/*.prisma"],
+      "inputs": ["package.json", "**/*.ts", "**/*.prisma"],
       "cache": false
     },
     "lint": {

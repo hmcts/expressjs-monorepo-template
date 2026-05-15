@@ -9,15 +9,17 @@ async function startServer() {
     console.log(`🌐 Web server running on http://localhost:${PORT}`);
   });
 
-  return server;
+  return () => {
+    server.close(() => process.exit(0));
+
+    // force shutdown after 1000 in dev to kill the hmr websocket
+    if (process.env.NODE_ENV !== "production") {
+      setTimeout(() => process.exit(0), 1000).unref();
+    }
+  };
 }
 
-const server = await startServer();
-
-function shutdown() {
-  server.close(() => process.exit(0));
-  setTimeout(() => process.exit(0), 1000).unref();
-}
+const shutdown = await startServer();
 
 process.on("SIGTERM", shutdown);
 process.on("SIGINT", shutdown);

@@ -11,7 +11,6 @@
   },
   "scripts": {
     "build": "prisma generate --no-hints && tsc",
-    "dev": "tsc --watch",
     "generate": "prisma generate --no-hints",
     "test": "vitest run",
     "test:watch": "vitest watch",

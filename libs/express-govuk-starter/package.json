@@ -26,7 +26,6 @@
   },
   "scripts": {
     "build": "tsc && cp -r src/govuk-frontend/views dist/govuk-frontend/ && cp -r src/cookies/views dist/cookies/",
-    "dev": "tsc --watch",
     "test": "vitest run",
     "test:watch": "vitest watch",
     "format": "biome format --write .",

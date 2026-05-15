@@ -23,7 +23,7 @@
     "start": "yarn dev:up && yarn start:api & yarn start:web",
     "start:api": "NODE_ENV=production yarn workspace @hmcts/api run start",
     "start:web": "NODE_ENV=production yarn workspace @hmcts/web run start",
-    "dev": "yarn dev:up && turbo run dev",
+    "dev": "yarn dev:up && turbo watch dev",
     "dev:nowatch": "yarn dev:up && yarn workspace @hmcts/api run dev & yarn workspace @hmcts/web run dev:nowatch",
     "dev:up": "docker compose up -d && yarn db:migrate:dev",
     "dev:down": "docker compose down",

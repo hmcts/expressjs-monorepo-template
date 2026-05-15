@@ -12,15 +12,10 @@ async function startServer() {
     console.log(`📊 Liveness check: http://localhost:${PORT}/health/liveness`);
   });
 
-  return server;
+  return () => server.close(() => process.exit(0));
 }
 
-const server = await startServer();
-
-function shutdown() {
-  server.close(() => process.exit(0));
-  setTimeout(() => process.exit(0), 1000).unref();
-}
+const shutdown = await startServer();
 
 process.on("SIGTERM", shutdown);
 process.on("SIGINT", shutdown);
