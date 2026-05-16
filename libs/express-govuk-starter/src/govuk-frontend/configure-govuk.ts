@@ -11,11 +11,11 @@ import { currencyFilter, dateFilter, govukErrorSummaryFilter, kebabCaseFilter, t
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const srcDir = process.env.NODE_ENV !== "production" ? __dirname.replace("/dist/", "/src/") : __dirname;
 
 export async function configureGovuk(app: Express, paths: string[], options: GovukSetupOptions): Promise<nunjucks.Environment> {
   const { mergedViewPaths, mergedI18nPaths } = mergeConfigs(paths);
   const govukFrontendPath = path.join(fileURLToPath(import.meta.resolve("govuk-frontend")), "..", "..");
+  const srcDir = process.env.NODE_ENV !== "production" ? __dirname.replace("/dist/", "/src/") : __dirname;
   const govukSetupViews = path.join(srcDir, "./views");
   const cookieViews = path.join(srcDir, "../cookies/views");
   const allViewPaths = [govukFrontendPath, govukSetupViews, cookieViews, ...mergedViewPaths];
