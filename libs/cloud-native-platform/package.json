@@ -1,6 +1,6 @@
 {
   "name": "@hmcts-cft/cloud-native-platform",
-  "version": "2.2.0",
+  "version": "2.2.1",
   "description": "HMCTS cloud-native-platform helpers for Express: health checks, Application Insights monitoring middleware, exception tracking, and properties-volume / Azure Key Vault secret loading.",
   "license": "MIT",
   "repository": {
