@@ -16,7 +16,8 @@ export async function configureAssets(app: Express, env: nunjucks.Environment, c
     });
     app.use(vite.middlewares);
 
-    const govukAssets = path.join(fileURLToPath(import.meta.resolve("govuk-frontend")), "../../dist/govuk/assets");
+    const govukFrontendPath = path.join(fileURLToPath(import.meta.resolve("govuk-frontend")), "..", "..");
+    const govukAssets = path.join(govukFrontendPath, "govuk/assets");
     app.use("/assets/fonts", express.static(path.join(govukAssets, "fonts")));
     app.use("/assets/images", express.static(path.join(govukAssets, "images")));
 

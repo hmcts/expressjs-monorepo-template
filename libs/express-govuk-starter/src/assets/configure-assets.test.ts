@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import type { Express } from "express";
 import express from "express";
 import type nunjucks from "nunjucks";
@@ -66,6 +67,21 @@ describe("configureAssets", () => {
       const staticCalls = useSpy.mock.calls.filter((call) => typeof call[0] === "string" && call[0].startsWith("/assets/"));
       expect(staticCalls.some((call) => call[0] === "/assets/fonts")).toBe(true);
       expect(staticCalls.some((call) => call[0] === "/assets/images")).toBe(true);
+    });
+
+    it("should resolve govuk-frontend asset paths that exist on disk", async () => {
+      const staticSpy = vi.spyOn(express, "static");
+
+      await configureAssets(app, env, {
+        entries: { index_js: "/src/assets/js/index.ts" },
+        viteConfigFile: "/path/to/vite.config.ts"
+      });
+
+      const fontPath = staticSpy.mock.calls.find((call) => typeof call[0] === "string" && call[0].endsWith("/fonts"))?.[0] as string;
+      const imagePath = staticSpy.mock.calls.find((call) => typeof call[0] === "string" && call[0].endsWith("/images"))?.[0] as string;
+
+      expect(existsSync(fontPath)).toBe(true);
+      expect(existsSync(imagePath)).toBe(true);
     });
   });
 
