@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/hmcts/expressjs-monorepo-template/compare/express-govuk-starter-v0.1.2...express-govuk-starter-v0.1.3) (2026-05-18)
+
+
+### Bug Fixes
+
+* **express-govuk-starter:** correct govuk-frontend asset path resolution ([#664](https://github.com/hmcts/expressjs-monorepo-template/issues/664)) ([66b789b](https://github.com/hmcts/expressjs-monorepo-template/commit/66b789bc67cf6f8c76feeb39d4df2a50099b7058))
+
 ## [0.1.2](https://github.com/hmcts/expressjs-monorepo-template/compare/express-govuk-starter-v0.1.1...express-govuk-starter-v0.1.2) (2026-05-18)
 
 
