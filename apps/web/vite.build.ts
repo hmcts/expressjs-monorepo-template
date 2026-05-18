@@ -36,6 +36,7 @@ const baseConfig: UserConfig = {
     rollupOptions: {
       input: getEntries(assetsPath),
       output: {
+        format: "es",
         entryFileNames: "js/[name]-[hash].js",
         chunkFileNames: "js/[name]-[hash].js",
         assetFileNames: (assetInfo) => {

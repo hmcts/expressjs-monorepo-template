@@ -9,23 +9,17 @@ async function startServer() {
     console.log(`🌐 Web server running on http://localhost:${PORT}`);
   });
 
-  return server;
+  return () => {
+    server.close(() => process.exit(0));
+
+    // force shutdown after 1000 in dev to kill the hmr websocket
+    if (process.env.NODE_ENV !== "production") {
+      setTimeout(() => process.exit(0), 1000).unref();
+    }
+  };
 }
 
-const server = await startServer();
+const shutdown = await startServer();
 
-process.on("SIGTERM", () => {
-  console.log("SIGTERM signal received: closing HTTP server...");
-  server.close(() => {
-    console.log("HTTP server closed");
-    process.exit(0);
-  });
-});
-
-process.on("SIGINT", () => {
-  console.log("SIGINT signal received: closing HTTP server...");
-  server.close(() => {
-    console.log("HTTP server closed");
-    process.exit(0);
-  });
-});
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);

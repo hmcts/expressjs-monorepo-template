@@ -12,25 +12,10 @@ async function startServer() {
     console.log(`📊 Liveness check: http://localhost:${PORT}/health/liveness`);
   });
 
-  return server;
+  return () => server.close(() => process.exit(0));
 }
 
-const serverPromise = startServer();
+const shutdown = await startServer();
 
-process.on("SIGTERM", async () => {
-  console.log("SIGTERM signal received: closing HTTP server");
-  const server = await serverPromise;
-  server.close(() => {
-    console.log("HTTP server closed");
-    process.exit(0);
-  });
-});
-
-process.on("SIGINT", async () => {
-  console.log("SIGINT signal received: closing HTTP server");
-  const server = await serverPromise;
-  server.close(() => {
-    console.log("HTTP server closed");
-    process.exit(0);
-  });
-});
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);
