@@ -1,5 +1,12 @@
 # @hmcts-cft/cloud-native-platform
 
+## [2.2.0](https://github.com/hmcts/expressjs-monorepo-template/compare/cloud-native-platform-v2.1.0...cloud-native-platform-v2.2.0) (2026-05-18)
+
+
+### Features
+
+* replace concurrently+nodemon with tsx watch and Vite dev middleware ([#661](https://github.com/hmcts/expressjs-monorepo-template/issues/661)) ([ecfe1cc](https://github.com/hmcts/expressjs-monorepo-template/commit/ecfe1ccef0f5e0a644f53af0a6da93df90936ed7))
+
 ## [2.1.0](https://github.com/hmcts/expressjs-monorepo-template/compare/cloud-native-platform-v2.0.0...cloud-native-platform-v2.1.0) (2026-05-13)
 
 

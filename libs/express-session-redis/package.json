@@ -1,6 +1,6 @@
 {
   "name": "@hmcts-cft/express-session-redis",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Express session middleware backed by Redis with sensible defaults.",
   "license": "MIT",
   "repository": {
