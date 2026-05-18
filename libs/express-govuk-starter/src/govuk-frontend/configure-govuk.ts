@@ -15,9 +15,12 @@ const __dirname = path.dirname(__filename);
 export async function configureGovuk(app: Express, paths: string[], options: GovukSetupOptions): Promise<nunjucks.Environment> {
   const { mergedViewPaths, mergedI18nPaths } = mergeConfigs(paths);
   const govukFrontendPath = path.join(fileURLToPath(import.meta.resolve("govuk-frontend")), "..", "..");
-  const srcDir = process.env.NODE_ENV !== "production" ? __dirname.replace("/dist/", "/src/") : __dirname;
-  const govukSetupViews = path.join(srcDir, "./views");
-  const cookieViews = path.join(srcDir, "../cookies/views");
+  // Views ship under dist/ for npm-installed consumers. The template's own dev
+  // mode runs tsc --watch without copying .njk files, so dist/views may be
+  // missing — fall back to src/ in that case.
+  const viewsBaseDir = existsSync(path.join(__dirname, "./views")) ? __dirname : __dirname.replace("/dist/", "/src/");
+  const govukSetupViews = path.join(viewsBaseDir, "./views");
+  const cookieViews = path.join(viewsBaseDir, "../cookies/views");
   const allViewPaths = [govukFrontendPath, govukSetupViews, cookieViews, ...mergedViewPaths];
 
   const env = nunjucks.configure(allViewPaths, {

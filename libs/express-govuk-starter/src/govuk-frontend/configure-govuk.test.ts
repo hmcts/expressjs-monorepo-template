@@ -255,6 +255,19 @@ describe("configureGovuk", () => {
     expect(env.loaders).toBeDefined();
   });
 
+  it("should resolve the lib's own view templates", async () => {
+    const pagesPath = join(testDir, "pages");
+    mkdirSync(pagesPath, { recursive: true });
+
+    const env = await configureGovuk(app, [testDir], {
+      assetOptions: { distPath: testDir }
+    });
+
+    // default.njk ships with the lib; it must be loadable regardless of
+    // whether the consumer installed via npm (dist/) or uses workspace-link (src/).
+    expect(() => env.getTemplate("layouts/default.njk")).not.toThrow();
+  });
+
   it("should add custom nunjucks globals", async () => {
     const pagesPath = join(testDir, "pages");
     mkdirSync(pagesPath, { recursive: true });
