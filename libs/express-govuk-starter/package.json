@@ -1,6 +1,6 @@
 {
   "name": "@hmcts-cft/express-govuk-starter",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "GOV.UK Frontend integration for Express 5 — Nunjucks, Helmet CSP, i18n, cookie consent, and error handlers with sensible defaults.",
   "license": "MIT",
   "repository": {

@@ -1,5 +1,12 @@
 # @hmcts-cft/express-session-redis
 
+## [0.1.3](https://github.com/hmcts/expressjs-monorepo-template/compare/express-session-redis-v0.1.2...express-session-redis-v0.1.3) (2026-05-18)
+
+
+### Features
+
+* replace concurrently+nodemon with tsx watch and Vite dev middleware ([#661](https://github.com/hmcts/expressjs-monorepo-template/issues/661)) ([ecfe1cc](https://github.com/hmcts/expressjs-monorepo-template/commit/ecfe1ccef0f5e0a644f53af0a6da93df90936ed7))
+
 ## [0.1.2](https://github.com/hmcts/expressjs-monorepo-template/compare/express-session-redis-v0.1.1...express-session-redis-v0.1.2) (2026-05-13)
 
 
