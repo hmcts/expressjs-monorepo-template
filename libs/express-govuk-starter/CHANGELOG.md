@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.5](https://github.com/hmcts/expressjs-monorepo-template/compare/express-govuk-starter-v0.1.4...express-govuk-starter-v0.1.5) (2026-05-18)
+
+
+### Bug Fixes
+
+* **express-govuk-starter:** resolve views from dist for npm-installed consumers ([#668](https://github.com/hmcts/expressjs-monorepo-template/issues/668)) ([9237a2d](https://github.com/hmcts/expressjs-monorepo-template/commit/9237a2d6dff556ccc34b369fad4284b71f655df2))
+
 ## [0.1.4](https://github.com/hmcts/expressjs-monorepo-template/compare/express-govuk-starter-v0.1.3...express-govuk-starter-v0.1.4) (2026-05-18)
 
 
