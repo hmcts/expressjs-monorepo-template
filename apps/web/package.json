@@ -43,7 +43,7 @@
     "@types/govuk-frontend": "5.11.0",
     "@types/nunjucks": "3.2.6",
     "sass": "1.99.0",
-    "vite": "8.0.13",
+    "vite": "8.0.14",
     "vite-plugin-static-copy": "4.1.0"
   }
 }
