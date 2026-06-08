@@ -984,7 +984,7 @@ __metadata:
     redis: "npm:5.12.1"
     sass: "npm:1.99.0"
     vite: "npm:8.0.14"
-    vite-plugin-static-copy: "npm:4.1.0"
+    vite-plugin-static-copy: "npm:4.1.1"
   languageName: unknown
   linkType: soft
 
@@ -6832,6 +6832,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tinyglobby@npm:^0.2.17":
+  version: 0.2.17
+  resolution: "tinyglobby@npm:0.2.17"
+  dependencies:
+    fdir: "npm:^6.5.0"
+    picomatch: "npm:^4.0.4"
+  checksum: 10c0/7f7bb0f197c88bc4b20c231e0deca4240ca3bf313a88f5a7fee93a872b84966a4d50220947c0455ad07a60b3b360961c5b7fd979222aeb716a9f99b412002e4c
+  languageName: node
+  linkType: hard
+
 "tinyrainbow@npm:^3.1.0":
   version: 3.1.0
   resolution: "tinyrainbow@npm:3.1.0"
@@ -7048,17 +7058,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite-plugin-static-copy@npm:4.1.0":
-  version: 4.1.0
-  resolution: "vite-plugin-static-copy@npm:4.1.0"
+"vite-plugin-static-copy@npm:4.1.1":
+  version: 4.1.1
+  resolution: "vite-plugin-static-copy@npm:4.1.1"
   dependencies:
     chokidar: "npm:^3.6.0"
     p-map: "npm:^7.0.4"
     picocolors: "npm:^1.1.1"
-    tinyglobby: "npm:^0.2.15"
+    tinyglobby: "npm:^0.2.17"
   peerDependencies:
     vite: ^6.0.0 || ^7.0.0 || ^8.0.0
-  checksum: 10c0/60b7cb1dfe24eff3a262849ca886129f20641edd5e27425f61acf7e405140ba172b5a7e15bfc6177768446be2cfa13899e519e386b1bd78116ab9c037ada3b9d
+  checksum: 10c0/71ddeeed556275ef95c13e2b1d2af081603a98921fe4d58a91e0d64afc8e122c94f1310e4eec70e0c78118b9667e94b251cbb0ca38e2eeed220be84628b4cd82
   languageName: node
   linkType: hard
 
