@@ -54,7 +54,6 @@ const baseConfig: UserConfig = {
   css: {
     preprocessorOptions: {
       scss: {
-        quietDeps: true,
         loadPaths: ["node_modules"]
       }
     },
