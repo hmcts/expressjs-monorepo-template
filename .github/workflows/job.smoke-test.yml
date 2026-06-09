@@ -28,23 +28,6 @@ jobs:
           echo "Deployment URLs JSON: ${URLS_JSON}"
           echo "urls=${URLS_JSON}" >> "$GITHUB_OUTPUT"
 
-      # TEMPORARY: diagnose why AAT smoke returns 000 (suspected private-DNS resolution failure on the runner)
-      - name: Connectivity diagnostics
-        run: |
-          URLS_JSON='${{ steps.urls.outputs.urls }}'
-          echo "--- runner resolver config (/etc/resolv.conf) ---"
-          cat /etc/resolv.conf || true
-          for KEY in web api; do
-            URL=$(echo "${URLS_JSON}" | jq -r ".${KEY} // empty")
-            [ -z "${URL}" ] && continue
-            HOST=$(echo "${URL}" | sed -E 's#^https?://##; s#/.*$##')
-            echo "=============================================="
-            echo "Diagnosing ${KEY}: ${URL} (host: ${HOST})"
-            echo "--- getent hosts ---";    getent hosts "${HOST}" || echo "getent: NO RESOLUTION (NXDOMAIN/host not found)"
-            echo "--- nslookup ---";        nslookup "${HOST}" || echo "nslookup: failed"
-            echo "--- curl -v (max 15s) ---"; curl -sv --max-time 15 "${URL}" -o /dev/null 2>&1 | sed 's/^/curl: /' || true
-          done
-
       - name: Health check - Web
         run: |
           URLS_JSON='${{ steps.urls.outputs.urls }}'
