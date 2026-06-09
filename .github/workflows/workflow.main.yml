@@ -67,8 +67,7 @@ jobs:
     with:
       change-id: staging
       urls: ${{ needs.deploy-stage.outputs.urls }}
-      # AAT is a non-production environment; test it from non-prod runners (same network as preview)
-      runner-group: azure-nonprod
+      runner-group: azure-prod
 
   e2e-stage:
     name: E2E
@@ -77,7 +76,7 @@ jobs:
     uses: ./.github/workflows/stage.e2e.yml
     with:
       urls: ${{ needs.deploy-stage.outputs.urls }}
-      runner-group: azure-nonprod
+      runner-group: azure-prod
     secrets: inherit
 
   cleanup-stage:
