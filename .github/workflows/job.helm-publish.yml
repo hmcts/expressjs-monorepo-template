@@ -26,7 +26,7 @@ jobs:
       - name: Set up Helm
         uses: azure/setup-helm@v5
         with:
-          version: 'v3.21.0'
+          version: 'v4.2.0'
 
       - name: Azure login (OIDC)
         uses: azure/login@v3
