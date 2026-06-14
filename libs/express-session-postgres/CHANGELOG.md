@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/hmcts/expressjs-monorepo-template/compare/express-session-postgres-v0.1.2...express-session-postgres-v0.1.3) (2026-06-14)
+
+
+### Bug Fixes
+
+* **deps:** update dependency pg to v8.21.0 ([#670](https://github.com/hmcts/expressjs-monorepo-template/issues/670)) ([96df9c3](https://github.com/hmcts/expressjs-monorepo-template/commit/96df9c34121e314fa0873d4dac149f68c905e3f2))
+
 ## [0.1.2](https://github.com/hmcts/expressjs-monorepo-template/compare/express-session-postgres-v0.1.1...express-session-postgres-v0.1.2) (2026-05-18)
 
 
