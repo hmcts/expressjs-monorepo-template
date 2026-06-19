@@ -46,7 +46,7 @@ jobs:
           private-key: ${{ secrets.CLAUDE_CODE_PRIVATE_KEY }}
 
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 1
           repository: ${{ (github.event.issue.pull_request || github.event.pull_request) && fromJSON(steps.get-pr.outputs.result).head.repo.full_name || github.repository }}
@@ -138,7 +138,7 @@ jobs:
           private-key: ${{ secrets.CLAUDE_CODE_PRIVATE_KEY }}
 
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 1
 
@@ -261,7 +261,7 @@ jobs:
           private-key: ${{ secrets.CLAUDE_CODE_PRIVATE_KEY }}
 
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 1
           token: ${{ steps.app-token.outputs.token }}
@@ -355,7 +355,7 @@ jobs:
           owner: ${{ github.repository_owner }}
 
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 1
           token: ${{ steps.app-token.outputs.token }}
@@ -488,7 +488,7 @@ jobs:
           private-key: ${{ secrets.CLAUDE_CODE_PRIVATE_KEY }}
 
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 1
 
