@@ -111,6 +111,21 @@ Express error and 404 handlers that render GOV.UK-styled error pages.
 
 i18n middleware for bilingual (English/Welsh) support. Reads `?lng=` query param and provides `t()` helper in templates.
 
+Page content is passed to `res.render` as `en` and `cy` entries; the render interceptor picks the entry matching the active locale and merges it into the view model. Each entry can be either a plain object or a **function** for interpolation. A function receives the rest of the view model (locals plus the other render data) as its context, so content strings can reference dynamic values with plain template literals:
+
+```typescript
+const en = (m: { firstName: string }) => ({
+  greeting: `Hello ${m.firstName}`
+});
+const cy = (m: { firstName: string }) => ({
+  greeting: `Helo ${m.firstName}`
+});
+
+res.render("page", { en, cy, firstName: applicant.firstName });
+```
+
+Object and function entries can be mixed, and static pages keep passing plain objects unchanged.
+
 ### `getTranslation(translations, key, locale)` / `loadTranslations(paths)`
 
 Utilities for loading and retrieving translations from `locales/en.ts` and `locales/cy.ts` files.

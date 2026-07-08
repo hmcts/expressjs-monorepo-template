@@ -443,6 +443,97 @@ describe("renderInterceptorMiddleware", () => {
     expect(next).toHaveBeenCalled();
   });
 
+  it("should call function content with the view model as interpolation context", () => {
+    const middleware = renderInterceptorMiddleware();
+    const originalRender = vi.fn();
+    const req = {} as Request;
+    const res = {
+      locals: { locale: "en", serviceName: "Test Service" },
+      render: originalRender
+    } as unknown as Response;
+    const next = vi.fn();
+
+    middleware(req, res, next);
+
+    res.render("test-view", {
+      en: (model: { firstName: string }) => ({ greeting: `Hello ${model.firstName}` }),
+      cy: (model: { firstName: string }) => ({ greeting: `Helo ${model.firstName}` }),
+      firstName: "Ada"
+    });
+
+    expect(originalRender).toHaveBeenCalledWith(
+      "test-view",
+      {
+        locale: "en",
+        serviceName: "Test Service",
+        greeting: "Hello Ada",
+        firstName: "Ada"
+      },
+      undefined
+    );
+    expect(next).toHaveBeenCalled();
+  });
+
+  it("should call the Welsh function when locale is cy", () => {
+    const middleware = renderInterceptorMiddleware();
+    const originalRender = vi.fn();
+    const req = {} as Request;
+    const res = {
+      locals: { locale: "cy" },
+      render: originalRender
+    } as unknown as Response;
+    const next = vi.fn();
+
+    middleware(req, res, next);
+
+    res.render("test-view", {
+      en: (model: { count: number }) => ({ message: `${model.count} items` }),
+      cy: (model: { count: number }) => ({ message: `${model.count} eitem` }),
+      count: 3
+    });
+
+    expect(originalRender).toHaveBeenCalledWith(
+      "test-view",
+      {
+        locale: "cy",
+        message: "3 eitem",
+        count: 3
+      },
+      undefined
+    );
+    expect(next).toHaveBeenCalled();
+  });
+
+  it("should support mixing a function locale with a plain-object locale", () => {
+    const middleware = renderInterceptorMiddleware();
+    const originalRender = vi.fn();
+    const req = {} as Request;
+    const res = {
+      locals: { locale: "en" },
+      render: originalRender
+    } as unknown as Response;
+    const next = vi.fn();
+
+    middleware(req, res, next);
+
+    res.render("test-view", {
+      en: (model: { name: string }) => ({ title: `Welcome ${model.name}` }),
+      cy: { title: "Croeso" },
+      name: "Sam"
+    });
+
+    expect(originalRender).toHaveBeenCalledWith(
+      "test-view",
+      {
+        locale: "en",
+        title: "Welcome Sam",
+        name: "Sam"
+      },
+      undefined
+    );
+    expect(next).toHaveBeenCalled();
+  });
+
   it("should preserve this context when calling original render", () => {
     const middleware = renderInterceptorMiddleware();
     const originalRender = vi.fn();
