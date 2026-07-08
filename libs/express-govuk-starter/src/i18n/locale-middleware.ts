@@ -82,7 +82,14 @@ export function renderInterceptorMiddleware() {
       if (opts && typeof opts === "object" && "en" in opts && "cy" in opts) {
         const { en, cy: _cy, ...otherContent } = opts;
         const locale = res.locals.locale || "en";
-        const selectedContent = opts[locale] || en || {};
+        const picked = opts[locale] || en;
+
+        // A locale entry may be a function for interpolation: it receives the
+        // rest of the view model (locals + render data) as its context, so
+        // content strings can reference dynamic values with plain template
+        // literals. Plain-object entries are used as-is.
+        const context = { ...res.locals, ...otherContent };
+        const selectedContent = (typeof picked === "function" ? picked(context) : picked) || {};
 
         // Merge selected content with existing locals
         opts = {

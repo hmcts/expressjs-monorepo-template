@@ -198,6 +198,25 @@ export const POST = async (req: Request, res: Response) => {
 - **Test with `?lng=cy`** - verify all text translates correctly
 - **No hardcoded English** - all visible text must come from content objects
 
+### Interpolating dynamic values
+
+When content needs to reference runtime values, make the `en`/`cy` entry a function. It receives the rest of the view model as its context, so you interpolate with plain template literals — no separate templating layer, and the values stay type-checked:
+
+```typescript
+const en = (m: { firstName: string }) => ({
+  title: `Check your answers, ${m.firstName}`
+});
+const cy = (m: { firstName: string }) => ({
+  title: `Gwiriwch eich atebion, ${m.firstName}`
+});
+
+export const GET = async (req: Request, res: Response) => {
+  res.render("page-name", { en, cy, firstName: applicant.firstName });
+};
+```
+
+Object and function entries can be mixed; keep static pages as plain objects. Zod error messages follow the same pattern — pass the resolved (interpolated) messages into a schema factory per request, e.g. `schema((res.locals.locale === "cy" ? cy : en)({ maxLen: 100 }).errors)`. Do **not** register a global `z.setErrorMap` for localisation — it mutates process-wide state and cannot be scoped per request.
+
 ## Form Handling
 
 ### Error Display Pattern
