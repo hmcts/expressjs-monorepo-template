@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.6](https://github.com/hmcts/expressjs-monorepo-template/compare/express-govuk-starter-v0.1.5...express-govuk-starter-v0.1.6) (2026-07-08)
+
+
+### Features
+
+* **express-govuk-starter:** support function locale entries for interpolation ([#726](https://github.com/hmcts/expressjs-monorepo-template/issues/726)) ([67a134a](https://github.com/hmcts/expressjs-monorepo-template/commit/67a134af4aef9b0bbd14596f9a088c6e1c599b9b))
+
 ## [0.1.5](https://github.com/hmcts/expressjs-monorepo-template/compare/express-govuk-starter-v0.1.4...express-govuk-starter-v0.1.5) (2026-05-18)
 
 
