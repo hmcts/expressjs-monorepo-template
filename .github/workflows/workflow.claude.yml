@@ -95,11 +95,9 @@ jobs:
         id: claude
         uses: anthropics/claude-code-action@v1
         env:
-          ANTHROPIC_DEFAULT_OPUS_MODEL: 'eu.anthropic.claude-opus-4-6-v1'
-          ANTHROPIC_DEFAULT_SONNET_MODEL: 'eu.anthropic.claude-sonnet-4-6'
+          ANTHROPIC_DEFAULT_OPUS_MODEL: 'eu.anthropic.claude-opus-5'
+          ANTHROPIC_DEFAULT_SONNET_MODEL: 'eu.anthropic.claude-sonnet-5'
           ANTHROPIC_DEFAULT_HAIKU_MODEL: 'eu.anthropic.claude-haiku-4-5-20251001-v1:0'
-          CLAUDE_CODE_MAX_OUTPUT_TOKENS: '4096'
-          MAX_THINKING_TOKENS: '1024'
         with:
           use_bedrock: "true"
           github_token: ${{ steps.app-token.outputs.token }}
@@ -194,11 +192,9 @@ jobs:
         if: steps.parse.outputs.valid == 'true'
         uses: anthropics/claude-code-action@v1
         env:
-          ANTHROPIC_DEFAULT_OPUS_MODEL: 'eu.anthropic.claude-opus-4-6-v1'
-          ANTHROPIC_DEFAULT_SONNET_MODEL: 'eu.anthropic.claude-sonnet-4-6'
+          ANTHROPIC_DEFAULT_OPUS_MODEL: 'eu.anthropic.claude-opus-5'
+          ANTHROPIC_DEFAULT_SONNET_MODEL: 'eu.anthropic.claude-sonnet-5'
           ANTHROPIC_DEFAULT_HAIKU_MODEL: 'eu.anthropic.claude-haiku-4-5-20251001-v1:0'
-          CLAUDE_CODE_MAX_OUTPUT_TOKENS: '4096'
-          MAX_THINKING_TOKENS: '1024'
         with:
           use_bedrock: "true"
           github_token: ${{ steps.app-token.outputs.token }}
@@ -308,11 +304,9 @@ jobs:
         id: claude
         uses: anthropics/claude-code-action@v1
         env:
-          ANTHROPIC_DEFAULT_OPUS_MODEL: 'eu.anthropic.claude-opus-4-6-v1'
-          ANTHROPIC_DEFAULT_SONNET_MODEL: 'eu.anthropic.claude-sonnet-4-6'
+          ANTHROPIC_DEFAULT_OPUS_MODEL: 'eu.anthropic.claude-opus-5'
+          ANTHROPIC_DEFAULT_SONNET_MODEL: 'eu.anthropic.claude-sonnet-5'
           ANTHROPIC_DEFAULT_HAIKU_MODEL: 'eu.anthropic.claude-haiku-4-5-20251001-v1:0'
-          CLAUDE_CODE_MAX_OUTPUT_TOKENS: '4096'
-          MAX_THINKING_TOKENS: '1024'
         with:
           use_bedrock: "true"
           github_token: ${{ steps.app-token.outputs.token }}
@@ -402,11 +396,9 @@ jobs:
         id: claude
         uses: anthropics/claude-code-action@v1
         env:
-          ANTHROPIC_DEFAULT_OPUS_MODEL: 'eu.anthropic.claude-opus-4-6-v1'
-          ANTHROPIC_DEFAULT_SONNET_MODEL: 'eu.anthropic.claude-sonnet-4-6'
+          ANTHROPIC_DEFAULT_OPUS_MODEL: 'eu.anthropic.claude-opus-5'
+          ANTHROPIC_DEFAULT_SONNET_MODEL: 'eu.anthropic.claude-sonnet-5'
           ANTHROPIC_DEFAULT_HAIKU_MODEL: 'eu.anthropic.claude-haiku-4-5-20251001-v1:0'
-          CLAUDE_CODE_MAX_OUTPUT_TOKENS: '4096'
-          MAX_THINKING_TOKENS: '1024'
         with:
           use_bedrock: "true"
           github_token: ${{ steps.app-token.outputs.token }}
@@ -502,11 +494,9 @@ jobs:
         id: claude-analysis
         uses: anthropics/claude-code-action@v1
         env:
-          ANTHROPIC_DEFAULT_OPUS_MODEL: 'eu.anthropic.claude-opus-4-6-v1'
-          ANTHROPIC_DEFAULT_SONNET_MODEL: 'eu.anthropic.claude-sonnet-4-6'
+          ANTHROPIC_DEFAULT_OPUS_MODEL: 'eu.anthropic.claude-opus-5'
+          ANTHROPIC_DEFAULT_SONNET_MODEL: 'eu.anthropic.claude-sonnet-5'
           ANTHROPIC_DEFAULT_HAIKU_MODEL: 'eu.anthropic.claude-haiku-4-5-20251001-v1:0'
-          CLAUDE_CODE_MAX_OUTPUT_TOKENS: '4096'
-          MAX_THINKING_TOKENS: '1024'
         with:
           use_bedrock: "true"
           github_token: ${{ steps.app-token.outputs.token }}
