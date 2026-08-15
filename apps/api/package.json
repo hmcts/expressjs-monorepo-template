@@ -19,7 +19,7 @@
     "@hmcts/onboarding": "workspace:*",
     "@hmcts/postgres-prisma": "workspace:*",
     "compression": "1.8.1",
-    "config": "4.4.1",
+    "config": "4.4.2",
     "cors": "2.8.6",
     "express": "5.2.1",
     "zod": "4.4.3"
