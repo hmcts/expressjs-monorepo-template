@@ -24,7 +24,7 @@
     "@hmcts/cookie-manager": "1.1.0",
     "@hmcts/onboarding": "workspace:*",
     "@hmcts/postgres-prisma": "workspace:*",
-    "config": "4.4.1",
+    "config": "4.4.2",
     "connect-redis": "9.0.0",
     "cookie-parser": "1.4.7",
     "express": "5.2.1",

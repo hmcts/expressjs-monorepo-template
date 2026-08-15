@@ -16,7 +16,7 @@
   "dependencies": {
     "@hmcts-cft/cloud-native-platform": "workspace:*",
     "@hmcts/postgres-prisma": "workspace:*",
-    "config": "4.4.1"
+    "config": "4.4.2"
   },
   "devDependencies": {
     "@types/config": "4.4.0"
