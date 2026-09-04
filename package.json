@@ -41,14 +41,14 @@
     "@biomejs/biome": "2.5.11",
     "@types/node": "24.13.3",
     "@types/supertest": "7.2.1",
-    "@vitest/coverage-v8": "4.1.10",
-    "@vitest/ui": "4.1.10",
+    "@vitest/coverage-v8": "5.0.0",
+    "@vitest/ui": "5.0.0",
     "supertest": "7.2.2",
     "tsx": "4.23.12",
     "turbo": "2.10.10",
     "typescript": "6.0.3",
     "vite-tsconfig-paths": "6.1.1",
-    "vitest": "4.1.10"
+    "vitest": "5.0.0"
   },
   "packageManager": "yarn@4.17.0",
   "resolutions": {
