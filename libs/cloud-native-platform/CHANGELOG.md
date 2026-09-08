@@ -1,5 +1,12 @@
 # @hmcts-cft/cloud-native-platform
 
+## [2.3.1](https://github.com/hmcts/expressjs-monorepo-template/compare/cloud-native-platform-v2.3.0...cloud-native-platform-v2.3.1) (2026-09-08)
+
+
+### Bug Fixes
+
+* **deps:** update dependency applicationinsights to v3.16.0 ([#721](https://github.com/hmcts/expressjs-monorepo-template/issues/721)) ([5211135](https://github.com/hmcts/expressjs-monorepo-template/commit/5211135dc8d5d498d78ae39698304ef39adac39b))
+
 ## [2.3.0](https://github.com/hmcts/expressjs-monorepo-template/compare/cloud-native-platform-v2.2.1...cloud-native-platform-v2.3.0) (2026-05-18)
 
 
