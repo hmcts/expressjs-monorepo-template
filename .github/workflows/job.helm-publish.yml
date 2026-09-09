@@ -55,11 +55,13 @@ jobs:
         run: |
           mkdir -p ./dist
 
+          BUILD_TIMESTAMP=$(date +%Y%m%d%H%M%S)
+
           # Publish individual subcharts (used by Flux GitOps)
           for chart_dir in apps/*/helm; do
             CHART_NAME=$(grep '^name:' "${chart_dir}/Chart.yaml" | awk '{print $2}')
             BASE_VERSION=$(grep '^version:' "${chart_dir}/Chart.yaml" | awk '{print $2}')
-            CHART_VERSION="${BASE_VERSION}-${{ inputs.short-sha }}"
+            CHART_VERSION="${BASE_VERSION}-t${BUILD_TIMESTAMP}.g${{ inputs.short-sha }}"
 
             helm package "${chart_dir}" --version "${CHART_VERSION}" -d ./dist
 
@@ -74,7 +76,7 @@ jobs:
 
           # Publish umbrella chart (used by CI pipeline helm deploy)
           BASE_VERSION=$(grep '^version:' helm/expressjs-monorepo-template/Chart.yaml | awk '{print $2}')
-          CHART_VERSION="${BASE_VERSION}-${{ inputs.short-sha }}"
+          CHART_VERSION="${BASE_VERSION}-t${BUILD_TIMESTAMP}.g${{ inputs.short-sha }}"
           echo "CHART_VERSION=${CHART_VERSION}" >> "$GITHUB_ENV"
 
           helm package helm/expressjs-monorepo-template --version "${CHART_VERSION}" -d ./dist
