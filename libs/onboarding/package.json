@@ -17,7 +17,7 @@
     "format": "biome format src/ --write"
   },
   "devDependencies": {
-    "typescript": "6.0.3"
+    "typescript": "7.0.2"
   },
   "peerDependencies": {
     "express": "^5.1.0"
