@@ -14,7 +14,7 @@ data "azurerm_key_vault" "key_vault" {
 # defined in variables.tf and auto-derived from Azure credentials in CI.
 #
 # module "key_vault" {
-#   source              = "git@github.com:hmcts/cnp-module-key-vault?ref=master"
+#   source              = "git@github.com:hmcts/cnp-module-key-vault?ref=DTSPO-31965/remove-jenkins-ptl-access"
 #   product             = var.product
 #   env                 = var.env
 #   tenant_id           = var.tenant_id
