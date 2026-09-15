@@ -1,0 +1,80 @@
+# Retry Preview Deploys
+#
+# The CFT preview cluster is powered off outside 07:00-20:00 on weekdays, so any
+# Preview run that reaches the deploy stage while it is down fails with
+# "Kubernetes cluster unreachable". Nothing about the PR causes it and no schedule
+# reliably avoids it — Renovate rebases whenever master moves, and people push in
+# the evening.
+#
+# Once the cluster is back up this re-runs the latest Preview run for each open PR,
+# but only when:
+#   - the deploy job is the only thing that failed, so a genuinely broken PR is not
+#     re-run every morning;
+#   - the run has not already been retried, so nothing is re-run forever;
+#   - the branch is in this repo, because a fork PR has no access to the Azure
+#     credentials and its deploy can never succeed.
+#
+# Successful jobs are not re-run, so the images built by the original run are reused.
+
+name: Retry Preview Deploys
+
+on:
+  schedule:
+    - cron: "0 8 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+  pull-requests: read
+
+jobs:
+  retry:
+    name: Re-run Failed Preview Deploys
+    runs-on: ubuntu-latest
+    steps:
+      - name: Re-run failed Preview deploys
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          gh pr list --state open --limit 100 \
+            --json number,headRefName,headRepositoryOwner \
+            --jq ".[] | select(.headRepositoryOwner.login == \"${GITHUB_REPOSITORY_OWNER}\") | \"\(.number) \(.headRefName)\"" > prs.txt
+
+          if [ ! -s prs.txt ]; then
+            echo "No open PRs on branches in this repo"
+            exit 0
+          fi
+
+          while read -r pr branch; do
+            run=$(gh run list --branch "$branch" --workflow workflow.preview.yml \
+              --limit 1 --json databaseId,conclusion \
+              --jq '.[] | select(.conclusion == "failure") | .databaseId')
+
+            if [ -z "$run" ]; then
+              echo "PR #${pr} (${branch}): latest Preview run did not fail, skipping"
+              continue
+            fi
+
+            attempt=$(gh run view "$run" --json attempt --jq '.attempt')
+            if [ "$attempt" -gt 1 ]; then
+              echo "PR #${pr} (${branch}): run ${run} already retried (attempt ${attempt}), skipping"
+              continue
+            fi
+
+            failed=$(gh run view "$run" --json jobs \
+              --jq '[.jobs[] | select(.conclusion == "failure") | .name]')
+            total=$(echo "$failed" | jq 'length')
+            deploys=$(echo "$failed" | jq '[.[] | select(test("Deploy to"))] | length')
+
+            if [ "$total" != "$deploys" ]; then
+              echo "PR #${pr} (${branch}): failures outside deploy, leaving alone — $(echo "$failed" | jq -c .)"
+              continue
+            fi
+
+            echo "PR #${pr} (${branch}): re-running failed deploy in run ${run}"
+            gh run rerun "$run" --failed
+          done < prs.txt
