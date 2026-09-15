@@ -2,6 +2,9 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
   "automerge": true,
+  "minimumReleaseAge": "3 days",
+  "schedule": ["after 8am and before 4pm every weekday"],
+  "automergeSchedule": ["after 8am and before 4pm every weekday"],
   "node": {
     "enabled": true
   },
