@@ -1,0 +1,485 @@
+# Renovate Autofix
+#
+# When the Preview pipeline fails on a Renovate PR, hand the failure to Claude once and
+# push the fix to the branch. One attempt per PR: the claude:autofix-attempted label is
+# claimed before Claude runs, so a crash or timeout still uses up the attempt. Remove the
+# label to allow another.
+#
+# Runs where the deploy job is the only failure are skipped and left to
+# workflow.retry-preview-deploys.yml — the preview cluster is off outside working hours,
+# no change to this repo can fix that, and the attempt is worth more than a report saying
+# so. Both files match the deploy job on "Deploy to"; keep them in step.
+#
+# A commit from claude-code-bot[bot] makes Renovate treat the branch as edited, so it
+# stops rebasing it and — since renovate.json sets automerge — stops automerging the PR.
+# gitIgnoredAuthors would suppress that and is deliberately not used, so the report
+# comment says the PR needs manual review, and Claude is told to change nothing unless
+# the failure is clearly caused by the update.
+#
+# workflow_run only ever runs the default-branch copy of this file, so edits do nothing
+# until merged; workflow_dispatch is there to run it on a specific PR on demand.
+
+name: Renovate Autofix
+
+on:
+  workflow_run:
+    workflows: [Preview]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr-number:
+        description: "PR number to attempt"
+        type: string
+        required: true
+
+jobs:
+  resolve:
+    name: Check Eligibility
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      actions: read
+    outputs:
+      eligible: ${{ steps.gate.outputs.eligible }}
+      number: ${{ steps.pr.outputs.number }}
+      head-ref: ${{ steps.pr.outputs.head-ref }}
+      head-sha: ${{ steps.pr.outputs.head-sha }}
+      run-id: ${{ steps.pr.outputs.run-id }}
+      failed-jobs: ${{ steps.pr.outputs.failed-jobs }}
+    steps:
+      - name: Resolve the pull request
+        id: pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          EVENT: ${{ github.event_name }}
+          INPUT_PR: ${{ inputs.pr-number }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+          RUN_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          # A JSON array, so it comes through the environment, not interpolation.
+          RUN_PRS: ${{ toJson(github.event.workflow_run.pull_requests) }}
+        run: |
+          set -euo pipefail
+
+          if [ "$EVENT" = "workflow_dispatch" ]; then
+            number="$INPUT_PR"
+            # No triggering run — the failed one is looked up below, once the branch
+            # is known.
+            run_id=""
+          else
+            # pull_requests is empty often enough that the branch lookup below has to
+            # be there as a fallback.
+            number=$(jq -r 'first(.[].number) // empty' <<<"$RUN_PRS")
+            if [ -z "$number" ]; then
+              number=$(gh pr list --state open --head "$RUN_BRANCH" --limit 1 \
+                --json number --jq 'first(.[].number) // empty')
+            fi
+            run_id="$RUN_ID"
+          fi
+
+          if [ -z "$number" ]; then
+            echo "no open PR found for branch '${RUN_BRANCH:-}' — nothing to do"
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          gh pr view "$number" \
+            --json number,headRefName,headRefOid,isCrossRepository,state,baseRefName,labels \
+            > /tmp/pr.json
+          cat /tmp/pr.json
+
+          head_ref=$(jq -r .headRefName /tmp/pr.json)
+
+          # REST, not gh pr view --json author: the GraphQL-backed field renders an App
+          # author as 'app/renovate', so a 'renovate[bot]' comparison never matches.
+          author=$(gh api "repos/${GH_REPO}/pulls/${number}" --jq .user.login)
+          echo "author: $author"
+
+          if [ -z "$run_id" ]; then
+            run_id=$(gh run list --workflow workflow.preview.yml --branch "$head_ref" \
+              --status failure --limit 1 --json databaseId \
+              --jq 'first(.[].databaseId) // empty')
+            echo "latest failed Preview run for $head_ref: ${run_id:-none}"
+          fi
+
+          # Which jobs failed decides both eligibility below and what Claude is told.
+          failed_jobs='[]'
+          if [ -n "$run_id" ]; then
+            failed_jobs=$(gh run view "$run_id" --json jobs \
+              --jq '[.jobs[] | select(.conclusion == "failure") | .name]')
+          fi
+          total=$(jq 'length' <<<"$failed_jobs")
+          deploys=$(jq '[.[] | select(test("Deploy to"))] | length' <<<"$failed_jobs")
+          echo "failed jobs: $failed_jobs"
+
+          # Only when something failed and all of it was the deploy — a run reporting no
+          # failed jobs is not a deploy-only failure, and is left to the gate below.
+          if [ "$total" -gt 0 ] && [ "$total" = "$deploys" ]; then
+            deploy_only=true
+          else
+            deploy_only=false
+          fi
+
+          {
+            echo "found=true"
+            echo "number=$number"
+            echo "head-ref=$head_ref"
+            echo "head-sha=$(jq -r .headRefOid /tmp/pr.json)"
+            echo "run-id=$run_id"
+            echo "author=$author"
+            echo "state=$(jq -r .state /tmp/pr.json)"
+            echo "base=$(jq -r .baseRefName /tmp/pr.json)"
+            echo "fork=$(jq -r .isCrossRepository /tmp/pr.json)"
+            echo "labelled=$(jq -r '[.labels[].name] | contains(["claude:autofix-attempted"])' /tmp/pr.json)"
+            echo "failed-jobs=$(jq -r 'join(", ")' <<<"$failed_jobs")"
+            echo "deploy-only=$deploy_only"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Decide whether to attempt a fix
+        id: gate
+        env:
+          FOUND: ${{ steps.pr.outputs.found }}
+          EVENT: ${{ github.event_name }}
+          CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          AUTHOR: ${{ steps.pr.outputs.author }}
+          STATE: ${{ steps.pr.outputs.state }}
+          BASE: ${{ steps.pr.outputs.base }}
+          IS_FORK: ${{ steps.pr.outputs.fork }}
+          LABELLED: ${{ steps.pr.outputs.labelled }}
+          RUN_ID: ${{ steps.pr.outputs.run-id }}
+          DEPLOY_ONLY: ${{ steps.pr.outputs.deploy-only }}
+        run: |
+          set -euo pipefail
+
+          # Single place that gates the autofix job, so the conditions cannot drift.
+          eligible=true
+          note() { eligible=false; echo "$1"; }
+
+          [ "$FOUND" = "true" ] || note "no PR resolved"
+          [ "$EVENT" = "workflow_dispatch" ] || [ "$CONCLUSION" = "failure" ] \
+            || note "Preview concluded '$CONCLUSION' — only failures are attempted"
+          # Author login, not the renovate/ branch prefix — the prefix is configurable.
+          [ "$AUTHOR" = "renovate[bot]" ] || note "PR author is '$AUTHOR', not renovate[bot]"
+          [ "$STATE" = "OPEN" ] || note "PR is $STATE"
+          [ "$BASE" = "master" ] || note "PR targets '$BASE', not master"
+          [ "$IS_FORK" != "true" ] || note "PR is from a fork — the app token cannot push to fork heads"
+          # The one-shot gate. See the header comment.
+          [ "$LABELLED" != "true" ] || note "already attempted (claude:autofix-attempted label present) — not retrying"
+          [ -n "$RUN_ID" ] || note "no failed Preview run found to diagnose"
+          # See the header comment: spending the one attempt on a cluster that is simply
+          # switched off is worse than letting the morning re-run pick it up.
+          [ "$DEPLOY_ONLY" != "true" ] \
+            || note "the deploy job is the only failure — left to workflow.retry-preview-deploys.yml"
+
+          echo "eligible=$eligible" >> "$GITHUB_OUTPUT"
+          [ "$eligible" = "true" ] && echo "eligible — handing PR #${{ steps.pr.outputs.number }} to Claude" || true
+
+  autofix:
+    name: Autofix PR #${{ needs.resolve.outputs.number }}
+    needs: [resolve]
+    if: needs.resolve.outputs.eligible == 'true'
+    runs-on: ubuntu-latest
+    concurrency:
+      # Not cancel-in-progress: a second Preview failure must not kill an attempt
+      # midway through. It queues, then finds the label already claimed.
+      group: renovate-autofix-pr-${{ needs.resolve.outputs.number }}
+      cancel-in-progress: false
+    permissions:
+      contents: write
+      pull-requests: write
+      issues: write # labels
+      actions: read # read the failed run's logs
+      id-token: write # Bedrock OIDC
+    env:
+      PR: ${{ needs.resolve.outputs.number }}
+      HEAD_REF: ${{ needs.resolve.outputs.head-ref }}
+      HEAD_SHA: ${{ needs.resolve.outputs.head-sha }}
+    steps:
+      - name: Generate GitHub App Token
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.CLAUDE_CODE_APP_ID }}
+          private-key: ${{ secrets.CLAUDE_CODE_PRIVATE_KEY }}
+          # Scoped down from every permission the App has — Claude runs unattended
+          # with this token in reach.
+          permission-contents: write
+          permission-pull-requests: write
+          permission-issues: write
+
+      - name: Checkout PR head
+        uses: actions/checkout@v7
+        with:
+          # By SHA, not branch name — the push below leases against this exact commit.
+          ref: ${{ needs.resolve.outputs.head-sha }}
+          token: ${{ steps.app-token.outputs.token }}
+          fetch-depth: 0
+          # Otherwise the token lands in .git/config, where Claude could read it. The
+          # push below puts it on the remote URL for that one command instead.
+          persist-credentials: false
+
+      - name: Configure Git
+        run: |
+          git config user.name "claude-code-bot[bot]"
+          git config user.email "claude-code-bot[bot]@users.noreply.github.com"
+          git checkout -B "$HEAD_REF"
+
+      - name: Collect the failure
+        id: failure
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_REPO: ${{ github.repository }}
+          RUN_ID: ${{ needs.resolve.outputs.run-id }}
+        run: |
+          set -euo pipefail
+
+          # Keep the tail — the assertion or stack trace is at the end of the log.
+          gh run view "$RUN_ID" --log-failed 2>/dev/null | tail -c 200000 \
+            > /tmp/ci-failure.log || echo "(could not retrieve logs)" > /tmp/ci-failure.log
+          wc -l /tmp/ci-failure.log
+
+          # Which dependency this PR updates, so Claude can tell breakage caused by
+          # the bump from breakage that is unrelated to it.
+          git log -1 --pretty=%s > /tmp/renovate-subject.txt
+          echo "subject=$(cat /tmp/renovate-subject.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Claim the attempt
+        # Before Claude runs, not after, so a crash or timeout still consumes the one
+        # attempt.
+        uses: actions/github-script@v9
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            await github.rest.issues.addLabels({
+              ...context.repo,
+              issue_number: Number(process.env.PR),
+              labels: ['claude:autofix-attempted'],
+            });
+            core.info(`PR #${process.env.PR}: claimed — no further automatic attempts`);
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'yarn'
+          cache-dependency-path: '**/yarn.lock'
+
+      # yarn install and yarn db:generate are deliberately NOT steps here. The update
+      # under diagnosis is often what breaks install, and a step can only report that
+      # secondhand — run by Claude, the error is in its own terminal, where it can read
+      # it and act on it. Both write only to gitignored paths, so neither dirties the
+      # tree that decides the outcome below.
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::313941174580:role/HMCTSClaudeGitHubActionsRole
+          aws-region: eu-west-1
+
+      - name: Run Claude Code - Autofix
+        id: claude
+        uses: anthropics/claude-code-action@v1
+        env:
+          ANTHROPIC_DEFAULT_OPUS_MODEL: 'eu.anthropic.claude-opus-5'
+          ANTHROPIC_DEFAULT_SONNET_MODEL: 'eu.anthropic.claude-sonnet-5'
+          ANTHROPIC_DEFAULT_HAIKU_MODEL: 'eu.anthropic.claude-haiku-4-5-20251001-v1:0'
+        with:
+          use_bedrock: "true"
+          github_token: ${{ steps.app-token.outputs.token }}
+          # The triggering actor is renovate, and the action refuses non-human actors
+          # by default. Only renovate is listed — not '*' — so the prompt below stays
+          # the only thing that can drive this job.
+          allowed_bots: "renovate"
+          prompt: |
+            The Preview pipeline failed on a Renovate dependency-update PR. Work out
+            whether the failure is caused by the update and, if it is, fix it.
+
+            REPO: ${{ github.repository }}
+            PR: ${{ env.PR }}
+            BRANCH: ${{ env.HEAD_REF }}
+            UPDATE: ${{ steps.failure.outputs.subject }}
+            FAILED JOBS: ${{ needs.resolve.outputs.failed-jobs }}
+
+            Read /tmp/ci-failure.log first — it is the tail of the failed jobs' logs.
+            Diagnose from it before changing anything.
+
+            Nothing is installed yet. Run `yarn install --immutable` and then
+            `yarn db:generate` before any lint or test command — both fail without the
+            Prisma client.
+
+            If `yarn install` itself fails, that is very likely the whole failure, so
+            read its error carefully. This repo leaves yarn's npmMinimalAgeGate at its
+            default of 1 day, so a version published in the last 24 hours is refused
+            with YN0016 "all versions satisfying ... are quarantined". No change to this
+            repo can fix that — report it and stop. When it is a lockfile problem,
+            `yarn install --mode update-lockfile` to repair the entry for the updated
+            package is a valid fix, provided the resulting yarn.lock still resolves the
+            version this PR is updating to. Do not resolve it back to the old version.
+
+            CHANGING NOTHING IS OFTEN THE RIGHT ANSWER. Any stage of the pipeline can
+            fail here, and most of them for reasons that are not code: terraform plan
+            drift, helm deploy, AKS capacity, smoke and e2e flakes, registry timeouts.
+            Pushing a commit to this branch takes the PR out of Renovate's management —
+            it stops being rebased and stops being automerged — so a speculative fix
+            has a real cost. Unless the log shows the dependency update itself breaking
+            the build, lint or tests, change nothing, say so in the report, and stop.
+            That is a correct outcome, not a failure.
+
+            When it IS the update, the fix is to adapt this repo to the new version:
+            a renamed or moved export, a changed signature, a new lint rule, an updated
+            snapshot, a type that got stricter. Never widen or pin back the version in
+            package.json, and never hand-edit yarn.lock to undo the update — that
+            defeats the entire PR. If the new version genuinely cannot be adopted
+            without a judgment call about behaviour, stop and explain; do not guess.
+
+            Keep the change as small as the failure demands. Then, before committing:
+            run `yarn format`, `yarn lint` and `yarn test`, and make sure all three
+            pass.
+
+            Commit once, subject `fix(deps): adapt to <dependency> update`. No
+            `Co-Authored-By` trailer — this repo does not use them. Do NOT push — a
+            later step owns that.
+
+            Always write /tmp/autofix-report.md: what failed, whether it was the
+            update, what you changed or why you changed nothing, and whether the checks
+            passed. Write it whether you fix anything or not.
+          # Git subcommands are enumerated rather than Bash(git:*), so "never push" is
+          # enforced by the tool gate and not only by the instruction above.
+          claude_args: |
+            --dangerously-skip-permissions
+            --max-turns 40
+            --append-system-prompt "You are fixing a failing Renovate dependency-update PR in a GitHub Action with no human present. Read @CLAUDE.md. Do not ask questions — nobody can answer; stop and write the report instead. Never push, never use --force, never revert the dependency update. Changing nothing is preferable to guessing. Always write /tmp/autofix-report.md."
+            --allowedTools "Read,Glob,Grep,Write,Edit,Bash(corepack:*),Bash(yarn:*),Bash(node_modules/.bin/tsc:*),Bash(git status:*),Bash(git log:*),Bash(git show:*),Bash(git diff:*),Bash(git add:*),Bash(git commit:*),Bash(git rev-parse:*),Bash(git rev-list:*),Bash(git ls-files:*),Bash(git config user.name:*),Bash(git config user.email:*)"
+
+      - name: Determine outcome
+        id: outcome
+        if: always()
+        run: |
+          set -euo pipefail
+
+          # Trust git, not the model's self-report.
+          if [ -n "$(git status --porcelain)" ]; then
+            # Uncommitted changes mean it stopped partway — pushing would ship half
+            # a fix.
+            state=dirty
+            git status --short
+          elif [ "$(git rev-parse HEAD)" = "$HEAD_SHA" ]; then
+            state=no-change
+          else
+            state=fixed
+            git log --oneline "$HEAD_SHA"..HEAD
+          fi
+          echo "state=$state" >> "$GITHUB_OUTPUT"
+          echo "Outcome: $state"
+
+      - name: Push the fix
+        id: push
+        if: ${{ steps.outcome.outputs.state == 'fixed' }}
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+
+          # Leased against the checked-out SHA, so a branch Renovate refreshed
+          # mid-run is refused rather than clobbered. The explicit <ref>:<oid> form
+          # matters — the bare form leases against the local remote-tracking ref and
+          # silently degrades to a plain --force after any fetch.
+          git push --force-with-lease="refs/heads/${HEAD_REF}:${HEAD_SHA}" \
+            "https://x-access-token:${GH_TOKEN}@github.com/${REPO}.git" \
+            "HEAD:refs/heads/${HEAD_REF}"
+
+          # Read by the report step, which must not claim success on a rejected push.
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Report on PR
+        if: always()
+        uses: actions/github-script@v9
+        env:
+          STATE: ${{ steps.outcome.outputs.state }}
+          PUSHED: ${{ steps.push.outputs.pushed }}
+          FAILED_JOBS: ${{ needs.resolve.outputs.failed-jobs }}
+          CLAUDE_OUTCOME: ${{ steps.claude.outcome }}
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const fs = require('fs');
+            const MARKER = '<!-- renovate-autofix -->';
+            const { owner, repo } = context.repo;
+            const pr = Number(process.env.PR);
+            const state = process.env.STATE;
+            const runUrl =
+              `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
+
+            // Report on the push, not the fix: a lease rejection leaves the branch
+            // exactly as it was and must not read as success.
+            const pushed = process.env.PUSHED === 'true';
+            const wouldPush = state === 'fixed' && !pushed;
+
+            let report = '';
+            try { report = fs.readFileSync('/tmp/autofix-report.md', 'utf8').trim(); }
+            catch { report = '_No report was produced._'; }
+
+            // A throttle, timeout or max-turns stop also leaves the tree at
+            // no-change, which must not read as a considered decision.
+            const crashed = process.env.CLAUDE_OUTCOME !== 'success';
+
+            const heading = pushed
+              ? '## 🤖 Autofix pushed'
+              : crashed
+                ? '## ⚠️ Autofix did not complete'
+                : state === 'no-change'
+                  ? '## 🤖 Autofix made no changes'
+                  : state === 'fixed'
+                    ? '## ⚠️ Autofix produced a fix but could not push it'
+                    : '## ⚠️ Autofix stopped partway';
+
+            const why = wouldPush
+              ? '\nThe push was rejected — the branch moved while Claude was working, so it has been left alone. Its head no longer matches what was fixed.'
+              : null;
+
+            const footer = [
+              // Only when a commit landed — otherwise the PR is still Renovate's.
+              pushed
+                ? 'ℹ️ **This PR now needs manual review and merge.** It carries a commit that is not Renovate\'s, so Renovate will no longer rebase, update or automerge it.'
+                : null,
+              '_Autofix runs once per PR. Remove the `claude:autofix-attempted` label to allow one more attempt._',
+            ].filter(l => l !== null);
+
+            const body = [
+              MARKER,
+              heading,
+              '',
+              `The Preview pipeline failed${process.env.FAILED_JOBS ? ` in **${process.env.FAILED_JOBS}**` : ''}. [View the run](${runUrl}).`,
+              why,
+              '',
+              '---',
+              '',
+              report,
+              // Suppress the rule when there is no footer to separate.
+              ...(footer.length ? ['', '---', '', ...footer] : []),
+            ].filter(l => l !== null).join('\n');
+
+            const comments = await github.paginate(github.rest.issues.listComments,
+              { owner, repo, issue_number: pr, per_page: 100 });
+            const existing = comments.find(c => c.body?.includes(MARKER));
+
+            if (existing) {
+              await github.rest.issues.updateComment(
+                { owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment(
+                { owner, repo, issue_number: pr, body });
+            }
+
+      - name: Fail on an incomplete attempt
+        # A dirty tree or rejected push is worth a red run; no-change is a legitimate
+        # outcome and stays green.
+        if: ${{ steps.outcome.outputs.state == 'dirty' || (steps.outcome.outputs.state == 'fixed' && steps.push.outputs.pushed != 'true') }}
+        run: |
+          echo "::error::autofix did not complete cleanly (state=${{ steps.outcome.outputs.state }}, pushed=${{ steps.push.outputs.pushed || 'false' }})"
+          exit 1
