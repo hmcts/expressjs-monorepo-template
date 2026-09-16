@@ -65,7 +65,6 @@ async function loadModuleRoutes(route: DiscoveredRoute, prefix: string, mountSpe
   const module = await loadRouteModule(route.absolutePath);
   const handlers = extractHandlers(module);
 
-  // A module exporting ROUTES is registered on each of those paths instead of its file-derived one
   return getRoutePaths(module, route.urlPath, route.absolutePath)
     .map((urlPath) => buildFullPath(prefix, urlPath))
     .flatMap((fullPath) => buildRouteEntries(fullPath, handlers, module, route.absolutePath, mountSpec));
@@ -116,8 +115,6 @@ function buildRouteEntries(
   const errorEntry: RouteEntry = {
     path: fullPath,
     method: "use",
-    // Cast to any[] first to bypass TypeScript's strict checking
-    // Express internally handles both 3-param and 4-param handlers
     handlers: [module.onError] as any as Handler[],
     sourcePath,
     mountSpec
@@ -199,7 +196,6 @@ export interface MountSpec {
 export interface RouteModule {
   [key: string]: unknown;
   onError?: ErrorRequestHandler;
-  // URL paths to register the module's handlers on, overriding the file-derived path
   ROUTES?: string[];
 }
 
