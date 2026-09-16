@@ -1,0 +1,85 @@
+# Renovate Autofix
+#
+# When the Preview pipeline fails on a Renovate PR, hand the failure to Claude once and
+# push the fix to the branch. The machinery lives in cnp-githubactions-library; what
+# stays here is the part that is specific to this repository — how to install, what a
+# valid fix looks like, and what to leave alone.
+#
+# workflow_run only ever runs the default-branch copy of this file, so edits do nothing
+# until merged; workflow_dispatch is there to run it on a specific PR on demand.
+
+name: Renovate Autofix
+
+on:
+  workflow_run:
+    workflows: [Preview]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      pr-number:
+        description: "PR number to attempt"
+        type: string
+        required: true
+
+permissions:
+  contents: read
+  pull-requests: read
+  actions: read
+  id-token: write # Bedrock OIDC
+
+jobs:
+  autofix:
+    uses: hmcts/cnp-githubactions-library/.github/workflows/renovate-autofix.yaml@main
+    secrets: inherit
+    with:
+      ci-workflow: workflow.preview.yml
+      pr-number: ${{ inputs.pr-number }}
+      # The preview cluster is powered off outside 07:00-20:00 on weekdays, so a
+      # deploy-only failure is not something a code change can fix. Those are left to
+      # workflow.retry-preview-deploys.yml, which re-runs them in the morning.
+      skip-when-all-failures-match: "Deploy to"
+      extra-allowed-tools: "Bash(corepack:*),Bash(yarn:*),Bash(node_modules/.bin/tsc:*)"
+      prompt: |
+        Work out whether the failure is caused by the update and, if it is, fix it.
+        Read @CLAUDE.md for this repository's conventions.
+
+        Nothing is installed yet. Run `yarn install --immutable` and then
+        `yarn db:generate` before any lint or test command — both fail without the
+        Prisma client.
+
+        If `yarn install` itself fails, that is very likely the whole failure, so
+        read its error carefully. This repo leaves yarn's npmMinimalAgeGate at its
+        default of 1 day, so a version published in the last 24 hours is refused
+        with YN0016 "all versions satisfying ... are quarantined". No change to this
+        repo can fix that — report it and stop. When it is a lockfile problem,
+        `yarn install --mode update-lockfile` to repair the entry for the updated
+        package is a valid fix, provided the resulting yarn.lock still resolves the
+        version this PR is updating to. Do not resolve it back to the old version.
+
+        CHANGING NOTHING IS OFTEN THE RIGHT ANSWER. Any stage of the pipeline can
+        fail here, and most of them for reasons that are not code: terraform plan
+        drift, helm deploy, AKS capacity, smoke and e2e flakes, registry timeouts.
+        Pushing a commit to this branch takes the PR out of Renovate's management —
+        it stops being rebased and stops being automerged — so a speculative fix
+        has a real cost. Unless the log shows the dependency update itself breaking
+        the build, lint or tests, change nothing, say so in the report, and stop.
+        That is a correct outcome, not a failure.
+
+        When it IS the update, the fix is to adapt this repo to the new version:
+        a renamed or moved export, a changed signature, a new lint rule, an updated
+        snapshot, a type that got stricter. Never widen or pin back the version in
+        package.json, and never hand-edit yarn.lock to undo the update — that
+        defeats the entire PR. If the new version genuinely cannot be adopted
+        without a judgment call about behaviour, stop and explain; do not guess.
+
+        Keep the change as small as the failure demands. Then, before committing:
+        run `yarn format`, `yarn lint` and `yarn test`, and make sure all three
+        pass.
+
+        Commit once, subject `fix(deps): adapt to <dependency> update`. No
+        `Co-Authored-By` trailer — this repo does not use them. Do NOT push — a
+        later step owns that.
+
+        Always write /tmp/autofix-report.md: what failed, whether it was the
+        update, what you changed or why you changed nothing, and whether the checks
+        passed. Write it whether you fix anything or not.
