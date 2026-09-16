@@ -1,5 +1,12 @@
 # @hmcts-cft/simple-router
 
+## [2.3.0](https://github.com/hmcts/expressjs-monorepo-template/compare/simple-router-v2.2.0...simple-router-v2.3.0) (2026-09-16)
+
+
+### Features
+
+* **simple-router:** support multiple explicit URLs via ROUTES export ([#769](https://github.com/hmcts/expressjs-monorepo-template/issues/769)) ([b7e8bfb](https://github.com/hmcts/expressjs-monorepo-template/commit/b7e8bfbff149fe25f99d79fe30dd8f37a1f49c64))
+
 ## [2.2.0](https://github.com/hmcts/expressjs-monorepo-template/compare/simple-router-v2.1.0...simple-router-v2.2.0) (2026-05-18)
 
 
