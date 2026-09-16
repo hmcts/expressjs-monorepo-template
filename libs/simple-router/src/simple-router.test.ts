@@ -188,6 +188,125 @@ export const Post = (req, res) => res.send('mixed case post');
       expect(groupPath.status).toBe(404);
     });
 
+    it("should register the handler on every ROUTES entry", async () => {
+      const routeContent = `
+export const ROUTES = ['/summary', '/check-your-answers', '/review'];
+export const GET = (req, res) => res.send('Summary');
+`;
+      writeFileSync(join(testDir, "summary.ts"), routeContent);
+
+      const app = express();
+      app.use(await createSimpleRouter({ path: testDir }));
+
+      const summaryResponse = await request(app).get("/summary");
+      const checkResponse = await request(app).get("/check-your-answers");
+      const reviewResponse = await request(app).get("/review");
+
+      expect(summaryResponse.text).toBe("Summary");
+      expect(checkResponse.text).toBe("Summary");
+      expect(reviewResponse.text).toBe("Summary");
+    });
+
+    it("should honour ROUTES for every exported method", async () => {
+      const routeContent = `
+export const ROUTES = ['/name', '/your-name'];
+export const GET = (req, res) => res.send('GET response');
+export const POST = (req, res) => res.send('POST response');
+`;
+      writeFileSync(join(testDir, "name.ts"), routeContent);
+
+      const app = express();
+      app.use(await createSimpleRouter({ path: testDir }));
+
+      const aliasGetResponse = await request(app).get("/your-name");
+      const aliasPostResponse = await request(app).post("/your-name");
+
+      expect(aliasGetResponse.text).toBe("GET response");
+      expect(aliasPostResponse.text).toBe("POST response");
+    });
+
+    it("should register onError for every ROUTES path", async () => {
+      const routeContent = `
+export const ROUTES = ['/first', '/second'];
+export const GET = (req, res, next) => next(new Error('boom'));
+export const onError = (err, req, res, next) => res.status(500).send('Handled: ' + err.message);
+`;
+      writeFileSync(join(testDir, "failing.ts"), routeContent);
+
+      const app = express();
+      app.use(await createSimpleRouter({ path: testDir }));
+
+      const firstResponse = await request(app).get("/first");
+      const secondResponse = await request(app).get("/second");
+
+      expect(firstResponse.status).toBe(500);
+      expect(firstResponse.text).toBe("Handled: boom");
+      expect(secondResponse.status).toBe(500);
+      expect(secondResponse.text).toBe("Handled: boom");
+    });
+
+    it("should apply the mount prefix to ROUTES paths", async () => {
+      const routeContent = `
+export const ROUTES = ['/', '/overview'];
+export const GET = (req, res) => res.send('Admin');
+`;
+      writeFileSync(join(testDir, "index.ts"), routeContent);
+
+      const app = express();
+      app.use(await createSimpleRouter({ path: testDir, prefix: "/admin" }));
+
+      const rootResponse = await request(app).get("/admin");
+      const overviewResponse = await request(app).get("/admin/overview");
+      const unprefixedResponse = await request(app).get("/overview");
+
+      expect(rootResponse.text).toBe("Admin");
+      expect(overviewResponse.text).toBe("Admin");
+      expect(unprefixedResponse.status).toBe(404);
+    });
+
+    it("should fall back to the file-derived path when ROUTES is absent", async () => {
+      writeFileSync(join(testDir, "contact.ts"), `export const GET = (req, res) => res.send('Contact');`);
+
+      const app = express();
+      app.use(await createSimpleRouter({ path: testDir }));
+
+      const response = await request(app).get("/contact");
+
+      expect(response.status).toBe(200);
+      expect(response.text).toBe("Contact");
+    });
+
+    it("should throw when ROUTES is present but malformed", async () => {
+      const variations = [
+        { name: "empty", exportLine: "export const ROUTES = [];" },
+        { name: "not-an-array", exportLine: "export const ROUTES = '/from-string';" },
+        { name: "non-string-entry", exportLine: "export const ROUTES = ['/valid', 42];" },
+        { name: "missing-leading-slash", exportLine: "export const ROUTES = ['no-leading-slash'];" },
+        { name: "empty-string-entry", exportLine: "export const ROUTES = [''];" }
+      ];
+
+      for (const { name, exportLine } of variations) {
+        const variationDir = join(testDir, name);
+        mkdirSync(variationDir, { recursive: true });
+        writeFileSync(join(variationDir, "contact.ts"), `${exportLine}\nexport const GET = (req, res) => res.send('Contact');`);
+
+        await expect(() => createSimpleRouter({ path: variationDir })).rejects.toThrow(/Invalid ROUTES/);
+      }
+    });
+
+    it("should name the offending file when ROUTES is malformed", async () => {
+      writeFileSync(join(testDir, "contact.ts"), `export const ROUTES = ['no-leading-slash'];\nexport const GET = (req, res) => res.send('Contact');`);
+
+      await expect(() => createSimpleRouter({ path: testDir })).rejects.toThrow(/contact\.ts.*"no-leading-slash"/);
+    });
+
+    it("should detect conflicts when two modules declare the same ROUTES path", async () => {
+      writeFileSync(join(testDir, "first.ts"), `export const ROUTES = ['/shared'];\nexport const GET = (req, res) => res.send('First');`);
+      writeFileSync(join(testDir, "second.ts"), `export const ROUTES = ['/shared'];\nexport const GET = (req, res) => res.send('Second');`);
+
+      await expect(() => createSimpleRouter({ path: testDir })).rejects.toThrow("Route conflict detected");
+    });
+
     it("should normalize prefix correctly", async () => {
       writeFileSync(join(testDir, "index.ts"), `export const GET = (req, res) => res.send('Test');`);
 

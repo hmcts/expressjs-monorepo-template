@@ -6,6 +6,7 @@ A simple, dependency-light file-system router for Express applications, inspired
 
 - ✅ Maps files in directories to Express routes automatically
 - ✅ Support for dynamic route parameters using `[param]` syntax
+- ✅ Explicit URLs via a `ROUTES` export, for one module serving several fixed paths
 - ✅ Case-insensitive HTTP method exports (GET, post, Delete all work)
 - ✅ Support for single handlers or arrays of middleware
 - ✅ Multiple mount points with prefixes
@@ -87,6 +88,34 @@ export const GET = [authenticate, authorize, (req, res) => {
 }];
 ```
 
+### Custom URLs with `ROUTES`
+
+By default a module's URL comes from its file path. Export `ROUTES` to serve the same handlers on one or
+more explicit URLs instead — useful when a single controller must answer on several fixed paths, or when
+a URL can't match its folder name:
+
+```typescript
+// pages/contact/index.js
+export const ROUTES = ["/contact-us", "/get-in-touch"];
+
+export const GET: RequestHandler = (req, res) => {
+  res.render("contact");
+};
+```
+
+Both URLs above run the same `GET` handler (and the same `onError`, if one is exported).
+
+**`ROUTES` replaces the file-derived path, it does not add to it** — in the example above,
+`/contact` is _not_ registered, so include it in the array if you still need it. Any `prefix`
+on the mount is applied to every entry, and route conflicts between `ROUTES` paths are detected at
+startup like any other.
+
+Each entry must be an Express path starting with `/`, relative to the mount — write `/users/:id`, not
+`/users/[id]`, since `[param]` syntax only applies to file-derived paths. If you export `ROUTES` at all,
+it must be a non-empty array of such paths — an empty array, a non-array value, or an entry not starting
+with `/` throws at startup rather than silently falling back to the file path, so a typo fails loudly
+instead of leaving the intended URLs returning 404.
+
 ### Dynamic Routes
 
 Use `[param]` syntax for dynamic segments:
@@ -135,6 +164,7 @@ Creates an Express router with file-system based routing.
 4. Route conflicts (same path + method from different files) throw startup errors
 5. Duplicate method exports with different casings throw errors
 6. Handler functions must have 2-4 parameters to be valid
+7. A `ROUTES` export must be a non-empty array of strings starting with `/`, or startup throws
 
 ## Route Precedence
 

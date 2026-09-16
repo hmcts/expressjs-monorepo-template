@@ -61,44 +61,69 @@ function discoverAndSortRoutes(pagesDir: string) {
   return sortRoutes(discoveredRoutes);
 }
 
-async function loadModuleRoutes(
-  route: { absolutePath: string; urlPath: string; relativePath: string },
-  prefix: string,
-  mountSpec: MountSpec
-): Promise<RouteEntry[]> {
+async function loadModuleRoutes(route: DiscoveredRoute, prefix: string, mountSpec: MountSpec): Promise<RouteEntry[]> {
   const module = await loadRouteModule(route.absolutePath);
   const handlers = extractHandlers(module);
-  const routeEntries: RouteEntry[] = [];
 
-  const fullPath = buildFullPath(prefix, route.urlPath);
+  // A module exporting ROUTES is registered on each of those paths instead of its file-derived one
+  return getRoutePaths(module, route.urlPath, route.absolutePath)
+    .map((urlPath) => buildFullPath(prefix, urlPath))
+    .flatMap((fullPath) => buildRouteEntries(fullPath, handlers, module, route.absolutePath, mountSpec));
+}
 
-  // Add method handlers
-  for (const [method, handlerExport] of handlers.entries()) {
-    routeEntries.push({
-      path: fullPath,
-      method,
-      handlers: normalizeHandlers(handlerExport),
-      sourcePath: route.absolutePath,
-      mountSpec
-    });
+// ROUTES arrives from a dynamically imported module, so its shape is validated at runtime.
+// Opting in and getting it wrong is fatal rather than silently falling back, since a typo would
+// otherwise leave the module serving on its file-derived path while the intended URLs 404.
+function getRoutePaths(module: RouteModule, defaultPath: string, sourcePath: string): string[] {
+  if (module.ROUTES === undefined) {
+    return [defaultPath];
   }
 
-  // Add error handler if present
+  if (!Array.isArray(module.ROUTES) || module.ROUTES.length === 0) {
+    throw new Error(`Invalid ROUTES in ${sourcePath}: expected a non-empty array of paths starting with "/"`);
+  }
+
+  for (const routePath of module.ROUTES) {
+    if (typeof routePath !== "string" || !routePath.startsWith("/")) {
+      throw new Error(`Invalid ROUTES entry in ${sourcePath}: ${JSON.stringify(routePath)} is not a path starting with "/"`);
+    }
+  }
+
+  return module.ROUTES;
+}
+
+function buildRouteEntries(
+  fullPath: string,
+  handlers: Map<string, HandlerExport>,
+  module: RouteModule,
+  sourcePath: string,
+  mountSpec: MountSpec
+): RouteEntry[] {
+  const methodEntries = [...handlers].map(([method, handlerExport]) => ({
+    path: fullPath,
+    method,
+    handlers: normalizeHandlers(handlerExport),
+    sourcePath,
+    mountSpec
+  }));
+
+  if (!module.onError) {
+    return methodEntries;
+  }
+
   // Note: Error handlers have 4 params (err, req, res, next) vs regular handlers with 3
   // Express handles this difference internally based on function arity
-  if (module.onError) {
-    routeEntries.push({
-      path: fullPath,
-      method: "use",
-      // Cast to any[] first to bypass TypeScript's strict checking
-      // Express internally handles both 3-param and 4-param handlers
-      handlers: [module.onError] as any as Handler[],
-      sourcePath: route.absolutePath,
-      mountSpec
-    });
-  }
+  const errorEntry: RouteEntry = {
+    path: fullPath,
+    method: "use",
+    // Cast to any[] first to bypass TypeScript's strict checking
+    // Express internally handles both 3-param and 4-param handlers
+    handlers: [module.onError] as any as Handler[],
+    sourcePath,
+    mountSpec
+  };
 
-  return routeEntries;
+  return [...methodEntries, errorEntry];
 }
 
 function buildFullPath(prefix: string, urlPath: string): string {
@@ -174,6 +199,8 @@ export interface MountSpec {
 export interface RouteModule {
   [key: string]: unknown;
   onError?: ErrorRequestHandler;
+  // URL paths to register the module's handlers on, overriding the file-derived path
+  ROUTES?: string[];
 }
 
 export interface RouteEntry {
