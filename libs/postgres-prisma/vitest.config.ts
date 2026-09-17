@@ -7,7 +7,7 @@ export default defineConfig({
     passWithNoTests: true,
     coverage: {
       reporter: ["lcov", "text"],
-      reportsDirectory: "coverage",
-    },
-  },
+      reportsDirectory: "coverage"
+    }
+  }
 });
