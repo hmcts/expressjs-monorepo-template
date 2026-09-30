@@ -26,6 +26,7 @@ export function expressSessionPostgres(options: ExpressSessionPostgresOptions): 
   return session({
     ...defaultSessionOptions,
     ...sessionOptions,
+    cookie: { ...defaultSessionOptions.cookie, ...sessionOptions.cookie },
     store
   });
 }
