@@ -1,5 +1,6 @@
 {% extends "layouts/default.njk" %}
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
 {% from "govuk/components/radios/macro.njk" import govukRadios %}
 {% from "govuk/components/error-summary/macro.njk" import govukErrorSummary %}
 {% from "govuk/components/back-link/macro.njk" import govukBackLink %}
@@ -15,7 +16,18 @@
     <form method="post" novalidate>
 
       {% set roleTypeError = errors.roleType %}
-      {% set roleOtherError = errors.roleOther %}
+      {% set otherHtml %}
+        {{ govukInput({
+          id: "roleOther",
+          name: "roleOther",
+          value: data.roleOther if data,
+          errorMessage: errors.roleOther,
+          classes: "govuk-!-width-two-thirds",
+          label: {
+            text: otherLabel
+          }
+        }) }}
+      {% endset %}
 
       {{ govukRadios({
         idPrefix: "roleType",
@@ -49,15 +61,7 @@
             text: options.other,
             checked: data.roleType == "other" if data,
             conditional: {
-              html: '
-                <div class="govuk-form-group">
-                  <label class="govuk-label" for="roleOther">
-                    ' + otherLabel + '
-                  </label>
-                  ' + ('<span class="govuk-error-message"><span class="govuk-visually-hidden">Error:</span> ' + roleOtherError.text + '</span>' if roleOtherError) + '
-                  <input class="govuk-input govuk-!-width-two-thirds ' + ('govuk-input--error' if roleOtherError) + '" id="roleOther" name="roleOther" type="text" value="' + (data.roleOther if data and data.roleOther else '') + '">
-                </div>
-              '
+              html: otherHtml
             }
           }
         ]
