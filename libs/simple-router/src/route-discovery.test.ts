@@ -82,17 +82,19 @@ describe("route-discovery", () => {
       expect(paths).toEqual(["/", "/about/team", "/posts", "/privacy-policy", "/terms-of-service"]);
     });
 
-    it("should prefer .ts files over .js files for the same route", () => {
-      // Create both .ts and .js files with the same name
+    it("should throw naming both files when .ts and .js files exist for the same route", () => {
       writeFileSync(join(testDir, "contact.ts"), "");
       writeFileSync(join(testDir, "contact.js"), "");
 
-      const routes = discoverRoutes(testDir);
+      expect(() => discoverRoutes(testDir)).toThrow(/Duplicate route file for URL \/contact:\s+1\. contact\.js\s+2\. contact\.ts/);
+    });
 
-      expect(routes).toHaveLength(1);
-      expect(routes[0].urlPath).toBe("/contact");
-      // Should prefer .ts file
-      expect(routes[0].relativePath).toBe("contact.ts");
+    it("should throw naming both files when a file and a directory index resolve to the same URL", () => {
+      mkdirSync(join(testDir, "foo"), { recursive: true });
+      writeFileSync(join(testDir, "foo.ts"), "");
+      writeFileSync(join(testDir, "foo", "index.ts"), "");
+
+      expect(() => discoverRoutes(testDir)).toThrow(/Duplicate route file for URL \/foo:\s+1\. foo\.ts\s+2\. foo\/index\.ts/);
     });
 
     it("should handle deeply nested routes", () => {

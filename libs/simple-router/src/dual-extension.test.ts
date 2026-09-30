@@ -25,28 +25,26 @@ describe("route-discovery dual extension support", () => {
     mkdirSync(join(testDir, "javascript-route"), { recursive: true });
     writeFileSync(join(testDir, "javascript-route", "index.js"), "");
 
-    // Create directory with both (should prefer .ts in dev, but discover both)
+    const routes = discoverRoutes(testDir);
+
+    expect(routes).toHaveLength(2);
+
+    const paths = routes.map((r) => r.urlPath).sort();
+    expect(paths).toEqual(["/javascript-route", "/typescript-route"]);
+
+    const tsRoute = routes.find((r) => r.urlPath === "/typescript-route");
+    const jsRoute = routes.find((r) => r.urlPath === "/javascript-route");
+
+    expect(tsRoute?.relativePath).toContain("index.ts");
+    expect(jsRoute?.relativePath).toContain("index.js");
+  });
+
+  it("should throw naming both files when a directory holds index.ts and index.js", () => {
     mkdirSync(join(testDir, "mixed-route"), { recursive: true });
     writeFileSync(join(testDir, "mixed-route", "index.ts"), "");
     writeFileSync(join(testDir, "mixed-route", "index.js"), "");
 
-    const routes = discoverRoutes(testDir);
-
-    // Should discover all three routes
-    expect(routes).toHaveLength(3);
-
-    const paths = routes.map((r) => r.urlPath).sort();
-    expect(paths).toEqual(["/javascript-route", "/mixed-route", "/typescript-route"]);
-
-    // Check file extensions
-    const tsRoute = routes.find((r) => r.urlPath === "/typescript-route");
-    const jsRoute = routes.find((r) => r.urlPath === "/javascript-route");
-    const mixedRoute = routes.find((r) => r.urlPath === "/mixed-route");
-
-    expect(tsRoute?.relativePath).toContain("index.ts");
-    expect(jsRoute?.relativePath).toContain("index.js");
-    // When both exist, .ts is discovered (appears first in condition)
-    expect(mixedRoute?.relativePath).toContain("index.ts");
+    expect(() => discoverRoutes(testDir)).toThrow(/\/mixed-route[\s\S]*mixed-route\/index\.js[\s\S]*mixed-route\/index\.ts/);
   });
 
   it("should work with only .js files (production mode)", () => {

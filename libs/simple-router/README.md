@@ -148,9 +148,8 @@ Creates an Express router with file-system based routing.
 
 #### MountSpec Options
 
-- `pagesDir` (required): Directory containing route modules
+- `path` (required): Directory containing route modules
 - `prefix`: URL prefix for all routes from this mount (default: "")
-- `trailingSlash`: How to handle trailing slashes ("off" | "enforce" | "redirect")
 
 ### Supported HTTP Methods
 
@@ -162,9 +161,11 @@ Creates an Express router with file-system based routing.
 2. Files/folders starting with `.` are ignored
 3. Invalid route segments (containing special characters except `-` and `_`) will throw errors
 4. Route conflicts (same path + method from different files) throw startup errors
-5. Duplicate method exports with different casings throw errors
-6. Handler functions must have 2-4 parameters to be valid
+5. Duplicate method exports throw errors, whether they differ by casing (`get`/`GET`) or alias (`del`/`DELETE`)
+6. Method handlers must not declare 4 parameters: Express treats a 4-parameter function as an error handler and never runs it for a request. Export error handlers as `onError` instead
 7. A `ROUTES` export must be a non-empty array of strings starting with `/`, or startup throws
+8. Two files in one mount that resolve to the same URL (`foo.ts` and `foo/index.ts`, `(group)/x.ts` and `x.ts`, `index.ts` and `index.js`) throw a startup error naming both files
+9. An exported `onError(err, req, res, next)` handles errors from that module's own method handlers only, not from other routes that share its path prefix
 
 ## Route Precedence
 
