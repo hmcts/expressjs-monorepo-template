@@ -9,7 +9,7 @@ COPY --chown=hmcts:hmcts --parents apps/*/package.json libs/*/package.json e2e-t
 
 # ---- Build image ----
 FROM base AS build
-RUN --mount=type=cache,target=/opt/app/.yarn/cache,uid=100,gid=101 yarn install --immutable
+RUN --mount=type=cache,target=/opt/app/.yarn/cache,uid=100,gid=101 yarn install --immutable --mode=skip-build
 COPY --chown=hmcts:hmcts . .
 ENV NODE_ENV=production
 RUN yarn turbo run build --filter=@hmcts/crons...
