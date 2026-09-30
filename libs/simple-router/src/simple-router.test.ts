@@ -245,6 +245,106 @@ export const onError = (err, req, res, next) => res.status(500).send('Handled: '
       expect(secondResponse.text).toBe("Handled: boom");
     });
 
+    it("should serve a handler declared with rest parameters", async () => {
+      writeFileSync(join(testDir, "wrapped.ts"), `export const GET = (...args) => args[1].send('Wrapped');`);
+
+      const app = express();
+      app.use(await createSimpleRouter({ path: testDir }));
+
+      const response = await request(app).get("/wrapped");
+
+      expect(response.status).toBe(200);
+      expect(response.text).toBe("Wrapped");
+    });
+
+    it("should refuse to mount a 4-parameter method handler", async () => {
+      writeFileSync(join(testDir, "broken.ts"), `export const GET = (a, b, c, d) => b.send('never');`);
+
+      await expect(() => createSimpleRouter({ path: testDir })).rejects.toThrow("Invalid handler for method GET");
+    });
+
+    it("should throw naming both files when foo.ts and foo/index.ts resolve to the same URL", async () => {
+      mkdirSync(join(testDir, "foo"), { recursive: true });
+      writeFileSync(join(testDir, "foo.ts"), `export const GET = (req, res) => res.send('file');`);
+      writeFileSync(join(testDir, "foo", "index.ts"), `export const POST = (req, res) => res.send('dir');`);
+
+      await expect(() => createSimpleRouter({ path: testDir })).rejects.toThrow(/\/foo.*foo\.ts.*foo\/index\.ts/s);
+    });
+
+    it("should throw naming both files when a (group) file and a plain file resolve to the same URL", async () => {
+      mkdirSync(join(testDir, "(group)"), { recursive: true });
+      writeFileSync(join(testDir, "(group)", "x.ts"), `export const GET = (req, res) => res.send('grouped');`);
+      writeFileSync(join(testDir, "x.ts"), `export const POST = (req, res) => res.send('plain');`);
+
+      await expect(() => createSimpleRouter({ path: testDir })).rejects.toThrow(/\(group\)\/x\.ts.*x\.ts/s);
+    });
+
+    it("should throw naming both files when index.ts and index.js sit side by side", async () => {
+      writeFileSync(join(testDir, "index.ts"), `export const GET = (req, res) => res.send('ts');`);
+      writeFileSync(join(testDir, "index.js"), `export const POST = (req, res) => res.send('js');`);
+
+      await expect(() => createSimpleRouter({ path: testDir })).rejects.toThrow(/index\.js.*index\.ts/s);
+    });
+
+    it("should not let a dynamic route's onError catch errors from a static route under its path", async () => {
+      mkdirSync(join(testDir, "users", "me"), { recursive: true });
+      writeFileSync(
+        join(testDir, "users", "[id].ts"),
+        `export const GET = (req, res) => res.send('User');\nexport const onError = (err, req, res, next) => res.status(418).send('User onError');`
+      );
+      writeFileSync(join(testDir, "users", "me", "settings.ts"), `export const GET = (req, res, next) => next(new Error('settings boom'));`);
+
+      const app = express();
+      app.use(await createSimpleRouter({ path: testDir }));
+      app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+        res.status(500).send(`App: ${err.message}`);
+      });
+
+      const response = await request(app).get("/users/me/settings");
+
+      expect(response.status).toBe(500);
+      expect(response.text).toBe("App: settings boom");
+    });
+
+    it("should not let a later mount's root onError catch errors from an earlier mount", async () => {
+      const firstMount = join(testDir, "first");
+      const secondMount = join(testDir, "second");
+      mkdirSync(firstMount, { recursive: true });
+      mkdirSync(secondMount, { recursive: true });
+      writeFileSync(join(firstMount, "failing.ts"), `export const POST = (req, res, next) => next(new Error('first boom'));`);
+      writeFileSync(
+        join(secondMount, "index.ts"),
+        `export const GET = (req, res) => res.send('Home');\nexport const onError = (err, req, res, next) => res.status(418).send('Home onError');`
+      );
+
+      const app = express();
+      app.use(await createSimpleRouter({ path: firstMount }, { path: secondMount }));
+      app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+        res.status(500).send(`App: ${err.message}`);
+      });
+
+      const response = await request(app).post("/failing");
+
+      expect(response.status).toBe(500);
+      expect(response.text).toBe("App: first boom");
+    });
+
+    it("should route errors from every exported method to that file's onError", async () => {
+      writeFileSync(
+        join(testDir, "form.ts"),
+        `export const GET = (req, res, next) => next(new Error('get boom'));\nexport const POST = [(req, res, next) => next(), (req, res, next) => next(new Error('post boom'))];\nexport const onError = (err, req, res, next) => res.status(500).send('Handled: ' + err.message);`
+      );
+
+      const app = express();
+      app.use(await createSimpleRouter({ path: testDir }));
+
+      const getResponse = await request(app).get("/form");
+      const postResponse = await request(app).post("/form");
+
+      expect(getResponse.text).toBe("Handled: get boom");
+      expect(postResponse.text).toBe("Handled: post boom");
+    });
+
     it("should apply the mount prefix to ROUTES paths", async () => {
       const routeContent = `
 export const ROUTES = ['/', '/overview'];

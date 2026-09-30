@@ -128,12 +128,20 @@ export const DELETE = (req, res) => res.send('DELETE');
       expect(() => extractHandlers(module)).toThrow("Invalid handler for method GET");
     });
 
-    it("should throw on invalid handler (function with wrong arity)", () => {
+    it("should reject a 4-parameter method handler because Express would treat it as an error handler", () => {
       const module = {
-        GET: vi.fn(() => {})
+        GET: (_err: unknown, _req: unknown, _res: unknown, _next: unknown) => {}
       };
 
-      expect(() => extractHandlers(module)).toThrow("Invalid handler for method GET");
+      expect(() => extractHandlers(module)).toThrow(/Invalid handler for method GET.*4 parameters.*onError/);
+    });
+
+    it("should reject a 4-parameter handler inside a handler array", () => {
+      const module = {
+        POST: [(_req: unknown, _res: unknown, next: () => void) => next(), (_err: unknown, _req: unknown, _res: unknown, _next: unknown) => {}]
+      };
+
+      expect(() => extractHandlers(module)).toThrow("Invalid handler for method POST");
     });
 
     it("should throw on empty array of handlers", () => {
@@ -144,16 +152,26 @@ export const DELETE = (req, res) => res.send('DELETE');
       expect(() => extractHandlers(module)).toThrow("Invalid handler for method GET");
     });
 
-    it("should accept handlers with 2, 3, or 4 parameters", () => {
+    it("should accept handlers whatever their declared parameter count, other than 4", () => {
       const module = {
-        GET: vi.fn((_req, _res) => {}),
-        POST: vi.fn((_req, _res, _next) => {}),
-        PUT: vi.fn((_err, _req, _res, _next) => {})
+        GET: (..._args: unknown[]) => {},
+        POST: (_req: unknown, _res: unknown = {}) => {},
+        PUT: (_req: unknown, _res: unknown) => {},
+        PATCH: (_req: unknown, _res: unknown, _next: unknown) => {}
       };
 
       const handlers = extractHandlers(module);
 
-      expect(handlers.size).toBe(3);
+      expect(handlers.size).toBe(4);
+    });
+
+    it("should throw when del and DELETE are both exported", () => {
+      const module = {
+        del: vi.fn((_req, _res) => {}),
+        DELETE: vi.fn((_req, _res) => {})
+      };
+
+      expect(() => extractHandlers(module)).toThrow("Duplicate method export found: DELETE");
     });
 
     it("should handle 'all' method", () => {
