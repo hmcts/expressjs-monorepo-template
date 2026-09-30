@@ -7,10 +7,5 @@
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.test.ts", "src/assets/**/*"],
-  "references": [
-    { "path": "../../libs/express-govuk-starter" },
-    { "path": "../../libs/express-session-redis" },
-    { "path": "../../libs/cloud-native-platform" },
-    { "path": "../../libs/postgres-prisma" }
-  ]
+  "references": [{ "path": "../../libs/express-govuk-starter" }, { "path": "../../libs/express-session-redis" }, { "path": "../../libs/cloud-native-platform" }]
 }
