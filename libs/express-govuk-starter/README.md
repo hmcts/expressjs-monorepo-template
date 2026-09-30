@@ -89,11 +89,29 @@ Middleware that generates a per-request CSP nonce and stores it in `res.locals.c
 
 ### `configureHelmet(options?)`
 
-Returns Helmet middleware configured for GOV.UK services with CSP directives for nonces, Google Tag Manager, and Vite HMR websocket (in development).
+Returns Helmet middleware configured for GOV.UK services with CSP directives for nonces, Google Tag Manager, Dynatrace, and Vite HMR websocket (in development). Directives this library does not set keep Helmet's defaults (e.g. `form-action 'self'`, `object-src 'none'`).
 
 Options:
 - `enableGoogleTagManager` — include GTM script/connect sources (default: `true`)
-- `isDevelopment` — allow Vite HMR websocket connections (default: `NODE_ENV !== "production"`)
+- `isDevelopment` — allow Vite HMR websocket connections in `connect-src` (default: `NODE_ENV !== "production"`)
+- `dynatraceUrl` — the Dynatrace RUM script URL, the same value you pass as `nunjucksGlobals.dynatrace.dynatraceUrl`. Its origin is added to `script-src`.
+- `extraDirectives` — extra sources per directive. Each list is appended to the directive's existing sources (this library's or Helmet's defaults); directives that are not set yet are added. Keys can be camelCase or kebab-case. Appending to a directive whose only source is `'none'` replaces it.
+
+```typescript
+app.use(
+  configureHelmet({
+    dynatraceUrl: process.env.DYNATRACE_URL,
+    extraDirectives: {
+      // allow POSTs that redirect to IDAM sign-in
+      formAction: ["https://idam-web-public.aat.platform.hmcts.net"],
+      // Dynatrace RUM beacons
+      connectSrc: ["https://<tenant-id>.bf.dynatrace.com"]
+    }
+  })
+);
+```
+
+Inline scripts in your own templates need `nonce="{{ cspNonce }}"`.
 
 ### `configureCookieManager(app, options)`
 
