@@ -135,6 +135,28 @@ describe("expressSessionPostgres", () => {
     });
   });
 
+  it("should keep default cookie options when only some are overridden", () => {
+    process.env.NODE_ENV = "production";
+
+    const middleware = expressSessionPostgres({
+      pgConnection: mockPool as any,
+      sessionOptions: {
+        cookie: { sameSite: "lax" }
+      }
+    });
+
+    expect(middleware).toEqual({
+      sessionOptions: expect.objectContaining({
+        cookie: {
+          secure: true,
+          httpOnly: true,
+          maxAge: 1000 * 60 * 60 * 24,
+          sameSite: "lax"
+        }
+      })
+    });
+  });
+
   it("should accept secret via sessionOptions without env var", () => {
     const middleware = expressSessionPostgres({
       pgConnection: mockPool as any,
