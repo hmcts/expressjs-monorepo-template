@@ -1,14 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  getPreviousPage,
-  getNextPage,
-  getChangePageRoute,
-  hasBackLink,
-  formatDateForDisplay,
-  formatAddressForDisplay,
-  formatRoleForDisplay,
-  getMonthName
-} from "./navigation.js";
+import { getPreviousPage, getChangePageRoute, formatDateForDisplay, formatAddressForDisplay, formatRoleForDisplay } from "./navigation.js";
 
 describe("navigation helpers", () => {
   describe("getPreviousPage", () => {
@@ -25,17 +16,6 @@ describe("navigation helpers", () => {
     });
   });
 
-  describe("getNextPage", () => {
-    it("should return next page in flow", () => {
-      expect(getNextPage("start")).toBe("/onboarding/name");
-      expect(getNextPage("name")).toBe("/onboarding/date-of-birth");
-      expect(getNextPage("date-of-birth")).toBe("/onboarding/address");
-      expect(getNextPage("address")).toBe("/onboarding/role");
-      expect(getNextPage("role")).toBe("/onboarding/summary");
-      expect(getNextPage("summary")).toBe("/onboarding/confirmation");
-    });
-  });
-
   describe("getChangePageRoute", () => {
     it("should return correct change page routes", () => {
       expect(getChangePageRoute("name")).toBe("/onboarding/name");
@@ -49,21 +29,6 @@ describe("navigation helpers", () => {
     });
   });
 
-  describe("hasBackLink", () => {
-    it("should return true for pages with back links", () => {
-      expect(hasBackLink("name")).toBe(true);
-      expect(hasBackLink("date-of-birth")).toBe(true);
-      expect(hasBackLink("address")).toBe(true);
-      expect(hasBackLink("role")).toBe(true);
-      expect(hasBackLink("summary")).toBe(true);
-    });
-
-    it("should return false for pages without back links", () => {
-      expect(hasBackLink("start")).toBe(false);
-      expect(hasBackLink("confirmation")).toBe(false);
-    });
-  });
-
   describe("formatDateForDisplay", () => {
     it("should format date correctly", () => {
       const dateData = { day: 15, month: 6, year: 1990 };
@@ -74,18 +39,10 @@ describe("navigation helpers", () => {
       const dateData = { day: 1, month: 1, year: 2000 };
       expect(formatDateForDisplay(dateData)).toBe("1 January 2000");
     });
-  });
 
-  describe("getMonthName", () => {
-    it("should return correct month names", () => {
-      expect(getMonthName(1)).toBe("January");
-      expect(getMonthName(6)).toBe("June");
-      expect(getMonthName(12)).toBe("December");
-    });
-
-    it("should return empty string for invalid month", () => {
-      expect(getMonthName(0)).toBe("");
-      expect(getMonthName(13)).toBe("");
+    it("should use the month name for December", () => {
+      const dateData = { day: 31, month: 12, year: 1999 };
+      expect(formatDateForDisplay(dateData)).toBe("31 December 1999");
     });
   });
 

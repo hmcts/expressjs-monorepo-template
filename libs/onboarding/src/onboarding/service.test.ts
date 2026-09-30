@@ -11,7 +11,6 @@ import {
 } from "./service.js";
 import { createOnboardingSubmission } from "./queries.js";
 
-// Mock the queries module
 vi.mock("./queries.js", () => ({
   createOnboardingSubmission: vi.fn()
 }));
