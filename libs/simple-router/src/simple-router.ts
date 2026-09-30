@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { resolve } from "node:path";
-import type { ErrorRequestHandler, Express, RequestHandler, Router } from "express";
+import type { ErrorRequestHandler, RequestHandler, Router } from "express";
 import { Router as expressRouter } from "express";
 import { discoverRoutes, sortRoutes } from "./route-discovery.js";
 import { extractHandlers, loadRouteModule, normalizeHandlers } from "./route-loader.js";
@@ -12,14 +12,9 @@ export async function createSimpleRouter(...mounts: MountSpec[]): Promise<Router
     throw new Error("At least one mount specification is required");
   }
 
-  try {
-    const allRoutes = await discoverAndLoadRoutes(mounts);
-    validateRoutes(allRoutes);
-    mountRoutes(router, allRoutes);
-  } catch (error) {
-    console.error("Failed to initialize file-system router:", error);
-    throw error;
-  }
+  const allRoutes = await discoverAndLoadRoutes(mounts);
+  validateRoutes(allRoutes);
+  mountRoutes(router, allRoutes);
 
   return router;
 }
@@ -44,7 +39,7 @@ async function processMountSpec(mountSpec: MountSpec): Promise<RouteEntry[]> {
   }
 
   const prefix = normalizePrefix(mountSpec.prefix || "");
-  const routes = discoverAndSortRoutes(routesDir);
+  const routes = sortRoutes(discoverRoutes(routesDir));
 
   const routeEntries: RouteEntry[] = [];
 
@@ -54,11 +49,6 @@ async function processMountSpec(mountSpec: MountSpec): Promise<RouteEntry[]> {
   }
 
   return routeEntries;
-}
-
-function discoverAndSortRoutes(pagesDir: string) {
-  const discoveredRoutes = discoverRoutes(pagesDir);
-  return sortRoutes(discoveredRoutes);
 }
 
 async function loadModuleRoutes(route: DiscoveredRoute, prefix: string, mountSpec: MountSpec): Promise<RouteEntry[]> {
@@ -93,34 +83,22 @@ function getRoutePaths(module: RouteModule, defaultPath: string, sourcePath: str
 
 function buildRouteEntries(
   fullPath: string,
-  handlers: Map<string, HandlerExport>,
+  handlers: Map<RouteMethod, HandlerExport>,
   module: RouteModule,
   sourcePath: string,
   mountSpec: MountSpec
 ): RouteEntry[] {
-  const methodEntries = [...handlers].map(([method, handlerExport]) => ({
+  // onError sits in the same route stack as the method handlers: Express passes an error along a route's own
+  // stack but skips every other route while an error is pending, so this scopes onError to this module's routes.
+  const errorHandlers = module.onError ? [module.onError] : [];
+
+  return [...handlers].map(([method, handlerExport]) => ({
     path: fullPath,
     method,
-    handlers: normalizeHandlers(handlerExport),
+    handlers: [...normalizeHandlers(handlerExport), ...errorHandlers],
     sourcePath,
     mountSpec
   }));
-
-  if (!module.onError) {
-    return methodEntries;
-  }
-
-  // Note: Error handlers have 4 params (err, req, res, next) vs regular handlers with 3
-  // Express handles this difference internally based on function arity
-  const errorEntry: RouteEntry = {
-    path: fullPath,
-    method: "use",
-    handlers: [module.onError] as any as Handler[],
-    sourcePath,
-    mountSpec
-  };
-
-  return [...methodEntries, errorEntry];
 }
 
 function buildFullPath(prefix: string, urlPath: string): string {
@@ -169,23 +147,16 @@ function validateRoutes(routes: RouteEntry[]): void {
   }
 }
 
-function mountRoutes(router: Router | Express, routes: RouteEntry[]): void {
-  for (const route of routes) {
-    const { path, method, handlers } = route;
-
-    if (method === "use") {
-      (router as any).use(path, ...handlers);
-    } else if (method === "all") {
-      (router as any).all(path, ...handlers);
-    } else {
-      (router as any)[method](path, ...handlers);
-    }
+function mountRoutes(router: Router, routes: RouteEntry[]): void {
+  for (const { path, method, handlers } of routes) {
+    router[method](path, ...handlers);
   }
 }
 
 export type Handler = RequestHandler;
 export type HandlerExport = Handler | Handler[];
 export type HttpMethod = "get" | "post" | "put" | "patch" | "delete" | "del" | "head" | "options" | "trace" | "connect" | "all";
+export type RouteMethod = Exclude<HttpMethod, "del">;
 
 export interface MountSpec {
   path: string;
@@ -201,8 +172,8 @@ export interface RouteModule {
 
 export interface RouteEntry {
   path: string;
-  method: string;
-  handlers: Handler[];
+  method: RouteMethod;
+  handlers: (Handler | ErrorRequestHandler)[];
   sourcePath: string;
   mountSpec: MountSpec;
 }
