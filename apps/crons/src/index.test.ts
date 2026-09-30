@@ -1,16 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockGetPropertiesVolumeSecrets = vi.fn();
-const mockConfigGet = vi.fn();
 
 vi.mock("@hmcts-cft/cloud-native-platform", () => ({
   getPropertiesVolumeSecrets: mockGetPropertiesVolumeSecrets
-}));
-
-vi.mock("config", () => ({
-  default: {
-    get: mockConfigGet
-  }
 }));
 
 describe("index - cron job runner", () => {
