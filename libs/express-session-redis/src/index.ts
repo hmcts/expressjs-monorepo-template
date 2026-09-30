@@ -24,7 +24,8 @@ export function expressSessionRedis(options: ExpressSessionRedisOptions): Reques
 
   return session({
     ...defaultSessionOptions,
-    ...sessionOptions
+    ...sessionOptions,
+    cookie: { ...defaultSessionOptions.cookie, ...sessionOptions.cookie }
   });
 }
 
