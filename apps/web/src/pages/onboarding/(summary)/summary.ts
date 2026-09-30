@@ -3,8 +3,8 @@ import {
   formatAddressForDisplay,
   formatDateForDisplay,
   formatRoleForDisplay,
-  getAllSessionData,
   getChangePageRoute,
+  getOnboardingSession,
   getPreviousPage,
   isSessionComplete,
   submitOnboarding
@@ -44,7 +44,7 @@ export const GET = async (req: Request, res: Response) => {
     return res.redirect("/onboarding/start");
   }
 
-  const sessionData = getAllSessionData(req.session);
+  const sessionData = getOnboardingSession(req.session);
   const backLink = getPreviousPage("summary");
 
   // Prepare summary data for display

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET, POST } from "./summary.js";
 
 vi.mock("@hmcts/onboarding", () => ({
-  getAllSessionData: vi.fn(),
+  getOnboardingSession: vi.fn(),
   isSessionComplete: vi.fn(),
   clearOnboardingSession: vi.fn(),
   submitOnboarding: vi.fn(),
@@ -19,8 +19,8 @@ import {
   formatAddressForDisplay,
   formatDateForDisplay,
   formatRoleForDisplay,
-  getAllSessionData,
   getChangePageRoute,
+  getOnboardingSession,
   getPreviousPage,
   isSessionComplete,
   submitOnboarding
@@ -63,7 +63,7 @@ describe("Summary page controller", () => {
 
     it("should render summary page with missing optional session data", async () => {
       vi.mocked(isSessionComplete).mockReturnValue(true);
-      vi.mocked(getAllSessionData).mockReturnValue({
+      vi.mocked(getOnboardingSession).mockReturnValue({
         name: { firstName: "John", lastName: "Doe" },
         dateOfBirth: undefined,
         address: undefined,
@@ -89,7 +89,7 @@ describe("Summary page controller", () => {
 
     it("should render summary page with complete session data", async () => {
       vi.mocked(isSessionComplete).mockReturnValue(true);
-      vi.mocked(getAllSessionData).mockReturnValue({
+      vi.mocked(getOnboardingSession).mockReturnValue({
         name: { firstName: "John", lastName: "Doe" },
         dateOfBirth: { day: 1, month: 1, year: 1990 },
         address: { addressLine1: "123 Test Street", town: "London", postcode: "SW1A 1AA" },

@@ -2,7 +2,6 @@ import { DefaultAzureCredential } from "@azure/identity";
 import { SecretClient } from "@azure/keyvault-secrets";
 import { parseVaultsFromHelmChart, type SecretDefinition, type VaultDefinition } from "./helm-chart.js";
 import type { Config } from "./properties.js";
-import { deepMerge, normalizeSecretName } from "./utils.js";
 
 export interface AzureVaultOptions {
   pathToHelmChart: string;
@@ -48,7 +47,7 @@ async function processVault(config: Config, vault: VaultDefinition, vaultUriSuff
   try {
     const secretResults = await Promise.all(secrets.map((secret) => processSecret(client, secret)));
     const secretsConfig: Config = Object.fromEntries(secretResults.map(({ key, value }) => [key, value]));
-    Object.assign(config, deepMerge(config, secretsConfig));
+    Object.assign(config, secretsConfig);
   } catch (error: unknown) {
     const message = errorMessage(error);
     if (message && !message.includes(vaultName)) {
@@ -74,6 +73,10 @@ async function processSecret(client: SecretClient, secret: SecretDefinition): Pr
     }
     throw new Error(`Failed to retrieve secret ${secretName}: ${errorMessage(error)}`);
   }
+}
+
+function normalizeSecretName(name: string): string {
+  return name.replace(/[^a-zA-Z0-9]/g, "_");
 }
 
 function errorMessage(error: unknown): string {

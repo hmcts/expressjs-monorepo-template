@@ -46,7 +46,7 @@ Each endpoint returns `{ status, services }` with HTTP 200 when everything repor
 
 ## Application Insights monitoring
 
-`monitoringMiddleware` initialises Application Insights and tracks every request as a dependency:
+`monitoringMiddleware` initialises Application Insights, whose auto-collection reports every request, dependency, exception and console log:
 
 ```typescript
 import { monitoringMiddleware } from "@hmcts-cft/cloud-native-platform";

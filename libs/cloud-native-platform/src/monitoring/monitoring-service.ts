@@ -1,4 +1,5 @@
-import * as appInsights from "applicationinsights";
+import type * as appInsights from "applicationinsights";
+import { startApplicationInsights } from "./application-insights.js";
 
 export class MonitoringService {
   private client?: appInsights.TelemetryClient;
@@ -8,20 +9,7 @@ export class MonitoringService {
     serviceName: string,
     private readonly logger: Logger = console
   ) {
-    // Set cloud role name via environment variable before setup (required for AI v3)
-    process.env.APPLICATIONINSIGHTS_ROLE_NAME = serviceName;
-
-    appInsights
-      .setup(connectionString)
-      .setAutoCollectRequests(true)
-      .setAutoCollectPerformance(true, true)
-      .setAutoCollectExceptions(true)
-      .setAutoCollectDependencies(true)
-      .setAutoCollectConsole(true, true)
-      .setUseDiskRetryCaching(true)
-      .start();
-
-    this.client = appInsights.defaultClient;
+    this.client = startApplicationInsights(connectionString, serviceName);
   }
 
   trackRequest(options: TrackRequestOptions): void {
@@ -62,8 +50,7 @@ export class MonitoringService {
   }
 
   flush(): Promise<void> {
-    this.client?.flush();
-    return Promise.resolve();
+    return this.client?.flush() ?? Promise.resolve();
   }
 }
 

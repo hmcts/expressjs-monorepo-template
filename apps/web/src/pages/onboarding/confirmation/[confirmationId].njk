@@ -6,9 +6,11 @@
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
 
+    {% set panelHtml %}{{ referenceLabel }}<br><strong>{{ confirmationId }}</strong>{% endset %}
+
     {{ govukPanel({
       titleText: panelTitle,
-      html: referenceLabel + '<br><strong>' + confirmationId + '</strong>'
+      html: panelHtml
     }) }}
 
     <h2 class="govuk-heading-m">{{ whatHappensNext }}</h2>

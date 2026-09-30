@@ -1,10 +1,8 @@
 import { z } from "zod";
 
-// Current year for date validation
 const CURRENT_YEAR = new Date().getFullYear();
 const MINIMUM_AGE = 16;
 
-// Name page schema
 export const nameSchema = z.object({
   firstName: z
     .string()
@@ -18,7 +16,6 @@ export const nameSchema = z.object({
     .regex(/^[a-zA-Z\s\-']+$/, "Last name must only include letters a to z, hyphens, spaces and apostrophes")
 });
 
-// Date of birth schema with age validation
 export const dobSchema = z
   .object({
     day: z
@@ -42,7 +39,6 @@ export const dobSchema = z
   })
   .refine(
     (data) => {
-      // Check if the date is valid
       const date = new Date(data.year, data.month - 1, data.day);
       return date.getDate() === data.day && date.getMonth() === data.month - 1 && date.getFullYear() === data.year;
     },
@@ -50,7 +46,6 @@ export const dobSchema = z
   )
   .refine(
     (data) => {
-      // Check minimum age
       const birthDate = new Date(data.year, data.month - 1, data.day);
       const today = new Date();
       const age = Math.floor((today.getTime() - birthDate.getTime()) / (365.25 * 24 * 60 * 60 * 1000));
@@ -59,7 +54,6 @@ export const dobSchema = z
     { message: "You must be at least 16 years old", path: ["day"] }
   );
 
-// Address schema with UK postcode validation
 export const addressSchema = z.object({
   addressLine1: z.string().min(1, "Enter address line 1").max(100, "Address line 1 must be 100 characters or less"),
   addressLine2: z.string().max(100, "Address line 2 must be 100 characters or less").optional(),
@@ -78,7 +72,6 @@ export const addressSchema = z.object({
     })
 });
 
-// Role schema with conditional validation
 export const roleSchema = z.discriminatedUnion("roleType", [
   z.object({
     roleType: z.literal("frontend-developer")
@@ -95,7 +88,6 @@ export const roleSchema = z.discriminatedUnion("roleType", [
   })
 ]);
 
-// Complete form schema for database submission
 export const onboardingSubmissionSchema = z.object({
   firstName: z.string(),
   lastName: z.string(),
@@ -108,21 +100,12 @@ export const onboardingSubmissionSchema = z.object({
   roleOther: z.string().optional()
 });
 
-// Type exports
 export type NameData = z.infer<typeof nameSchema>;
 export type DobData = z.infer<typeof dobSchema>;
 export type AddressData = z.infer<typeof addressSchema>;
 export type RoleData = z.infer<typeof roleSchema>;
 export type OnboardingSubmission = z.infer<typeof onboardingSubmissionSchema>;
 
-// Error display interface
-export interface ValidationError {
-  field: string;
-  text: string;
-  href: string;
-}
-
-// Error formatter for GOV.UK components
 export function formatZodErrors(error: z.ZodError): NestedErrors {
   return error.issues.reduce((acc, curr) => {
     return recursiveSet(acc, curr.path as (string | number)[], {
@@ -145,7 +128,6 @@ function recursiveSet(obj: NestedErrors, path: (string | number)[], value: unkno
   };
 }
 
-// Create error summary for GOV.UK error summary component
 export function createErrorSummary(errors: NestedErrors) {
   return {
     titleText: "There is a problem",
@@ -168,4 +150,10 @@ function flattenErrors(nested: NestedErrors): ValidationError[] {
 
 interface NestedErrors {
   [key: string]: ValidationError | NestedErrors;
+}
+
+interface ValidationError {
+  field: string;
+  text: string;
+  href: string;
 }
