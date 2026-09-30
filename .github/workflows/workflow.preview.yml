@@ -15,7 +15,7 @@ jobs:
     name: Detect Code Changes
     uses: ./.github/workflows/job.detect-changes.yml
     with:
-      paths: "^(yarn\\.lock|apps/|libs/|helm/)"
+      paths: "^(yarn\\.lock|package\\.json|turbo\\.json|tsconfig\\.json|biome\\.json|vitest\\.config\\.ts|\\.nvmrc|apps/|libs/|helm/|e2e-tests/|\\.github/)"
       cache-key: code-pr-${{ github.event.pull_request.number }}
 
   detect-infra-changes:
