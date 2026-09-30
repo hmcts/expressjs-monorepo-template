@@ -77,7 +77,7 @@ function assertUniqueUrlPaths(routes: DiscoveredRoute[]): void {
     const existing = seen.get(route.urlPath);
 
     if (existing) {
-      const [first, second] = [existing.relativePath, route.relativePath].sort();
+      const [first, second] = [existing.relativePath, route.relativePath].toSorted((a, b) => a.localeCompare(b));
       throw new Error(`Duplicate route file for URL ${route.urlPath}:\n    1. ${first}\n    2. ${second}\n  Keep only one file per URL.`);
     }
 
