@@ -1,5 +1,5 @@
 import type { Session } from "express-session";
-import type { NameData, DobData, AddressData, RoleData } from "./validation.js";
+import type { AddressData, DobData, NameData, RoleData } from "./validation.js";
 
 export function getOnboardingSession(session: Session): OnboardingData {
   const onboardingSession = session as OnboardingSession;

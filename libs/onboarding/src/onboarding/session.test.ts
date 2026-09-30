@@ -1,6 +1,6 @@
-import { describe, it, expect, beforeEach } from "vitest";
 import type { Session } from "express-session";
-import { getOnboardingSession, setSessionData, clearOnboardingSession, isSessionComplete } from "./session.js";
+import { beforeEach, describe, expect, it } from "vitest";
+import { clearOnboardingSession, getOnboardingSession, isSessionComplete, setSessionData } from "./session.js";
 
 describe("session helpers", () => {
   let mockSession: Session;

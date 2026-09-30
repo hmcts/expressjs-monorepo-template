@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { getPreviousPage, getChangePageRoute, formatDateForDisplay, formatAddressForDisplay, formatRoleForDisplay } from "./navigation.js";
+import { describe, expect, it } from "vitest";
+import { formatAddressForDisplay, formatDateForDisplay, formatRoleForDisplay, getChangePageRoute, getPreviousPage } from "./navigation.js";
 
 describe("navigation helpers", () => {
   describe("getPreviousPage", () => {

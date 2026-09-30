@@ -1,17 +1,17 @@
 import type { Session } from "express-session";
-import {
-  nameSchema,
-  dobSchema,
-  addressSchema,
-  roleSchema,
-  type NameData,
-  type DobData,
-  type AddressData,
-  type RoleData,
-  type OnboardingSubmission
-} from "./validation.js";
-import { getOnboardingSession, setSessionData } from "./session.js";
 import { createOnboardingSubmission } from "./queries.js";
+import { getOnboardingSession, setSessionData } from "./session.js";
+import {
+  type AddressData,
+  addressSchema,
+  type DobData,
+  dobSchema,
+  type NameData,
+  nameSchema,
+  type OnboardingSubmission,
+  type RoleData,
+  roleSchema
+} from "./validation.js";
 
 export function processNameSubmission(session: Session, formData: unknown): NameData {
   const validatedData = nameSchema.parse(formData);
