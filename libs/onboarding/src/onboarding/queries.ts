@@ -1,5 +1,6 @@
 import { prisma } from "@hmcts/postgres-prisma";
 import type { OnboardingSubmission } from "./validation.js";
+
 export async function createOnboardingSubmission(data: OnboardingSubmission) {
   return prisma.onboardingSubmission.create({
     data: {
@@ -14,7 +15,4 @@ export async function createOnboardingSubmission(data: OnboardingSubmission) {
       roleOther: data.roleOther
     }
   });
-}
-export async function getSubmissionById(id: string) {
-  return prisma.onboardingSubmission.findUnique({ where: { id } });
 }
