@@ -4953,6 +4953,11 @@ __metadata:
     typescript: "npm:7.0.2"
     vite-tsconfig-paths: "npm:6.1.1"
     vitest: "npm:4.1.11"
+  dependenciesMeta:
+    "@prisma/engines":
+      built: true
+    prisma:
+      built: true
   languageName: unknown
   linkType: soft
 
