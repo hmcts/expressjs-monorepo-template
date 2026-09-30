@@ -13,10 +13,26 @@ on:
 jobs:
   claude:
     if: |
-      (github.event_name == 'issue_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review_comment' && contains(github.event.comment.body, '@claude')) ||
-      (github.event_name == 'pull_request_review' && contains(github.event.review.body, '@claude')) ||
-      (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
+      (github.event_name == 'issue_comment' &&
+       contains(github.event.comment.body, '@claude') &&
+       (github.event.comment.author_association == 'OWNER' ||
+        github.event.comment.author_association == 'MEMBER' ||
+        github.event.comment.author_association == 'COLLABORATOR')) ||
+      (github.event_name == 'pull_request_review_comment' &&
+       contains(github.event.comment.body, '@claude') &&
+       (github.event.comment.author_association == 'OWNER' ||
+        github.event.comment.author_association == 'MEMBER' ||
+        github.event.comment.author_association == 'COLLABORATOR')) ||
+      (github.event_name == 'pull_request_review' &&
+       contains(github.event.review.body, '@claude') &&
+       (github.event.review.author_association == 'OWNER' ||
+        github.event.review.author_association == 'MEMBER' ||
+        github.event.review.author_association == 'COLLABORATOR')) ||
+      (github.event_name == 'issues' &&
+       (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')) &&
+       (github.event.issue.author_association == 'OWNER' ||
+        github.event.issue.author_association == 'MEMBER' ||
+        github.event.issue.author_association == 'COLLABORATOR'))
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -38,6 +54,14 @@ jobs:
             });
             return pr.data;
 
+      # Later steps run the checked-out code's install scripts while the job can mint OIDC
+      # tokens for the Bedrock role, so fork code must never be checked out here.
+      - name: Refuse pull requests from forks
+        if: steps.get-pr.outcome == 'success' && fromJSON(steps.get-pr.outputs.result).head.repo.full_name != github.repository
+        run: |
+          echo "::error::@claude does not run on pull requests from forks"
+          exit 1
+
       - name: Generate GitHub App Token
         id: app-token
         uses: actions/create-github-app-token@v3
@@ -45,13 +69,15 @@ jobs:
           app-id: ${{ secrets.CLAUDE_CODE_APP_ID }}
           private-key: ${{ secrets.CLAUDE_CODE_PRIVATE_KEY }}
 
+      # claude-code-action replaces the git credential with its own before Claude runs,
+      # so the App token does not need to sit in .git/config during yarn install.
       - name: Checkout repository
         uses: actions/checkout@v7
         with:
           fetch-depth: 1
-          repository: ${{ (github.event.issue.pull_request || github.event.pull_request) && fromJSON(steps.get-pr.outputs.result).head.repo.full_name || github.repository }}
           ref: ${{ (github.event.issue.pull_request || github.event.pull_request) && fromJSON(steps.get-pr.outputs.result).head.ref || github.ref }}
           token: ${{ steps.app-token.outputs.token }}
+          persist-credentials: false
 
       - name: Configure Git
         run: |
@@ -241,7 +267,12 @@ jobs:
           fi
 
   claude-plan:
-    if: github.event_name == 'issue_comment' && contains(github.event.comment.body, '@plan')
+    if: |
+      github.event_name == 'issue_comment' &&
+      contains(github.event.comment.body, '@plan') &&
+      (github.event.comment.author_association == 'OWNER' ||
+       github.event.comment.author_association == 'MEMBER' ||
+       github.event.comment.author_association == 'COLLABORATOR')
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -331,7 +362,12 @@ jobs:
             --allowedTools "Bash(corepack:*),Bash(yarn:*),Bash(git:*),Bash(gh issue:*),Bash(mkdir:*),Read,Write,Edit,Grep,Glob,TodoWrite,Skill"
 
   claude-ready:
-    if: github.event_name == 'issue_comment' && contains(github.event.comment.body, '@ready')
+    if: |
+      github.event_name == 'issue_comment' &&
+      contains(github.event.comment.body, '@ready') &&
+      (github.event.comment.author_association == 'OWNER' ||
+       github.event.comment.author_association == 'MEMBER' ||
+       github.event.comment.author_association == 'COLLABORATOR')
     runs-on: ubuntu-latest
     permissions:
       contents: write
