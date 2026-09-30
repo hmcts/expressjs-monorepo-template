@@ -1,13 +1,11 @@
 import { prisma } from "@hmcts/postgres-prisma";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createOnboardingSubmission, getRecentSubmissions, getSubmissionById } from "./queries.js";
+import { createOnboardingSubmission } from "./queries.js";
 
 vi.mock("@hmcts/postgres-prisma", () => ({
   prisma: {
     onboardingSubmission: {
-      create: vi.fn(),
-      findUnique: vi.fn(),
-      findMany: vi.fn()
+      create: vi.fn()
     }
   }
 }));
@@ -92,116 +90,6 @@ describe("queries", () => {
           roleOther: "Legal advisor"
         })
       });
-    });
-  });
-
-  describe("getSubmissionById", () => {
-    it("should get submission by id", async () => {
-      const mockResult = {
-        id: "test-id",
-        firstName: "John",
-        lastName: "Doe",
-        dateOfBirth: new Date("1990-06-15"),
-        addressLine1: "123 Test Street",
-        addressLine2: "Flat 4",
-        town: "London",
-        postcode: "SW1A 1AA",
-        roleType: "prosecutor",
-        roleOther: null,
-        sessionId: "session-123",
-        submittedAt: new Date()
-      };
-
-      vi.mocked(prisma.onboardingSubmission.findUnique).mockResolvedValue(mockResult);
-
-      const result = await getSubmissionById("test-id");
-
-      expect(prisma.onboardingSubmission.findUnique).toHaveBeenCalledWith({
-        where: { id: "test-id" }
-      });
-      expect(result).toEqual(mockResult);
-    });
-
-    it("should return null for non-existent id", async () => {
-      vi.mocked(prisma.onboardingSubmission.findUnique).mockResolvedValue(null);
-
-      const result = await getSubmissionById("non-existent");
-
-      expect(prisma.onboardingSubmission.findUnique).toHaveBeenCalledWith({
-        where: { id: "non-existent" }
-      });
-      expect(result).toBeNull();
-    });
-  });
-
-  describe("getRecentSubmissions", () => {
-    it("should get recent submissions with default limit", async () => {
-      const mockResults = [
-        {
-          id: "test-1",
-          firstName: "John",
-          lastName: "Doe",
-          dateOfBirth: new Date("1990-01-01"),
-          addressLine1: "1 Test St",
-          addressLine2: null,
-          town: "London",
-          postcode: "SW1A 1AA",
-          roleType: "prosecutor",
-          roleOther: null,
-          submittedAt: new Date("2024-01-15")
-        },
-        {
-          id: "test-2",
-          firstName: "Jane",
-          lastName: "Smith",
-          dateOfBirth: new Date("1985-01-01"),
-          addressLine1: "2 Test St",
-          addressLine2: null,
-          town: "London",
-          postcode: "SW1A 1AA",
-          roleType: "defendant",
-          roleOther: null,
-          submittedAt: new Date("2024-01-14")
-        }
-      ];
-
-      vi.mocked(prisma.onboardingSubmission.findMany).mockResolvedValue(mockResults);
-
-      const result = await getRecentSubmissions();
-
-      expect(prisma.onboardingSubmission.findMany).toHaveBeenCalledWith({
-        orderBy: { submittedAt: "desc" },
-        take: 10,
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          submittedAt: true,
-          roleType: true
-        }
-      });
-      expect(result).toEqual(mockResults);
-    });
-
-    it("should get recent submissions with custom limit", async () => {
-      const mockResults: never[] = [];
-
-      vi.mocked(prisma.onboardingSubmission.findMany).mockResolvedValue(mockResults);
-
-      const result = await getRecentSubmissions(5);
-
-      expect(prisma.onboardingSubmission.findMany).toHaveBeenCalledWith({
-        orderBy: { submittedAt: "desc" },
-        take: 5,
-        select: {
-          id: true,
-          firstName: true,
-          lastName: true,
-          submittedAt: true,
-          roleType: true
-        }
-      });
-      expect(result).toEqual(mockResults);
     });
   });
 });

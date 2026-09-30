@@ -1,6 +1,5 @@
 import { readFileSync } from "node:fs";
 import { load as yamlLoad } from "js-yaml";
-import { deepSearch } from "./utils.js";
 
 export function parseVaultsFromHelmChart(chartPath: string): ParsedHelmChart {
   const chart = yamlLoad(readFileSync(chartPath, "utf8"));
@@ -22,6 +21,14 @@ export function parseVaultsFromHelmChart(chartPath: string): ParsedHelmChart {
   }
 
   return { vaults, hasKeyVaultsKey: keyVaultsEntries.length > 0, invalidVaultNames };
+}
+
+function deepSearch(value: unknown, searchKey: string): unknown[] {
+  if (Array.isArray(value)) {
+    return value.flatMap((item) => deepSearch(item, searchKey));
+  }
+  if (!isRecord(value)) return [];
+  return Object.entries(value).flatMap(([key, child]) => (key === searchKey ? [child, ...deepSearch(child, searchKey)] : deepSearch(child, searchKey)));
 }
 
 function parseSecrets(vaultConfig: unknown): SecretDefinition[] | null {
