@@ -238,12 +238,14 @@ describe("MonitoringService", () => {
       service = new MonitoringService(connectionString, "test-service", mockLogger);
     });
 
-    it("should flush and return a promise", async () => {
+    it("should return the client flush promise", async () => {
+      const clientFlush = Promise.resolve();
+      vi.mocked(appInsights.defaultClient.flush).mockReturnValue(clientFlush);
+
       const promise = service.flush();
 
-      expect(promise).toBeInstanceOf(Promise);
+      expect(promise).toBe(clientFlush);
       await expect(promise).resolves.toBeUndefined();
-      expect(appInsights.defaultClient.flush).toHaveBeenCalled();
     });
   });
 
