@@ -1,6 +1,6 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": ["**/.env", "**/.env.*"],
+  "globalDependencies": ["**/.env", "**/.env.*", ".nvmrc", "biome.json", "tsconfig.json", "vitest.config.ts"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
