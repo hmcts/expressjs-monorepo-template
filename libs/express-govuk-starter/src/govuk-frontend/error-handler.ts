@@ -26,16 +26,21 @@ export function notFoundHandler() {
  * Must be added as the last middleware
  */
 export function errorHandler(logger: Logger = console): ErrorRequestHandler {
-  return (err: Error, _req: Request, res: Response, _next: NextFunction) => {
-    // Log the error for debugging
+  return (err: HttpError, _req: Request, res: Response, next: NextFunction) => {
+    if (res.headersSent) {
+      return next(err);
+    }
+
     logger.error("Error:", err.stack || err);
+
+    const status = clientErrorStatus(err) ?? 500;
+    const view = status === 404 ? "errors/404" : "errors/500";
 
     // Don't leak error details in production
     if (process.env.NODE_ENV === "production") {
-      res.status(500).render("errors/500");
+      res.status(status).render(view);
     } else {
-      // In development, show more detailed error
-      res.status(500).render("errors/500", {
+      res.status(status).render(view, {
         error: err.message,
         stack: err.stack
       });
@@ -43,4 +48,11 @@ export function errorHandler(logger: Logger = console): ErrorRequestHandler {
   };
 }
 
-type Logger = Pick<Console, "error" | "log" | "warn">;
+function clientErrorStatus(err: HttpError): number | undefined {
+  const status = err.status ?? err.statusCode;
+  return typeof status === "number" && status >= 400 && status < 500 ? status : undefined;
+}
+
+type HttpError = Error & { status?: number; statusCode?: number };
+
+type Logger = Pick<Console, "error">;

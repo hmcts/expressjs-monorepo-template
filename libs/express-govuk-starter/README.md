@@ -107,6 +107,8 @@ Options:
 
 Express error and 404 handlers that render GOV.UK-styled error pages.
 
+`errorHandler(logger?)` logs with `logger.error` (default: `console`). It responds with the error's `status`/`statusCode` when it is a 4xx (e.g. body-parser's 400 and 413), rendering `errors/404` for 404 and `errors/500` otherwise; any other error gets a 500. If the response has already started, it hands the error to Express's default handler.
+
 ### `localeMiddleware()` / `translationMiddleware(translations)`
 
 i18n middleware for bilingual (English/Welsh) support. Reads `?lng=` query param and provides `t()` helper in templates.
