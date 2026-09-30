@@ -40,11 +40,7 @@ export async function createApp(): Promise<Express> {
     ? {
         entries: {
           index_js: "/src/assets/js/index.ts",
-          index_css: "/src/assets/css/index.scss",
-          footer_js: "/src/assets/js/footer.ts",
-          footer_css: "/src/assets/css/footer.scss",
-          onboarding_js: "/src/assets/js/onboarding.ts",
-          onboarding_css: "/src/assets/css/onboarding.scss"
+          index_css: "/src/assets/css/index.scss"
         },
         viteConfigFile: path.join(__dirname, "../vite.build.ts")
       }

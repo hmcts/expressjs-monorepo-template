@@ -1,6 +1,6 @@
 import type { Session } from "express-session";
 import { beforeEach, describe, expect, it } from "vitest";
-import { clearOnboardingSession, getAllSessionData, getOnboardingSession, isSessionComplete, setSessionData } from "./session.js";
+import { clearOnboardingSession, getOnboardingSession, isSessionComplete, setSessionData } from "./session.js";
 
 describe("session helpers", () => {
   let mockSession: Session;
@@ -89,26 +89,6 @@ describe("session helpers", () => {
       };
 
       expect(isSessionComplete(mockSession)).toBe(true);
-    });
-  });
-
-  describe("getAllSessionData", () => {
-    it("should return all session data", () => {
-      const sessionData = {
-        name: { firstName: "John", lastName: "Smith" },
-        dateOfBirth: { day: 15, month: 6, year: 1990 },
-        address: {
-          addressLine1: "123 Main St",
-          town: "London",
-          postcode: "SW1A 1AA"
-        },
-        role: { roleType: "frontend-developer" }
-      };
-
-      (mockSession as any).onboarding = sessionData;
-
-      const result = getAllSessionData(mockSession);
-      expect(result).toEqual(sessionData);
     });
   });
 });

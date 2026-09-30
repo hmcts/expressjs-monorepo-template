@@ -1,5 +1,8 @@
 import type { Request, Response } from "express";
 
+// OnboardingSubmission ids are Prisma cuid() values; this is the check cuid itself uses in isCuid.
+const CONFIRMATION_ID_PATTERN = /^c[a-z0-9]{20,32}$/;
+
 const en = {
   title: "Onboarding complete",
   heading: "Onboarding complete",
@@ -25,6 +28,10 @@ export const GET = async (req: Request, res: Response) => {
 
   if (!confirmationId) {
     return res.redirect("/onboarding/start");
+  }
+
+  if (!CONFIRMATION_ID_PATTERN.test(confirmationId)) {
+    return res.status(404).render("errors/404");
   }
 
   res.render("[confirmationId]", {
