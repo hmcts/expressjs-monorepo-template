@@ -320,7 +320,7 @@ describe("addFromAzureVault", () => {
     expect(config).toEqual({ existing: "value" });
   });
 
-  it("should merge secrets with deep nested config", async () => {
+  it("should overwrite existing config values with secrets", async () => {
     config = {
       existing: "value",
       nested: {
