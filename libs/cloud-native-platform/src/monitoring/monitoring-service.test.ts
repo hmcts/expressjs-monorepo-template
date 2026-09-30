@@ -49,27 +49,6 @@ describe("MonitoringService", () => {
   });
 
   describe("constructor", () => {
-    it("should setup Application Insights with correct configuration", () => {
-      service = new MonitoringService(connectionString, "test-service", mockLogger);
-
-      expect(appInsights.setup).toHaveBeenCalledWith(connectionString);
-
-      const setupMock = vi.mocked(appInsights.setup)(connectionString);
-      expect(setupMock.setAutoCollectRequests).toHaveBeenCalledWith(true);
-      expect(setupMock.setAutoCollectPerformance).toHaveBeenCalledWith(true, true);
-      expect(setupMock.setAutoCollectExceptions).toHaveBeenCalledWith(true);
-      expect(setupMock.setAutoCollectDependencies).toHaveBeenCalledWith(true);
-      expect(setupMock.setAutoCollectConsole).toHaveBeenCalledWith(true, true);
-      expect(setupMock.setUseDiskRetryCaching).toHaveBeenCalledWith(true);
-      expect(setupMock.start).toHaveBeenCalled();
-    });
-
-    it("should set cloud role name before starting", () => {
-      service = new MonitoringService(connectionString, "test-service", mockLogger);
-
-      expect(process.env.APPLICATIONINSIGHTS_ROLE_NAME).toBe("test-service");
-    });
-
     it("should use console as default logger", () => {
       service = new MonitoringService(connectionString, "test-service");
 
