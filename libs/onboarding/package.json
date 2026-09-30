@@ -13,11 +13,12 @@
     "build": "tsc",
     "test": "vitest run",
     "test:watch": "vitest watch",
-    "lint": "biome lint src/",
-    "format": "biome format src/ --write"
+    "format": "biome format --write .",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write ."
   },
   "devDependencies": {
-    "typescript": "7.0.2"
+    "@types/express-session": "1.19.0"
   },
   "peerDependencies": {
     "express": "^5.1.0"
