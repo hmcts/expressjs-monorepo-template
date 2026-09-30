@@ -149,6 +149,29 @@ describe("expressSessionRedis", () => {
     });
   });
 
+  it("should keep default cookie options when only some are overridden", () => {
+    process.env.NODE_ENV = "production";
+    const mockRedisClient = { connect: vi.fn() };
+
+    const middleware = expressSessionRedis({
+      redisConnection: mockRedisClient,
+      sessionOptions: {
+        cookie: { sameSite: "lax" }
+      }
+    });
+
+    expect(middleware).toEqual({
+      sessionOptions: expect.objectContaining({
+        cookie: {
+          secure: true,
+          httpOnly: true,
+          maxAge: 1000 * 60 * 60 * 4,
+          sameSite: "lax"
+        }
+      })
+    });
+  });
+
   it("should work with any Redis client implementation", () => {
     process.env.SESSION_SECRET = "test-secret";
 
