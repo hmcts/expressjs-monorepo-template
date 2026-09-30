@@ -1,16 +1,10 @@
 {
   "$schema": "https://turbo.build/schema.json",
-  "globalDependencies": [
-    "**/.env",
-    "**/.env.*",
-    "**/helm/**",
-    "**/Dockerfile"
-  ],
+  "globalDependencies": ["**/.env", "**/.env.*"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "outputs": ["dist/**", "build/**"],
-      "inputs": ["**/*.ts", "**/*.njk", "**/*.prisma", "package.json"]
+      "outputs": ["dist/**", "generated/**", "*.tsbuildinfo"]
     },
     "dev": {
       "cache": false,
@@ -20,29 +14,15 @@
       "inputs": ["src/**/*.ts", "config/**", "package.json"]
     },
     "test": {
-      "outputs": ["coverage/**"],
-      "inputs": ["package.json", "**/*.ts", "**/*.prisma"],
       "cache": false
     },
     "lint": {
       "outputs": []
     },
     "lint:fix": {
-      "outputs": []
-    },
-    "format": {
-      "outputs": []
-    },
-    "type-check": {
-      "dependsOn": ["^build"],
-      "outputs": []
-    },
-    "db:generate": {
-      "outputs": ["node_modules/.prisma/**"],
       "cache": false
     },
-    "db:migrate": {
-      "dependsOn": ["db:generate"],
+    "format": {
       "cache": false
     }
   }
