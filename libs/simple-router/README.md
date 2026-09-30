@@ -150,7 +150,6 @@ Creates an Express router with file-system based routing.
 
 - `path` (required): Directory containing route modules
 - `prefix`: URL prefix for all routes from this mount (default: "")
-- `trailingSlash`: How to handle trailing slashes ("off" | "enforce" | "redirect")
 
 ### Supported HTTP Methods
 

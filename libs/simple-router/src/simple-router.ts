@@ -161,7 +161,6 @@ export type RouteMethod = Exclude<HttpMethod, "del">;
 export interface MountSpec {
   path: string;
   prefix?: string;
-  trailingSlash?: "off" | "enforce" | "redirect";
 }
 
 export interface RouteModule {
