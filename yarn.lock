@@ -952,7 +952,7 @@ __metadata:
     "@types/cookie-parser": "npm:1.4.10"
     "@types/express": "npm:5.0.6"
     "@types/express-session": "npm:1.19.0"
-    "@types/govuk-frontend": "npm:5.11.0"
+    "@types/govuk-frontend": "npm:6.0.0"
     "@types/nunjucks": "npm:3.2.6"
     config: "npm:4.4.2"
     connect-redis: "npm:9.0.0"
@@ -960,7 +960,7 @@ __metadata:
     express: "npm:5.2.1"
     express-session: "npm:1.19.0"
     glob: "npm:13.0.6"
-    govuk-frontend: "npm:6.2.0"
+    govuk-frontend: "npm:6.5.1"
     helmet: "npm:8.3.0"
     nunjucks: "npm:3.2.4"
     redis: "npm:6.2.1"
@@ -3143,10 +3143,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/govuk-frontend@npm:5.11.0":
-  version: 5.11.0
-  resolution: "@types/govuk-frontend@npm:5.11.0"
-  checksum: 10c0/ba7862ba291ccd4503cf0dcda427dfe1acf10c80227559d07483a7724f445748b550475e5df517e80db6bb7baf6c3ad0c852e9e392e1039f399c508a4d22df99
+"@types/govuk-frontend@npm:6.0.0":
+  version: 6.0.0
+  resolution: "@types/govuk-frontend@npm:6.0.0"
+  checksum: 10c0/b373261ec3939d7b3569ea966f19ad0cd0f7766479e25e108d7e750ecd37afea17cbfa288edba2db1ccb564662188086af76ceeb27c6bdf3bf7bc9121d5711bf
   languageName: node
   linkType: hard
 
@@ -5281,10 +5281,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"govuk-frontend@npm:6.2.0":
-  version: 6.2.0
-  resolution: "govuk-frontend@npm:6.2.0"
-  checksum: 10c0/ab4a6b157b2785d14479bae4c78916dfe60ac9e00da7202b6c46b656078920a0b99627ec03e24482ab6a09962e200c477323e7229d75207c6ce24a3ac35dd30f
+"govuk-frontend@npm:6.5.1":
+  version: 6.5.1
+  resolution: "govuk-frontend@npm:6.5.1"
+  checksum: 10c0/3654d9bf8f185923fe76a6c1da8fabfc8fee59a15ab1f3b1ed663a095a543546c570848b6cd483b66af6c11879e0b98650526627c44090a50c79f74b020f1bae
   languageName: node
   linkType: hard
 
