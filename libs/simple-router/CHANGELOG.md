@@ -1,5 +1,16 @@
 # @hmcts-cft/simple-router
 
+## [3.0.0](https://github.com/hmcts/expressjs-monorepo-template/compare/simple-router-v2.3.0...simple-router-v3.0.0) (2026-10-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* **simple-router:** MountSpec no longer has a trailingSlash field; TypeScript consumers passing it get a compile error (delete it, it never did anything). Route layouts that were silently broken now fail at startup: a method handler declaring 4 parameters, del and DELETE exported together, and two files in one mount resolving to the same URL.
+
+### Bug Fixes
+
+* **simple-router:** fix route registration, onError scope and duplicate detection ([#797](https://github.com/hmcts/expressjs-monorepo-template/issues/797)) ([1ccbfce](https://github.com/hmcts/expressjs-monorepo-template/commit/1ccbfce7c3f342a8690a0c060a7a659828cc6309))
+
 ## [2.3.0](https://github.com/hmcts/expressjs-monorepo-template/compare/simple-router-v2.2.0...simple-router-v2.3.0) (2026-09-16)
 
 
