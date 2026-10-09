@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.1.7](https://github.com/hmcts/expressjs-monorepo-template/compare/express-govuk-starter-v0.1.6...express-govuk-starter-v0.1.7) (2026-10-09)
+
+
+### Features
+
+* **express-govuk-starter:** add dynatraceUrl and extraDirectives to configureHelmet ([#795](https://github.com/hmcts/expressjs-monorepo-template/issues/795)) ([6fc8a8a](https://github.com/hmcts/expressjs-monorepo-template/commit/6fc8a8a1b9d34a1468a687eb0718043ecb71fd45))
+
+
+### Bug Fixes
+
+* **express-govuk-starter:** add the CSP nonce to the inline Google Tag Manager script ([6fc8a8a](https://github.com/hmcts/expressjs-monorepo-template/commit/6fc8a8a1b9d34a1468a687eb0718043ecb71fd45))
+* **express-govuk-starter:** drop ws://localhost:5173 from script-src ([6fc8a8a](https://github.com/hmcts/expressjs-monorepo-template/commit/6fc8a8a1b9d34a1468a687eb0718043ecb71fd45))
+* **express-govuk-starter:** honour 4xx error statuses and headersSent in errorHandler ([6fc8a8a](https://github.com/hmcts/expressjs-monorepo-template/commit/6fc8a8a1b9d34a1468a687eb0718043ecb71fd45))
+
 ## [0.1.6](https://github.com/hmcts/expressjs-monorepo-template/compare/express-govuk-starter-v0.1.5...express-govuk-starter-v0.1.6) (2026-07-08)
 
 

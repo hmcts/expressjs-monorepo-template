@@ -1,5 +1,12 @@
 # @hmcts-cft/express-session-redis
 
+## [0.1.4](https://github.com/hmcts/expressjs-monorepo-template/compare/express-session-redis-v0.1.3...express-session-redis-v0.1.4) (2026-10-09)
+
+
+### Bug Fixes
+
+* merge partial session cookie options with defaults ([#789](https://github.com/hmcts/expressjs-monorepo-template/issues/789)) ([2b06415](https://github.com/hmcts/expressjs-monorepo-template/commit/2b06415b636cec0c3447e9ea8e4a074924a1313d))
+
 ## [0.1.3](https://github.com/hmcts/expressjs-monorepo-template/compare/express-session-redis-v0.1.2...express-session-redis-v0.1.3) (2026-05-18)
 
 
