@@ -7,7 +7,7 @@ COPY --chown=hmcts:hmcts package.json yarn.lock .yarnrc.yml ./
 COPY --chown=hmcts:hmcts --parents apps/*/package.json libs/*/package.json e2e-tests/package.json ./
 
 ENV NODE_ENV=production
-RUN --mount=type=cache,target=/opt/app/.yarn/cache,uid=1000,gid=1000 yarn workspaces focus @hmcts/postgres --production
+RUN --mount=type=cache,id=yarn-cache-hmcts-1000,target=/opt/app/.yarn/cache,uid=1000,gid=1000 yarn workspaces focus @hmcts/postgres --production
 COPY libs/postgres-prisma/prisma ./libs/postgres-prisma/prisma
 COPY apps/postgres/prisma ./apps/postgres/prisma
 COPY apps/postgres/prisma.config.ts apps/postgres/health-server.mjs ./apps/postgres/
