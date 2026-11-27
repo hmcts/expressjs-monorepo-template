@@ -16,21 +16,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@azure-rest/core-client@npm:^2.3.3":
-  version: 2.5.0
-  resolution: "@azure-rest/core-client@npm:2.5.0"
-  dependencies:
-    "@azure/abort-controller": "npm:^2.0.0"
-    "@azure/core-auth": "npm:^1.9.0"
-    "@azure/core-rest-pipeline": "npm:^1.5.0"
-    "@azure/core-tracing": "npm:^1.0.1"
-    "@typespec/ts-http-runtime": "npm:^0.3.0"
-    tslib: "npm:^2.6.2"
-  checksum: 10c0/02da837ae71b6c0adb17945ba1979760bb3605e14463ecc35eaafc41e8bfd7d2d53cd0ce681042590abb9987ae32335eba34ef49460374bdf4fe65a2e874848e
-  languageName: node
-  linkType: hard
-
-"@azure-rest/core-client@npm:^2.5.2":
+"@azure-rest/core-client@npm:^2.3.3, @azure-rest/core-client@npm:^2.5.2":
   version: 2.6.0
   resolution: "@azure-rest/core-client@npm:2.6.0"
   dependencies:
@@ -53,7 +39,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@azure/core-auth@npm:^1.10.0, @azure/core-auth@npm:^1.10.1":
+"@azure/core-auth@npm:^1.10.0, @azure/core-auth@npm:^1.10.1, @azure/core-auth@npm:^1.3.0, @azure/core-auth@npm:^1.4.0, @azure/core-auth@npm:^1.9.0":
   version: 1.10.1
   resolution: "@azure/core-auth@npm:1.10.1"
   dependencies:
@@ -61,17 +47,6 @@ __metadata:
     "@azure/core-util": "npm:^1.13.0"
     tslib: "npm:^2.6.2"
   checksum: 10c0/83fd96e43cf8ca3e1cf6c7677915ca1433d6e331cb7352b64a3f93d9fd71dcddf77e8b46f2bb2a5db49ce87016ed30ebaca88034a0acf321e86ba17c0eb3329e
-  languageName: node
-  linkType: hard
-
-"@azure/core-auth@npm:^1.3.0, @azure/core-auth@npm:^1.4.0, @azure/core-auth@npm:^1.8.0, @azure/core-auth@npm:^1.9.0":
-  version: 1.10.0
-  resolution: "@azure/core-auth@npm:1.10.0"
-  dependencies:
-    "@azure/abort-controller": "npm:^2.0.0"
-    "@azure/core-util": "npm:^1.11.0"
-    tslib: "npm:^2.6.2"
-  checksum: 10c0/a1319b8eda53e8a2dcd57bf7cd0245dfa8c0c00a8e1a9e86344a50dde7a3f036361f2ba323bcf7d41e5671f245785739f244a2ed6ac414f9f12dd4d1bea0722d
   languageName: node
   linkType: hard
 
@@ -118,22 +93,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@azure/core-rest-pipeline@npm:^1.17.0, @azure/core-rest-pipeline@npm:^1.19.0, @azure/core-rest-pipeline@npm:^1.20.0, @azure/core-rest-pipeline@npm:^1.5.0, @azure/core-rest-pipeline@npm:^1.8.0":
-  version: 1.22.0
-  resolution: "@azure/core-rest-pipeline@npm:1.22.0"
-  dependencies:
-    "@azure/abort-controller": "npm:^2.0.0"
-    "@azure/core-auth": "npm:^1.8.0"
-    "@azure/core-tracing": "npm:^1.0.1"
-    "@azure/core-util": "npm:^1.11.0"
-    "@azure/logger": "npm:^1.0.0"
-    "@typespec/ts-http-runtime": "npm:^0.3.0"
-    tslib: "npm:^2.6.2"
-  checksum: 10c0/b760e9e8728bd09fa84104c9e806068f5e404b668111e7e37ec7229d8f723a18cd0916f68584a39fa3ffe226859fb1b7969a2da51e95fc5d9f02b19f58619d0a
-  languageName: node
-  linkType: hard
-
-"@azure/core-rest-pipeline@npm:^1.22.0, @azure/core-rest-pipeline@npm:^1.22.2":
+"@azure/core-rest-pipeline@npm:^1.17.0, @azure/core-rest-pipeline@npm:^1.19.0, @azure/core-rest-pipeline@npm:^1.20.0, @azure/core-rest-pipeline@npm:^1.22.0, @azure/core-rest-pipeline@npm:^1.22.2, @azure/core-rest-pipeline@npm:^1.8.0":
   version: 1.22.2
   resolution: "@azure/core-rest-pipeline@npm:1.22.2"
   dependencies:
@@ -148,16 +108,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@azure/core-tracing@npm:^1.0.0, @azure/core-tracing@npm:^1.0.1, @azure/core-tracing@npm:^1.2.0":
-  version: 1.3.0
-  resolution: "@azure/core-tracing@npm:1.3.0"
-  dependencies:
-    tslib: "npm:^2.6.2"
-  checksum: 10c0/7d533264407dae4cd46aefaf4c7bac2b3aaa57912acf5234ddab079b5bb4eb3cd2edecaa3ccbf3f339a6f2fee8fceb28855be7cff0907d3f9a687ef5037286b8
-  languageName: node
-  linkType: hard
-
-"@azure/core-tracing@npm:^1.3.0":
+"@azure/core-tracing@npm:^1.0.0, @azure/core-tracing@npm:^1.2.0, @azure/core-tracing@npm:^1.3.0":
   version: 1.3.1
   resolution: "@azure/core-tracing@npm:1.3.1"
   dependencies:
@@ -166,18 +117,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@azure/core-util@npm:^1.10.0, @azure/core-util@npm:^1.11.0, @azure/core-util@npm:^1.2.0, @azure/core-util@npm:^1.6.1":
-  version: 1.13.0
-  resolution: "@azure/core-util@npm:1.13.0"
-  dependencies:
-    "@azure/abort-controller": "npm:^2.0.0"
-    "@typespec/ts-http-runtime": "npm:^0.3.0"
-    tslib: "npm:^2.6.2"
-  checksum: 10c0/4f8803b0502f17f3518d95c0a3ab4c392bfa92e6db48ad2a3a4972c38e9a132585b60cdc76315cb456e7f4a522865109fa0db16183c9a822ee96954630cad192
-  languageName: node
-  linkType: hard
-
-"@azure/core-util@npm:^1.13.0":
+"@azure/core-util@npm:^1.10.0, @azure/core-util@npm:^1.11.0, @azure/core-util@npm:^1.13.0, @azure/core-util@npm:^1.2.0, @azure/core-util@npm:^1.6.1":
   version: 1.13.1
   resolution: "@azure/core-util@npm:1.13.1"
   dependencies:
@@ -270,9 +210,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@azure/monitor-opentelemetry-exporter@npm:1.0.0-beta.45, @azure/monitor-opentelemetry-exporter@npm:>=1.0.0-beta.41 <1.0.0-c || ^1.0.0":
-  version: 1.0.0-beta.45
-  resolution: "@azure/monitor-opentelemetry-exporter@npm:1.0.0-beta.45"
+"@azure/monitor-opentelemetry-exporter@npm:1.0.0-beta.47, @azure/monitor-opentelemetry-exporter@npm:>=1.0.0-beta.46 <1.0.0-c || ^1.0.0":
+  version: 1.0.0-beta.47
+  resolution: "@azure/monitor-opentelemetry-exporter@npm:1.0.0-beta.47"
   dependencies:
     "@azure-rest/core-client": "npm:^2.5.2"
     "@azure/core-auth": "npm:^1.9.0"
@@ -289,13 +229,13 @@ __metadata:
     "@opentelemetry/sdk-trace-base": "npm:^2.10.0"
     "@opentelemetry/semantic-conventions": "npm:^1.43.0"
     tslib: "npm:^2.8.1"
-  checksum: 10c0/5b864a82ef08bc65d24116a7b855cb88693f86eb85033c670e2fa5683fa16b2acfe0945ffc6487527fdc339739289c3f8e71cfe67c51a28145a69e4b18983fbb
+  checksum: 10c0/61951b1b871d17d65bb6e5a79a61fe80c7a9d50c4b454e9018a39aca98eb46011c84ac424d8581ad6cd851703cfa925ad0c65e5e8a126cfb30645e7c20e47cb0
   languageName: node
   linkType: hard
 
-"@azure/monitor-opentelemetry@npm:^1.19.0":
-  version: 1.20.0
-  resolution: "@azure/monitor-opentelemetry@npm:1.20.0"
+"@azure/monitor-opentelemetry@npm:^1.20.1":
+  version: 1.21.0
+  resolution: "@azure/monitor-opentelemetry@npm:1.21.0"
   dependencies:
     "@azure-rest/core-client": "npm:^2.5.2"
     "@azure/core-auth": "npm:^1.10.1"
@@ -303,7 +243,7 @@ __metadata:
     "@azure/core-tracing": "npm:^1.2.0"
     "@azure/identity": "npm:^4.13.1"
     "@azure/logger": "npm:^1.3.0"
-    "@azure/monitor-opentelemetry-exporter": "npm:1.0.0-beta.45"
+    "@azure/monitor-opentelemetry-exporter": "npm:1.0.0-beta.47"
     "@azure/opentelemetry-instrumentation-azure-sdk": "npm:^1.1.0-beta.1"
     "@microsoft/applicationinsights-web-snippet": "npm:^1.2.3"
     "@opentelemetry/api": "npm:^1.9.1"
@@ -328,7 +268,7 @@ __metadata:
     "@opentelemetry/semantic-conventions": "npm:^1.43.0"
     "@opentelemetry/winston-transport": "npm:^0.31.0"
     tslib: "npm:^2.8.1"
-  checksum: 10c0/21df8aa22a1da7855b3c2e9d498ca860adad6a70649eed485218357b9239b106b775b942d19b98a86f60ceb33b66dd93a29d033f5b032343119215fbee45d377
+  checksum: 10c0/fc4599709c78c92a7a58f6aca2d4b882c48edd6dcb5c0f51ac98c5345e65334e4fcb72e46c525cef229912468b9f36d451fb94202640ae6deeded4d73637bdab
   languageName: node
   linkType: hard
 
@@ -365,18 +305,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@azure/opentelemetry-instrumentation-azure-sdk@npm:^1.0.0-beta.7":
-  version: 1.0.0-beta.9
-  resolution: "@azure/opentelemetry-instrumentation-azure-sdk@npm:1.0.0-beta.9"
+"@azure/opentelemetry-instrumentation-azure-sdk@npm:^1.0.0":
+  version: 1.0.0
+  resolution: "@azure/opentelemetry-instrumentation-azure-sdk@npm:1.0.0"
   dependencies:
     "@azure/core-tracing": "npm:^1.2.0"
     "@azure/logger": "npm:^1.0.0"
     "@opentelemetry/api": "npm:^1.9.0"
     "@opentelemetry/core": "npm:^2.0.0"
-    "@opentelemetry/instrumentation": "npm:^0.200.0"
+    "@opentelemetry/instrumentation": "npm:^0.211.0"
     "@opentelemetry/sdk-trace-web": "npm:^2.0.0"
     tslib: "npm:^2.7.0"
-  checksum: 10c0/378a3a9cae4d22b21d971bfa57f53d7457941dd268589b3c3017736e308ccdc68ffea1264dbc733ea810440df9f401ca68643cec539e6654c060ca6b4d6fca96
+  checksum: 10c0/98cfdb2dfd75d6d248684bfdd68891bdbfc723830843e285d7d22404dd64a05613396be97b520964bb25f146e7e1920b2abd687b2a1677aaa8b0222ea4e6cc1c
   languageName: node
   linkType: hard
 
@@ -559,34 +499,6 @@ __metadata:
   version: 0.4.3
   resolution: "@electric-sql/pglite@npm:0.4.3"
   checksum: 10c0/480c49655a0557ae855498f5d62f80949e4a191e7183e77e33a6e2654f8fe2424d220a68f2c46fe2c4fc430695938669dc37534fa2c64fa837d6bc3f540e46c4
-  languageName: node
-  linkType: hard
-
-"@emnapi/core@npm:1.9.2":
-  version: 1.9.2
-  resolution: "@emnapi/core@npm:1.9.2"
-  dependencies:
-    "@emnapi/wasi-threads": "npm:1.2.1"
-    tslib: "npm:^2.4.0"
-  checksum: 10c0/5500393f953951bad0768fafaa9191f2d938956b20c6d6a79e5ab696a613a25ce6ad23422bc18e86e6ce8deb147619d8d0d7d413a69f84adc01a6633cc353cd9
-  languageName: node
-  linkType: hard
-
-"@emnapi/runtime@npm:1.9.2":
-  version: 1.9.2
-  resolution: "@emnapi/runtime@npm:1.9.2"
-  dependencies:
-    tslib: "npm:^2.4.0"
-  checksum: 10c0/61c3a59e0c36784558b8d58eb02bd04815aa5fb0dbfbaf84d1b3050a78aa0cc63ea129ae806bd1e48062bfeb7fc36eb0e5431740d62f64ea51bdf426404b8caa
-  languageName: node
-  linkType: hard
-
-"@emnapi/wasi-threads@npm:1.2.1":
-  version: 1.2.1
-  resolution: "@emnapi/wasi-threads@npm:1.2.1"
-  dependencies:
-    tslib: "npm:^2.4.0"
-  checksum: 10c0/32fcfa81ab396533b2ec1f4082b1ff779a05d9c836bbbd3f4398405b0e6814c0d9503b7993130e37bc6941dbc1ded49f55e9700ae9ca4e803bab2b5bc5deb331
   languageName: node
   linkType: hard
 
@@ -773,12 +685,12 @@ __metadata:
   linkType: hard
 
 "@grpc/grpc-js@npm:^1.14.3":
-  version: 1.14.3
-  resolution: "@grpc/grpc-js@npm:1.14.3"
+  version: 1.14.7
+  resolution: "@grpc/grpc-js@npm:1.14.7"
   dependencies:
     "@grpc/proto-loader": "npm:^0.8.0"
     "@js-sdsl/ordered-map": "npm:^4.4.2"
-  checksum: 10c0/f41f06a311b93cca8c472d56e21387e0f7b57bb2337a91d15ea4279bac8ec4fa0de6bd0d881201229ab800c0f0c55277911ecb850e057f20a828d0ddd623551d
+  checksum: 10c0/9f6dd28237edbd868f4aeb775f2c9f51a57b1b5ed35cc8dad36cd7b1c7d40010abe3bcba525035fea99dbbffa800a2ead88f57f08af2f623c0962861b68a059a
   languageName: node
   linkType: hard
 
@@ -804,8 +716,8 @@ __metadata:
     "@azure/keyvault-secrets": "npm:^4.7.0"
     "@types/express": "npm:5.0.6"
     "@types/js-yaml": "npm:^4.0.9"
-    applicationinsights: "npm:3.16.0"
-    js-yaml: "npm:^4.1.0"
+    applicationinsights: "npm:3.17.1"
+    js-yaml: "npm:^4.3.2"
   peerDependencies:
     config: ^3.3.12 || ^4.0.0
     express: ^5.1.0
@@ -1025,18 +937,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@napi-rs/wasm-runtime@npm:^1.1.4":
-  version: 1.1.4
-  resolution: "@napi-rs/wasm-runtime@npm:1.1.4"
-  dependencies:
-    "@tybys/wasm-util": "npm:^0.10.1"
-  peerDependencies:
-    "@emnapi/core": ^1.7.1
-    "@emnapi/runtime": ^1.7.1
-  checksum: 10c0/2e88e1955258949ccf2d18c79975821ad38071b465ef126a5e14110977b97868867b016c1ad046e963cccc42c0bd9db6c8ff5fd1ebb61b87bb3487f339041658
-  languageName: node
-  linkType: hard
-
 "@noble/hashes@npm:^1.1.5":
   version: 1.8.0
   resolution: "@noble/hashes@npm:1.8.0"
@@ -1066,30 +966,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/api-logs@npm:0.200.0":
-  version: 0.200.0
-  resolution: "@opentelemetry/api-logs@npm:0.200.0"
-  dependencies:
-    "@opentelemetry/api": "npm:^1.3.0"
-  checksum: 10c0/c6bc3cfba35c69411f294519d93d0ff9f603517030d1162839ee42ac22ed1b0235edaf71d00cabc40125f813d8b4dc830d14315afcebcef138c1df560eaa5c91
-  languageName: node
-  linkType: hard
-
 "@opentelemetry/api-logs@npm:0.211.0":
   version: 0.211.0
   resolution: "@opentelemetry/api-logs@npm:0.211.0"
   dependencies:
     "@opentelemetry/api": "npm:^1.3.0"
   checksum: 10c0/75d87828d9d6350a4a419c7d135782b00dbc6eda5ea04b222a8330e5aa868d5aec5380e95217446f89e4ef6493b4e5b8dd6e0e3af1b867cee09b912cc72dd04a
-  languageName: node
-  linkType: hard
-
-"@opentelemetry/api-logs@npm:0.220.0, @opentelemetry/api-logs@npm:^0.220.0":
-  version: 0.220.0
-  resolution: "@opentelemetry/api-logs@npm:0.220.0"
-  dependencies:
-    "@opentelemetry/api": "npm:^1.3.0"
-  checksum: 10c0/0189cb2e610b64f75509724721b8b3ed31869a21a94254106330647eccc2a56dc13024a2aa93f4e07e1758b0af8f21952e65b4d7b3bbe9dc380f03810253ede6
   languageName: node
   linkType: hard
 
@@ -1102,14 +984,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/api@npm:^1.3.0, @opentelemetry/api@npm:^1.9.0":
-  version: 1.9.0
-  resolution: "@opentelemetry/api@npm:1.9.0"
-  checksum: 10c0/9aae2fe6e8a3a3eeb6c1fdef78e1939cf05a0f37f8a4fae4d6bf2e09eb1e06f966ece85805626e01ba5fab48072b94f19b835449e58b6d26720ee19a58298add
-  languageName: node
-  linkType: hard
-
-"@opentelemetry/api@npm:^1.9.1":
+"@opentelemetry/api@npm:^1.3.0, @opentelemetry/api@npm:^1.9.0, @opentelemetry/api@npm:^1.9.1":
   version: 1.9.1
   resolution: "@opentelemetry/api@npm:1.9.1"
   checksum: 10c0/c608485fc8b5a91e1f7e05e843b45b509307456b31cd2ad365933d90813e40ebfedf179f1451c762037e82d7c76aa8500e95d2da3609f640a1206cde5322cd14
@@ -1146,17 +1021,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/core@npm:2.0.1, @opentelemetry/core@npm:^2.0.0":
-  version: 2.0.1
-  resolution: "@opentelemetry/core@npm:2.0.1"
-  dependencies:
-    "@opentelemetry/semantic-conventions": "npm:^1.29.0"
-  peerDependencies:
-    "@opentelemetry/api": ">=1.0.0 <1.10.0"
-  checksum: 10c0/d587b1289559757d80da98039f9f57612f84f72ec608cd665dc467c7c6c5ce3a987dfcc2c63b521c7c86ce984a2552b3ead15a0dc458de1cf6bde5cdfe4ca9d8
-  languageName: node
-  linkType: hard
-
 "@opentelemetry/core@npm:2.10.0":
   version: 2.10.0
   resolution: "@opentelemetry/core@npm:2.10.0"
@@ -1168,7 +1032,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/core@npm:2.11.0, @opentelemetry/core@npm:^2.10.0, @opentelemetry/core@npm:^2.9.0":
+"@opentelemetry/core@npm:2.11.0":
   version: 2.11.0
   resolution: "@opentelemetry/core@npm:2.11.0"
   dependencies:
@@ -1179,25 +1043,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/core@npm:2.2.0":
-  version: 2.2.0
-  resolution: "@opentelemetry/core@npm:2.2.0"
+"@opentelemetry/core@npm:2.12.1, @opentelemetry/core@npm:^2.0.0, @opentelemetry/core@npm:^2.10.0, @opentelemetry/core@npm:^2.9.0":
+  version: 2.12.1
+  resolution: "@opentelemetry/core@npm:2.12.1"
   dependencies:
     "@opentelemetry/semantic-conventions": "npm:^1.29.0"
   peerDependencies:
     "@opentelemetry/api": ">=1.0.0 <1.10.0"
-  checksum: 10c0/f618b63f2f560d052791d2406b1411722aa4b0585031242e6906f869f0a707ffe725c4b29bf18aed1f202e1ab5dfc3a9f769c517ac8521338b33ac8c4265fba9
-  languageName: node
-  linkType: hard
-
-"@opentelemetry/core@npm:2.9.0":
-  version: 2.9.0
-  resolution: "@opentelemetry/core@npm:2.9.0"
-  dependencies:
-    "@opentelemetry/semantic-conventions": "npm:^1.29.0"
-  peerDependencies:
-    "@opentelemetry/api": ">=1.0.0 <1.10.0"
-  checksum: 10c0/2b498ed07594e8e8d569832fffb54fe35479f2fe256651b02ed2c834971c2a50750265afb0e15da348515673d84b357d7ffeb75eb7fe7e63a0fbabd34ad01e65
+  checksum: 10c0/6789db751263071ad9311e370cb95ea2f4a5b885f57ceb35a43b87b12c955a3f2ea50c95a8307187d503bae63fda5af4497ee9a8d74c0450c1e117574a5fd021
   languageName: node
   linkType: hard
 
@@ -1215,7 +1068,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/exporter-logs-otlp-http@npm:0.221.0":
+"@opentelemetry/exporter-logs-otlp-http@npm:0.221.0, @opentelemetry/exporter-logs-otlp-http@npm:^0.221.0":
   version: 0.221.0
   resolution: "@opentelemetry/exporter-logs-otlp-http@npm:0.221.0"
   dependencies:
@@ -1225,21 +1078,6 @@ __metadata:
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
   checksum: 10c0/6509e2de06874b5384d1babe5987ce681187263e1d3a7d05eb4e18168b8770a55f2a64e4d9a4957665f99ed341ed8109e997d3d580a10d65c17c423f18c21e79
-  languageName: node
-  linkType: hard
-
-"@opentelemetry/exporter-logs-otlp-http@npm:^0.220.0":
-  version: 0.220.0
-  resolution: "@opentelemetry/exporter-logs-otlp-http@npm:0.220.0"
-  dependencies:
-    "@opentelemetry/api-logs": "npm:0.220.0"
-    "@opentelemetry/core": "npm:2.9.0"
-    "@opentelemetry/otlp-exporter-base": "npm:0.220.0"
-    "@opentelemetry/otlp-transformer": "npm:0.220.0"
-    "@opentelemetry/sdk-logs": "npm:0.220.0"
-  peerDependencies:
-    "@opentelemetry/api": ^1.3.0
-  checksum: 10c0/d5c257c29132e5eb707bae74058f35577f8815ab91d53ab20d8cb45120b326bf7ebe3454ec33abb3ff0f77f9d0a0d42bbbbbec05f8b390fff79bc5a1b042e234
   languageName: node
   linkType: hard
 
@@ -1269,22 +1107,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/exporter-metrics-otlp-http@npm:0.220.0, @opentelemetry/exporter-metrics-otlp-http@npm:^0.220.0":
-  version: 0.220.0
-  resolution: "@opentelemetry/exporter-metrics-otlp-http@npm:0.220.0"
-  dependencies:
-    "@opentelemetry/core": "npm:2.9.0"
-    "@opentelemetry/otlp-exporter-base": "npm:0.220.0"
-    "@opentelemetry/otlp-transformer": "npm:0.220.0"
-    "@opentelemetry/resources": "npm:2.9.0"
-    "@opentelemetry/sdk-metrics": "npm:2.9.0"
-  peerDependencies:
-    "@opentelemetry/api": ^1.3.0
-  checksum: 10c0/b3638556f6da337f0d7c5acf3c5d0fee616909b24742e84376da52cc31366dff86663a879b240c085e9e2c637a2767001b08cbeb134bca1f62f998578643e637
-  languageName: node
-  linkType: hard
-
-"@opentelemetry/exporter-metrics-otlp-http@npm:0.221.0":
+"@opentelemetry/exporter-metrics-otlp-http@npm:0.221.0, @opentelemetry/exporter-metrics-otlp-http@npm:^0.221.0":
   version: 0.221.0
   resolution: "@opentelemetry/exporter-metrics-otlp-http@npm:0.221.0"
   dependencies:
@@ -1299,7 +1122,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/exporter-metrics-otlp-proto@npm:0.221.0":
+"@opentelemetry/exporter-metrics-otlp-proto@npm:0.221.0, @opentelemetry/exporter-metrics-otlp-proto@npm:^0.221.0":
   version: 0.221.0
   resolution: "@opentelemetry/exporter-metrics-otlp-proto@npm:0.221.0"
   dependencies:
@@ -1309,22 +1132,6 @@ __metadata:
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
   checksum: 10c0/adfe28e7d28a27029a034b3d485b02ccc89bb6a88a305410071bbe25d7d383f1b0cf7917e8f6eac71ecf737505d14ad3816f055c377a4d9eb32b4f53abe7299e
-  languageName: node
-  linkType: hard
-
-"@opentelemetry/exporter-metrics-otlp-proto@npm:^0.220.0":
-  version: 0.220.0
-  resolution: "@opentelemetry/exporter-metrics-otlp-proto@npm:0.220.0"
-  dependencies:
-    "@opentelemetry/core": "npm:2.9.0"
-    "@opentelemetry/exporter-metrics-otlp-http": "npm:0.220.0"
-    "@opentelemetry/otlp-exporter-base": "npm:0.220.0"
-    "@opentelemetry/otlp-transformer": "npm:0.220.0"
-    "@opentelemetry/resources": "npm:2.9.0"
-    "@opentelemetry/sdk-metrics": "npm:2.9.0"
-  peerDependencies:
-    "@opentelemetry/api": ^1.3.0
-  checksum: 10c0/ac17fdc51d0aed59b52c836e7b756f034f00b6e0688c591257f8b891e1f1d58f1ad231202fa32871ee3fad1557ae49ac1b7128732e14dc6f46fb01847b9f9e3d
   languageName: node
   linkType: hard
 
@@ -1356,7 +1163,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/exporter-trace-otlp-http@npm:0.221.0":
+"@opentelemetry/exporter-trace-otlp-http@npm:0.221.0, @opentelemetry/exporter-trace-otlp-http@npm:^0.221.0":
   version: 0.221.0
   resolution: "@opentelemetry/exporter-trace-otlp-http@npm:0.221.0"
   dependencies:
@@ -1366,21 +1173,6 @@ __metadata:
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
   checksum: 10c0/a6b6419b4ff1f8ec3e89c62cb44ff9aae0dde5bd717a302221f263672ef076c7a9bf8cbd264691ccf559582e28ddb0fab0025ce2460e07f44ca426c302684003
-  languageName: node
-  linkType: hard
-
-"@opentelemetry/exporter-trace-otlp-http@npm:^0.220.0":
-  version: 0.220.0
-  resolution: "@opentelemetry/exporter-trace-otlp-http@npm:0.220.0"
-  dependencies:
-    "@opentelemetry/core": "npm:2.9.0"
-    "@opentelemetry/otlp-exporter-base": "npm:0.220.0"
-    "@opentelemetry/otlp-transformer": "npm:0.220.0"
-    "@opentelemetry/resources": "npm:2.9.0"
-    "@opentelemetry/sdk-trace": "npm:2.9.0"
-  peerDependencies:
-    "@opentelemetry/api": ^1.3.0
-  checksum: 10c0/fc9622a76db9322dbae0090d957ae884630c4d91847912ea269f8ba112d186fdca3a875a359715d2b0354fb0910f0fccb1f389d336c6b739dd174159580a4597
   languageName: node
   linkType: hard
 
@@ -1530,21 +1322,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/instrumentation@npm:^0.200.0":
-  version: 0.200.0
-  resolution: "@opentelemetry/instrumentation@npm:0.200.0"
-  dependencies:
-    "@opentelemetry/api-logs": "npm:0.200.0"
-    "@types/shimmer": "npm:^1.2.0"
-    import-in-the-middle: "npm:^1.8.1"
-    require-in-the-middle: "npm:^7.1.1"
-    shimmer: "npm:^1.2.1"
-  peerDependencies:
-    "@opentelemetry/api": ^1.3.0
-  checksum: 10c0/b7e6e0382231e7d0b113a2916511f5da24f80795e6904e32c2386a1e0856a0ad8592fb46bf8c3846447396a51aeed8c1664572af8728323a3266aecc3a33edd8
-  languageName: node
-  linkType: hard
-
 "@opentelemetry/instrumentation@npm:^0.211.0":
   version: 0.211.0
   resolution: "@opentelemetry/instrumentation@npm:0.211.0"
@@ -1558,19 +1335,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/otlp-exporter-base@npm:0.220.0, @opentelemetry/otlp-exporter-base@npm:^0.220.0":
-  version: 0.220.0
-  resolution: "@opentelemetry/otlp-exporter-base@npm:0.220.0"
-  dependencies:
-    "@opentelemetry/core": "npm:2.9.0"
-    "@opentelemetry/otlp-transformer": "npm:0.220.0"
-  peerDependencies:
-    "@opentelemetry/api": ^1.3.0
-  checksum: 10c0/726c4d11900946315f904b382056ae1ad0d2169eb3e3e79b1301c7dd8284477920293b456dd1cfa7c287838c8abd515afe844cc4c2859dc930307dc2b41cb241
-  languageName: node
-  linkType: hard
-
-"@opentelemetry/otlp-exporter-base@npm:0.221.0":
+"@opentelemetry/otlp-exporter-base@npm:0.221.0, @opentelemetry/otlp-exporter-base@npm:^0.221.0":
   version: 0.221.0
   resolution: "@opentelemetry/otlp-exporter-base@npm:0.221.0"
   dependencies:
@@ -1593,22 +1358,6 @@ __metadata:
   peerDependencies:
     "@opentelemetry/api": ^1.3.0
   checksum: 10c0/6b21ad3dba598143924a9eb120cd8d6a3ed382faa679dc412036e19427ece6fd4b33908f4e98b11ae9a3165e1a36b63c1baa05c2d38640a9b8863778d0982b74
-  languageName: node
-  linkType: hard
-
-"@opentelemetry/otlp-transformer@npm:0.220.0":
-  version: 0.220.0
-  resolution: "@opentelemetry/otlp-transformer@npm:0.220.0"
-  dependencies:
-    "@opentelemetry/api-logs": "npm:0.220.0"
-    "@opentelemetry/core": "npm:2.9.0"
-    "@opentelemetry/resources": "npm:2.9.0"
-    "@opentelemetry/sdk-logs": "npm:0.220.0"
-    "@opentelemetry/sdk-metrics": "npm:2.9.0"
-    "@opentelemetry/sdk-trace": "npm:2.9.0"
-  peerDependencies:
-    "@opentelemetry/api": ^1.3.0
-  checksum: 10c0/7c5014c17b2663f2c412a95df2507f1004c3f9c459d582a55db536156e83c6b7771c4d84cadac9e1e6023a827a07f6d164d84179e8048b687cd0843f3e5d012b
   languageName: node
   linkType: hard
 
@@ -1670,18 +1419,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/resources@npm:2.0.1":
-  version: 2.0.1
-  resolution: "@opentelemetry/resources@npm:2.0.1"
-  dependencies:
-    "@opentelemetry/core": "npm:2.0.1"
-    "@opentelemetry/semantic-conventions": "npm:^1.29.0"
-  peerDependencies:
-    "@opentelemetry/api": ">=1.3.0 <1.10.0"
-  checksum: 10c0/96532b7553b26607a7a892d72f6b03ad12bd542dc23c95135a8ae40362da9c883c21a4cff3d2296d9e0e9bd899a5977e325ed52d83142621a8ffe81d08d99341
-  languageName: node
-  linkType: hard
-
 "@opentelemetry/resources@npm:2.10.0":
   version: 2.10.0
   resolution: "@opentelemetry/resources@npm:2.10.0"
@@ -1694,7 +1431,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/resources@npm:2.11.0, @opentelemetry/resources@npm:^2.10.0, @opentelemetry/resources@npm:^2.9.0":
+"@opentelemetry/resources@npm:2.11.0":
   version: 2.11.0
   resolution: "@opentelemetry/resources@npm:2.11.0"
   dependencies:
@@ -1706,41 +1443,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/resources@npm:2.9.0":
-  version: 2.9.0
-  resolution: "@opentelemetry/resources@npm:2.9.0"
+"@opentelemetry/resources@npm:2.12.1, @opentelemetry/resources@npm:^2.0.0, @opentelemetry/resources@npm:^2.10.0":
+  version: 2.12.1
+  resolution: "@opentelemetry/resources@npm:2.12.1"
   dependencies:
-    "@opentelemetry/core": "npm:2.9.0"
+    "@opentelemetry/core": "npm:2.12.1"
     "@opentelemetry/semantic-conventions": "npm:^1.29.0"
   peerDependencies:
     "@opentelemetry/api": ">=1.3.0 <1.10.0"
-  checksum: 10c0/b0fe7a1dc7c4c1ccb0dc905cf2578b15de39d37bd43058c35521a455019dc1eca6fc4a54ad3a3e48bdddbd2d8088514bb52bc333b7652a4957df5088140c2129
-  languageName: node
-  linkType: hard
-
-"@opentelemetry/resources@npm:^2.0.0":
-  version: 2.2.0
-  resolution: "@opentelemetry/resources@npm:2.2.0"
-  dependencies:
-    "@opentelemetry/core": "npm:2.2.0"
-    "@opentelemetry/semantic-conventions": "npm:^1.29.0"
-  peerDependencies:
-    "@opentelemetry/api": ">=1.3.0 <1.10.0"
-  checksum: 10c0/f08fa69ccccb6d14b6932fabe6f8e097c0dfc41ae8f4c0f6c54fb04bc3d9c04e742da3e22d7240d74b585287101126d97a0da192b493a9724dc07a56ca1b77e0
-  languageName: node
-  linkType: hard
-
-"@opentelemetry/sdk-logs@npm:0.220.0, @opentelemetry/sdk-logs@npm:^0.220.0":
-  version: 0.220.0
-  resolution: "@opentelemetry/sdk-logs@npm:0.220.0"
-  dependencies:
-    "@opentelemetry/api-logs": "npm:0.220.0"
-    "@opentelemetry/core": "npm:2.9.0"
-    "@opentelemetry/resources": "npm:2.9.0"
-    "@opentelemetry/semantic-conventions": "npm:^1.29.0"
-  peerDependencies:
-    "@opentelemetry/api": ">=1.4.0 <1.10.0"
-  checksum: 10c0/8e74f223e7e731f8c39259870c73190c9d3ec0094d1649fe67e3fe1eaefe576c8e4129930e324feeccb29bbe997a9d1ababd4d6c53fd8c17364d9d7ee0d92a43
+  checksum: 10c0/4d4013ddf5de2080971ef27bae76bf941a19a8f7c06e27f30c7d9a715dc25fbd74c30422595709a6af9d4fcf45042430c129263e0c38adc9749e8d07e658a78b
   languageName: node
   linkType: hard
 
@@ -1770,19 +1481,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/sdk-metrics@npm:2.9.0":
-  version: 2.9.0
-  resolution: "@opentelemetry/sdk-metrics@npm:2.9.0"
-  dependencies:
-    "@opentelemetry/core": "npm:2.9.0"
-    "@opentelemetry/resources": "npm:2.9.0"
-  peerDependencies:
-    "@opentelemetry/api": ">=1.9.0 <1.10.0"
-  checksum: 10c0/343d00af79c4234730349f7fa34c4f13776e4508401237c787048daf4fa1f94ae0ccb30df3ec6de3853b717c4efd4ef0ce52b162495476ab675c2ad810f1b1f8
-  languageName: node
-  linkType: hard
-
-"@opentelemetry/sdk-metrics@npm:^2.10.0, @opentelemetry/sdk-metrics@npm:^2.9.0":
+"@opentelemetry/sdk-metrics@npm:^2.10.0":
   version: 2.11.0
   resolution: "@opentelemetry/sdk-metrics@npm:2.11.0"
   dependencies:
@@ -1831,19 +1530,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/sdk-trace-base@npm:2.0.1":
-  version: 2.0.1
-  resolution: "@opentelemetry/sdk-trace-base@npm:2.0.1"
-  dependencies:
-    "@opentelemetry/core": "npm:2.0.1"
-    "@opentelemetry/resources": "npm:2.0.1"
-    "@opentelemetry/semantic-conventions": "npm:^1.29.0"
-  peerDependencies:
-    "@opentelemetry/api": ">=1.3.0 <1.10.0"
-  checksum: 10c0/4e3c733296012b758d007e9c0d8a5b175edbe9a680c73ec75303476e7982b73ad4209f1a2791c1a94c428e5a53eba6c2a72faa430c70336005aa58744d6cb37b
-  languageName: node
-  linkType: hard
-
 "@opentelemetry/sdk-trace-base@npm:2.10.0":
   version: 2.10.0
   resolution: "@opentelemetry/sdk-trace-base@npm:2.10.0"
@@ -1858,7 +1544,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/sdk-trace-base@npm:2.11.0, @opentelemetry/sdk-trace-base@npm:^2.10.0, @opentelemetry/sdk-trace-base@npm:^2.9.0":
+"@opentelemetry/sdk-trace-base@npm:2.11.0":
   version: 2.11.0
   resolution: "@opentelemetry/sdk-trace-base@npm:2.11.0"
   dependencies:
@@ -1869,6 +1555,20 @@ __metadata:
   peerDependencies:
     "@opentelemetry/api": ">=1.3.0 <1.10.0"
   checksum: 10c0/73c91d0cafcae29b2a1528108640a778cf60b5b9e3944dfcc4ce6d16f551863be453052b104ca19a435232a328862df8ef256d9d1c4fc2704e8d1f4bf9d0e4bb
+  languageName: node
+  linkType: hard
+
+"@opentelemetry/sdk-trace-base@npm:2.12.1, @opentelemetry/sdk-trace-base@npm:^2.10.0":
+  version: 2.12.1
+  resolution: "@opentelemetry/sdk-trace-base@npm:2.12.1"
+  dependencies:
+    "@opentelemetry/core": "npm:2.12.1"
+    "@opentelemetry/resources": "npm:2.12.1"
+    "@opentelemetry/sdk-trace": "npm:2.12.1"
+    "@opentelemetry/semantic-conventions": "npm:^1.29.0"
+  peerDependencies:
+    "@opentelemetry/api": ">=1.3.0 <1.10.0"
+  checksum: 10c0/cd852ea39f03ea59f7a85a2c0515705cabcba016c5bcfa951c11aeb5d4b8e41ee27a9248f377a289756e6e770b4e22e435e368f3e0731fb01469f510741de883
   languageName: node
   linkType: hard
 
@@ -1885,7 +1585,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/sdk-trace-node@npm:^2.10.0, @opentelemetry/sdk-trace-node@npm:^2.9.0":
+"@opentelemetry/sdk-trace-node@npm:^2.10.0":
   version: 2.11.0
   resolution: "@opentelemetry/sdk-trace-node@npm:2.11.0"
   dependencies:
@@ -1899,14 +1599,14 @@ __metadata:
   linkType: hard
 
 "@opentelemetry/sdk-trace-web@npm:^2.0.0":
-  version: 2.0.1
-  resolution: "@opentelemetry/sdk-trace-web@npm:2.0.1"
+  version: 2.12.1
+  resolution: "@opentelemetry/sdk-trace-web@npm:2.12.1"
   dependencies:
-    "@opentelemetry/core": "npm:2.0.1"
-    "@opentelemetry/sdk-trace-base": "npm:2.0.1"
+    "@opentelemetry/core": "npm:2.12.1"
+    "@opentelemetry/sdk-trace-base": "npm:2.12.1"
   peerDependencies:
     "@opentelemetry/api": ">=1.0.0 <1.10.0"
-  checksum: 10c0/48821b91430e24378b0b5b2632e78efdd018a3f840462a6aeba6ce318a6480bad2f623cc7f7f625a9266028ad44b78eb8456181778de6cb18725f26c44e2729b
+  checksum: 10c0/0f2485b00b057664e5cdf2992e8379870cde1abedc3f1f5f4697e3f5b3b978120a8b1d9018c1fe10166233a53676bcdb526f44a6e0c72d47506106e5a4ad2424
   languageName: node
   linkType: hard
 
@@ -1936,41 +1636,20 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@opentelemetry/sdk-trace@npm:2.9.0":
-  version: 2.9.0
-  resolution: "@opentelemetry/sdk-trace@npm:2.9.0"
+"@opentelemetry/sdk-trace@npm:2.12.1":
+  version: 2.12.1
+  resolution: "@opentelemetry/sdk-trace@npm:2.12.1"
   dependencies:
-    "@opentelemetry/core": "npm:2.9.0"
-    "@opentelemetry/resources": "npm:2.9.0"
+    "@opentelemetry/core": "npm:2.12.1"
+    "@opentelemetry/resources": "npm:2.12.1"
     "@opentelemetry/semantic-conventions": "npm:^1.29.0"
   peerDependencies:
     "@opentelemetry/api": ">=1.3.0 <1.10.0"
-  checksum: 10c0/8a6d2be45c3be8a66b455443edd0f1dcb571fc9e12edc310a87ae87a6cb15303a36d0b91ba5b5595e5f5715adc75316a171097b71e96014584c634c398c09043
+  checksum: 10c0/7eaaeeaccd4df3f245e79065d7bc1d2460793cf8da9883e15a3dba1bd11d0f10a93ba983633e372e11045ac3e4ff9abb576396608ebd4cd5cc1dc73325fa8c06
   languageName: node
   linkType: hard
 
-"@opentelemetry/semantic-conventions@npm:^1.27.0, @opentelemetry/semantic-conventions@npm:^1.34.0, @opentelemetry/semantic-conventions@npm:^1.37.0":
-  version: 1.37.0
-  resolution: "@opentelemetry/semantic-conventions@npm:1.37.0"
-  checksum: 10c0/ddce99f36e390603d6bbc556a50c070e41303d764a830808a4c451f02f4e6a3d989dbde8bcfac15e4e5bba13686b36c6664a323321c9259f9030eb70522a7c68
-  languageName: node
-  linkType: hard
-
-"@opentelemetry/semantic-conventions@npm:^1.29.0":
-  version: 1.36.0
-  resolution: "@opentelemetry/semantic-conventions@npm:1.36.0"
-  checksum: 10c0/edc8a6fe3ec4fc0c67ba3a92b86fb3dcc78fe1eb4f19838d8013c3232b9868540a034dd25cfe0afdd5eae752c5f0e9f42272ff46da144a2d5b35c644478e1c62
-  languageName: node
-  linkType: hard
-
-"@opentelemetry/semantic-conventions@npm:^1.33.0":
-  version: 1.41.1
-  resolution: "@opentelemetry/semantic-conventions@npm:1.41.1"
-  checksum: 10c0/c54b1edf845766e93026d30fd95e15da9dba8d7a5b58f8c320c5d36ab542c77b37868f3e8e3d78ec162da8ee2afd24781f0a65934c9bdbc1aea86b47b12f074c
-  languageName: node
-  linkType: hard
-
-"@opentelemetry/semantic-conventions@npm:^1.41.1, @opentelemetry/semantic-conventions@npm:^1.43.0":
+"@opentelemetry/semantic-conventions@npm:^1.27.0, @opentelemetry/semantic-conventions@npm:^1.29.0, @opentelemetry/semantic-conventions@npm:^1.33.0, @opentelemetry/semantic-conventions@npm:^1.34.0, @opentelemetry/semantic-conventions@npm:^1.37.0, @opentelemetry/semantic-conventions@npm:^1.41.1, @opentelemetry/semantic-conventions@npm:^1.43.0":
   version: 1.43.0
   resolution: "@opentelemetry/semantic-conventions@npm:1.43.0"
   checksum: 10c0/ea4b4b07c9414b0c5e7ce7349f608cb2572d16922d96077fb0882b59f173ec9b94aada74896bd5dd4aeb1759924503bd5a34b6dc2847a84c36f71626a0578ec4
@@ -1996,13 +1675,6 @@ __metadata:
     "@opentelemetry/semantic-conventions": "npm:^1.41.1"
     winston-transport: "npm:4.*"
   checksum: 10c0/c89c5ee4f2cffbdfcd47495e0aa47d8d4930ee2010a3897da0c9e921da3fde9da367fe585487c1ed90f22cfc052ec341e64f9e7fa643e996d1fd926cbb8506e2
-  languageName: node
-  linkType: hard
-
-"@oxc-project/types@npm:=0.126.0":
-  version: 0.126.0
-  resolution: "@oxc-project/types@npm:0.126.0"
-  checksum: 10c0/ad0bb774d63b6529bfbe7cc0808c9368c5de6038938256eabc868cf7f812b8d304a7a57800b1cfc09bf02566c396be8148d3153fb2c5fee273ccd8f0a9fd8751
   languageName: node
   linkType: hard
 
@@ -2375,27 +2047,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@protobufjs/codegen@npm:^2.0.4":
-  version: 2.0.4
-  resolution: "@protobufjs/codegen@npm:2.0.4"
-  checksum: 10c0/26ae337c5659e41f091606d16465bbcc1df1f37cc1ed462438b1f67be0c1e28dfb2ca9f294f39100c52161aef82edf758c95d6d75650a1ddf31f7ddee1440b43
+"@protobufjs/codegen@npm:^2.0.5":
+  version: 2.0.5
+  resolution: "@protobufjs/codegen@npm:2.0.5"
+  checksum: 10c0/1b8a2ae56ee60a56e9d205cd4b6072a1503c5069b8ebb905710f974ff0098a0d0700641c137e0a8d98dedf14423156a106a9433695cbf52574810f55000fdcab
   languageName: node
   linkType: hard
 
-"@protobufjs/eventemitter@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "@protobufjs/eventemitter@npm:1.1.0"
-  checksum: 10c0/1eb0a75180e5206d1033e4138212a8c7089a3d418c6dfa5a6ce42e593a4ae2e5892c4ef7421f38092badba4040ea6a45f0928869989411001d8c1018ea9a6e70
+"@protobufjs/eventemitter@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "@protobufjs/eventemitter@npm:1.1.1"
+  checksum: 10c0/8e06193d4629c5e7c09d4f8c2ddba8fc4dfa739f0149f33a1d901568d35bb7b8b5277a4e8452baf3bdd0b302fd599cf255d193267aa93a0a4747e23cd073c4ac
   languageName: node
   linkType: hard
 
-"@protobufjs/fetch@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "@protobufjs/fetch@npm:1.1.0"
+"@protobufjs/fetch@npm:^1.1.1":
+  version: 1.1.1
+  resolution: "@protobufjs/fetch@npm:1.1.1"
   dependencies:
     "@protobufjs/aspromise": "npm:^1.1.1"
-    "@protobufjs/inquire": "npm:^1.1.0"
-  checksum: 10c0/cda6a3dc2d50a182c5865b160f72077aac197046600091dbb005dd0a66db9cce3c5eaed6d470ac8ed49d7bcbeef6ee5f0bc288db5ff9a70cbd003e5909065233
+  checksum: 10c0/a497ff5433854e8577f0427983ea39b9113b49a8120f94515291d763327061d2c3013e60e24ea436d091dafae01a0f6eb1867e3b1616045d96a31d8b3c646ed4
   languageName: node
   linkType: hard
 
@@ -2403,13 +2074,6 @@ __metadata:
   version: 1.0.2
   resolution: "@protobufjs/float@npm:1.0.2"
   checksum: 10c0/18f2bdede76ffcf0170708af15c9c9db6259b771e6b84c51b06df34a9c339dbbeec267d14ce0bddd20acc142b1d980d983d31434398df7f98eb0c94a0eb79069
-  languageName: node
-  linkType: hard
-
-"@protobufjs/inquire@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "@protobufjs/inquire@npm:1.1.0"
-  checksum: 10c0/64372482efcba1fb4d166a2664a6395fa978b557803857c9c03500e0ac1013eb4b1aacc9ed851dd5fc22f81583670b4f4431bae186f3373fedcfde863ef5921a
   languageName: node
   linkType: hard
 
@@ -2427,10 +2091,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@protobufjs/utf8@npm:^1.1.0":
-  version: 1.1.0
-  resolution: "@protobufjs/utf8@npm:1.1.0"
-  checksum: 10c0/a3fe31fe3fa29aa3349e2e04ee13dc170cc6af7c23d92ad49e3eeaf79b9766264544d3da824dba93b7855bd6a2982fb40032ef40693da98a136d835752beb487
+"@protobufjs/utf8@npm:^1.1.1":
+  version: 1.1.2
+  resolution: "@protobufjs/utf8@npm:1.1.2"
+  checksum: 10c0/975c6e2c0319bd50c17531d186b537a88cb4d3205e3ca9297cd842b631d341da0ee3ff16be8656cd2660756dc753b29c8a6a14c0ad8ed602c1f91ddf22e7b3f3
   languageName: node
   linkType: hard
 
@@ -2613,24 +2277,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rolldown/binding-android-arm64@npm:1.0.0-rc.16":
-  version: 1.0.0-rc.16
-  resolution: "@rolldown/binding-android-arm64@npm:1.0.0-rc.16"
-  conditions: os=android & cpu=arm64
-  languageName: node
-  linkType: hard
-
 "@rolldown/binding-android-arm64@npm:1.2.13":
   version: 1.2.13
   resolution: "@rolldown/binding-android-arm64@npm:1.2.13"
   conditions: os=android & cpu=arm64
-  languageName: node
-  linkType: hard
-
-"@rolldown/binding-darwin-arm64@npm:1.0.0-rc.16":
-  version: 1.0.0-rc.16
-  resolution: "@rolldown/binding-darwin-arm64@npm:1.0.0-rc.16"
-  conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
@@ -2641,24 +2291,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rolldown/binding-darwin-x64@npm:1.0.0-rc.16":
-  version: 1.0.0-rc.16
-  resolution: "@rolldown/binding-darwin-x64@npm:1.0.0-rc.16"
-  conditions: os=darwin & cpu=x64
-  languageName: node
-  linkType: hard
-
 "@rolldown/binding-darwin-x64@npm:1.2.13":
   version: 1.2.13
   resolution: "@rolldown/binding-darwin-x64@npm:1.2.13"
   conditions: os=darwin & cpu=x64
-  languageName: node
-  linkType: hard
-
-"@rolldown/binding-freebsd-x64@npm:1.0.0-rc.16":
-  version: 1.0.0-rc.16
-  resolution: "@rolldown/binding-freebsd-x64@npm:1.0.0-rc.16"
-  conditions: os=freebsd & cpu=x64
   languageName: node
   linkType: hard
 
@@ -2669,24 +2305,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rolldown/binding-linux-arm-gnueabihf@npm:1.0.0-rc.16":
-  version: 1.0.0-rc.16
-  resolution: "@rolldown/binding-linux-arm-gnueabihf@npm:1.0.0-rc.16"
-  conditions: os=linux & cpu=arm
-  languageName: node
-  linkType: hard
-
 "@rolldown/binding-linux-arm-gnueabihf@npm:1.2.13":
   version: 1.2.13
   resolution: "@rolldown/binding-linux-arm-gnueabihf@npm:1.2.13"
   conditions: os=linux & cpu=arm
-  languageName: node
-  linkType: hard
-
-"@rolldown/binding-linux-arm64-gnu@npm:1.0.0-rc.16":
-  version: 1.0.0-rc.16
-  resolution: "@rolldown/binding-linux-arm64-gnu@npm:1.0.0-rc.16"
-  conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
@@ -2697,24 +2319,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rolldown/binding-linux-arm64-musl@npm:1.0.0-rc.16":
-  version: 1.0.0-rc.16
-  resolution: "@rolldown/binding-linux-arm64-musl@npm:1.0.0-rc.16"
-  conditions: os=linux & cpu=arm64 & libc=musl
-  languageName: node
-  linkType: hard
-
 "@rolldown/binding-linux-arm64-musl@npm:1.2.13":
   version: 1.2.13
   resolution: "@rolldown/binding-linux-arm64-musl@npm:1.2.13"
   conditions: os=linux & cpu=arm64 & libc=musl
-  languageName: node
-  linkType: hard
-
-"@rolldown/binding-linux-ppc64-gnu@npm:1.0.0-rc.16":
-  version: 1.0.0-rc.16
-  resolution: "@rolldown/binding-linux-ppc64-gnu@npm:1.0.0-rc.16"
-  conditions: os=linux & cpu=ppc64 & libc=glibc
   languageName: node
   linkType: hard
 
@@ -2725,24 +2333,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rolldown/binding-linux-s390x-gnu@npm:1.0.0-rc.16":
-  version: 1.0.0-rc.16
-  resolution: "@rolldown/binding-linux-s390x-gnu@npm:1.0.0-rc.16"
-  conditions: os=linux & cpu=s390x & libc=glibc
-  languageName: node
-  linkType: hard
-
 "@rolldown/binding-linux-s390x-gnu@npm:1.2.13":
   version: 1.2.13
   resolution: "@rolldown/binding-linux-s390x-gnu@npm:1.2.13"
   conditions: os=linux & cpu=s390x & libc=glibc
-  languageName: node
-  linkType: hard
-
-"@rolldown/binding-linux-x64-gnu@npm:1.0.0-rc.16":
-  version: 1.0.0-rc.16
-  resolution: "@rolldown/binding-linux-x64-gnu@npm:1.0.0-rc.16"
-  conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
@@ -2753,24 +2347,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rolldown/binding-linux-x64-musl@npm:1.0.0-rc.16":
-  version: 1.0.0-rc.16
-  resolution: "@rolldown/binding-linux-x64-musl@npm:1.0.0-rc.16"
-  conditions: os=linux & cpu=x64 & libc=musl
-  languageName: node
-  linkType: hard
-
 "@rolldown/binding-linux-x64-musl@npm:1.2.13":
   version: 1.2.13
   resolution: "@rolldown/binding-linux-x64-musl@npm:1.2.13"
   conditions: os=linux & cpu=x64 & libc=musl
-  languageName: node
-  linkType: hard
-
-"@rolldown/binding-openharmony-arm64@npm:1.0.0-rc.16":
-  version: 1.0.0-rc.16
-  resolution: "@rolldown/binding-openharmony-arm64@npm:1.0.0-rc.16"
-  conditions: os=openharmony & cpu=arm64
   languageName: node
   linkType: hard
 
@@ -2781,35 +2361,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rolldown/binding-wasm32-wasi@npm:1.0.0-rc.16":
-  version: 1.0.0-rc.16
-  resolution: "@rolldown/binding-wasm32-wasi@npm:1.0.0-rc.16"
-  dependencies:
-    "@emnapi/core": "npm:1.9.2"
-    "@emnapi/runtime": "npm:1.9.2"
-    "@napi-rs/wasm-runtime": "npm:^1.1.4"
-  conditions: cpu=wasm32
-  languageName: node
-  linkType: hard
-
-"@rolldown/binding-win32-arm64-msvc@npm:1.0.0-rc.16":
-  version: 1.0.0-rc.16
-  resolution: "@rolldown/binding-win32-arm64-msvc@npm:1.0.0-rc.16"
-  conditions: os=win32 & cpu=arm64
-  languageName: node
-  linkType: hard
-
 "@rolldown/binding-win32-arm64-msvc@npm:1.2.13":
   version: 1.2.13
   resolution: "@rolldown/binding-win32-arm64-msvc@npm:1.2.13"
   conditions: os=win32 & cpu=arm64
-  languageName: node
-  linkType: hard
-
-"@rolldown/binding-win32-x64-msvc@npm:1.0.0-rc.16":
-  version: 1.0.0-rc.16
-  resolution: "@rolldown/binding-win32-x64-msvc@npm:1.0.0-rc.16"
-  conditions: os=win32 & cpu=x64
   languageName: node
   linkType: hard
 
@@ -2820,13 +2375,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@rolldown/pluginutils@npm:1.0.0-rc.16":
-  version: 1.0.0-rc.16
-  resolution: "@rolldown/pluginutils@npm:1.0.0-rc.16"
-  checksum: 10c0/92921f12d3f965c53fcda593fed8a88fb3b27fef43c88c604f94981d9d7a1e2bebcb3fd83efa62f970c9ab50cb89d04f845ac9f6d2d9822b10e009f696bb5d31
-  languageName: node
-  linkType: hard
-
 "@rolldown/pluginutils@npm:^1.0.0":
   version: 1.0.1
   resolution: "@rolldown/pluginutils@npm:1.0.1"
@@ -2834,14 +2382,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@standard-schema/spec@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "@standard-schema/spec@npm:1.0.0"
-  checksum: 10c0/a1ab9a8bdc09b5b47aa8365d0e0ec40cc2df6437be02853696a0e377321653b0d3ac6f079a8c67d5ddbe9821025584b1fb71d9cc041a6666a96f1fadf2ece15f
-  languageName: node
-  linkType: hard
-
-"@standard-schema/spec@npm:^1.1.0":
+"@standard-schema/spec@npm:^1.0.0, @standard-schema/spec@npm:^1.1.0":
   version: 1.1.0
   resolution: "@standard-schema/spec@npm:1.1.0"
   checksum: 10c0/d90f55acde4b2deb983529c87e8025fa693de1a5e8b49ecc6eb84d1fd96328add0e03d7d551442156c7432fd78165b2c26ff561b970a9a881f046abb78d6a526
@@ -2887,15 +2428,6 @@ __metadata:
   version: 2.10.13
   resolution: "@turbo/windows-arm64@npm:2.10.13"
   conditions: os=win32 & cpu=arm64
-  languageName: node
-  linkType: hard
-
-"@tybys/wasm-util@npm:^0.10.1":
-  version: 0.10.1
-  resolution: "@tybys/wasm-util@npm:0.10.1"
-  dependencies:
-    tslib: "npm:^2.4.0"
-  checksum: 10c0/b255094f293794c6d2289300c5fbcafbb5532a3aed3a5ffd2f8dc1828e639b88d75f6a376dd8f94347a44813fd7a7149d8463477a9a49525c8b2dcaa38c2d1e8
   languageName: node
   linkType: hard
 
@@ -3114,18 +2646,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/express@npm:*":
-  version: 5.0.3
-  resolution: "@types/express@npm:5.0.3"
-  dependencies:
-    "@types/body-parser": "npm:*"
-    "@types/express-serve-static-core": "npm:^5.0.0"
-    "@types/serve-static": "npm:*"
-  checksum: 10c0/f0fbc8daa7f40070b103cf4d020ff1dd08503477d866d1134b87c0390bba71d5d7949cb8b4e719a81ccba89294d8e1573414e6dcbb5bb1d097a7b820928ebdef
-  languageName: node
-  linkType: hard
-
-"@types/express@npm:5.0.6":
+"@types/express@npm:*, @types/express@npm:5.0.6":
   version: 5.0.6
   resolution: "@types/express@npm:5.0.6"
   dependencies:
@@ -3235,14 +2756,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/pg@npm:*":
-  version: 8.15.5
-  resolution: "@types/pg@npm:8.15.5"
+"@types/pg@npm:*, @types/pg@npm:8.20.0, @types/pg@npm:^8.16.0":
+  version: 8.20.0
+  resolution: "@types/pg@npm:8.20.0"
   dependencies:
     "@types/node": "npm:*"
     pg-protocol: "npm:*"
     pg-types: "npm:^2.2.0"
-  checksum: 10c0/19a3cc1811918753f8c827733648c3a85c7b0355bf207c44eb1a3b79b2e6a0d85cb5457ec550d860fc9be7e88c7587a3600958ec8c61fa1ad573061c63af93f0
+  checksum: 10c0/c8b5aa794ea074aa20d0c1ef6c721ce0fe16f2c084d0ccc32b7f12909a08ec969e6b01a094ce8e7019cc425381c4b59f261bd0133daf0c6d4aca5c6c492e8312
   languageName: node
   linkType: hard
 
@@ -3254,17 +2775,6 @@ __metadata:
     pg-protocol: "npm:*"
     pg-types: "npm:^2.2.0"
   checksum: 10c0/7f93f83a4da0dc6133918f824d826fa34e78fb8cf86392d28a0e095c836c6910c014ced5d4b364d83e8485a65ce369adeb9663b14ba301241d4c0f80073007f3
-  languageName: node
-  linkType: hard
-
-"@types/pg@npm:8.20.0, @types/pg@npm:^8.16.0":
-  version: 8.20.0
-  resolution: "@types/pg@npm:8.20.0"
-  dependencies:
-    "@types/node": "npm:*"
-    pg-protocol: "npm:*"
-    pg-types: "npm:^2.2.0"
-  checksum: 10c0/c8b5aa794ea074aa20d0c1ef6c721ce0fe16f2c084d0ccc32b7f12909a08ec969e6b01a094ce8e7019cc425381c4b59f261bd0133daf0c6d4aca5c6c492e8312
   languageName: node
   linkType: hard
 
@@ -3301,17 +2811,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/serve-static@npm:*":
-  version: 1.15.8
-  resolution: "@types/serve-static@npm:1.15.8"
-  dependencies:
-    "@types/http-errors": "npm:*"
-    "@types/node": "npm:*"
-    "@types/send": "npm:*"
-  checksum: 10c0/8ad86a25b87da5276cb1008c43c74667ff7583904d46d5fcaf0355887869d859d453d7dc4f890788ae04705c23720e9b6b6f3215e2d1d2a4278bbd090a9268dd
-  languageName: node
-  linkType: hard
-
 "@types/serve-static@npm:^2":
   version: 2.2.0
   resolution: "@types/serve-static@npm:2.2.0"
@@ -3319,13 +2818,6 @@ __metadata:
     "@types/http-errors": "npm:*"
     "@types/node": "npm:*"
   checksum: 10c0/a3c6126bdbf9685e6c7dc03ad34639666eff32754e912adeed9643bf3dd3aa0ff043002a7f69039306e310d233eb8e160c59308f95b0a619f32366bbc48ee094
-  languageName: node
-  linkType: hard
-
-"@types/shimmer@npm:^1.2.0":
-  version: 1.2.0
-  resolution: "@types/shimmer@npm:1.2.0"
-  checksum: 10c0/6f7bfe1b55601cfc3ae713fc74a03341f3834253b8b91cb2add926d5949e4a63f7e666f59c2a6e40a883a5f9e2f3e3af10f9d3aed9b60fced0bda87659e58d8d
   languageName: node
   linkType: hard
 
@@ -3774,16 +3266,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"acorn@npm:^8.14.0":
-  version: 8.15.0
-  resolution: "acorn@npm:8.15.0"
-  bin:
-    acorn: bin/acorn
-  checksum: 10c0/dec73ff59b7d6628a01eebaece7f2bdb8bb62b9b5926dcad0f8931f2b8b79c2be21f6c68ac095592adb5adb15831a3635d9343e6a91d028bbe85d564875ec3ec
-  languageName: node
-  linkType: hard
-
-"acorn@npm:^8.15.0":
+"acorn@npm:^8.14.0, acorn@npm:^8.15.0":
   version: 8.16.0
   resolution: "acorn@npm:8.16.0"
   bin:
@@ -3837,31 +3320,31 @@ __metadata:
   languageName: node
   linkType: hard
 
-"applicationinsights@npm:3.16.0":
-  version: 3.16.0
-  resolution: "applicationinsights@npm:3.16.0"
+"applicationinsights@npm:3.17.1":
+  version: 3.17.1
+  resolution: "applicationinsights@npm:3.17.1"
   dependencies:
     "@azure/core-auth": "npm:^1.9.0"
     "@azure/functions": "npm:^4.11.2"
     "@azure/identity": "npm:^4.13.1"
-    "@azure/monitor-opentelemetry": "npm:^1.19.0"
-    "@azure/monitor-opentelemetry-exporter": "npm:>=1.0.0-beta.41 <1.0.0-c || ^1.0.0"
-    "@azure/opentelemetry-instrumentation-azure-sdk": "npm:^1.0.0-beta.7"
+    "@azure/monitor-opentelemetry": "npm:^1.20.1"
+    "@azure/monitor-opentelemetry-exporter": "npm:>=1.0.0-beta.46 <1.0.0-c || ^1.0.0"
+    "@azure/opentelemetry-instrumentation-azure-sdk": "npm:^1.0.0"
     "@opentelemetry/api": "npm:^1.9.1"
-    "@opentelemetry/api-logs": "npm:^0.220.0"
-    "@opentelemetry/core": "npm:^2.9.0"
-    "@opentelemetry/exporter-logs-otlp-http": "npm:^0.220.0"
-    "@opentelemetry/exporter-metrics-otlp-http": "npm:^0.220.0"
-    "@opentelemetry/exporter-metrics-otlp-proto": "npm:^0.220.0"
-    "@opentelemetry/exporter-trace-otlp-http": "npm:^0.220.0"
-    "@opentelemetry/otlp-exporter-base": "npm:^0.220.0"
-    "@opentelemetry/resources": "npm:^2.9.0"
-    "@opentelemetry/sdk-logs": "npm:^0.220.0"
-    "@opentelemetry/sdk-metrics": "npm:^2.9.0"
-    "@opentelemetry/sdk-trace-base": "npm:^2.9.0"
-    "@opentelemetry/sdk-trace-node": "npm:^2.9.0"
+    "@opentelemetry/api-logs": "npm:^0.221.0"
+    "@opentelemetry/core": "npm:^2.10.0"
+    "@opentelemetry/exporter-logs-otlp-http": "npm:^0.221.0"
+    "@opentelemetry/exporter-metrics-otlp-http": "npm:^0.221.0"
+    "@opentelemetry/exporter-metrics-otlp-proto": "npm:^0.221.0"
+    "@opentelemetry/exporter-trace-otlp-http": "npm:^0.221.0"
+    "@opentelemetry/otlp-exporter-base": "npm:^0.221.0"
+    "@opentelemetry/resources": "npm:^2.10.0"
+    "@opentelemetry/sdk-logs": "npm:^0.221.0"
+    "@opentelemetry/sdk-metrics": "npm:^2.10.0"
+    "@opentelemetry/sdk-trace-base": "npm:^2.10.0"
+    "@opentelemetry/sdk-trace-node": "npm:^2.10.0"
     "@opentelemetry/semantic-conventions": "npm:^1.43.0"
-  checksum: 10c0/4040bacccb92a0216348e69851ecb726f999b00ee2d7da2aba04dfd2b4877f0832717597c5066301a21b0df71665e2980258c9b3015568bd8e9b4435485bc029
+  checksum: 10c0/aa0c99e328fa17f1b49941e4c06c0ee51a690e74361511694a1ab8cf9038530869c6e226c05bceca06e73a879e0d0cc18fc9f43ddc8196adc59d29085b810344
   languageName: node
   linkType: hard
 
@@ -4202,30 +3685,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"confbox@npm:^0.2.2":
-  version: 0.2.2
-  resolution: "confbox@npm:0.2.2"
-  checksum: 10c0/7c246588d533d31e8cdf66cb4701dff6de60f9be77ab54c0d0338e7988750ac56863cc0aca1b3f2046f45ff223a765d3e5d4977a7674485afcd37b6edf3fd129
-  languageName: node
-  linkType: hard
-
-"confbox@npm:^0.2.4":
+"confbox@npm:^0.2.2, confbox@npm:^0.2.4":
   version: 0.2.4
   resolution: "confbox@npm:0.2.4"
   checksum: 10c0/4c36af33d9df7034300c452f7b289179264493bd0671fa81b995a0d70dc897b1d37f1af10d3ffb187f178d17ba1ed2ba167ed0f599ba3a139c271205dd553f73
   languageName: node
   linkType: hard
 
-"config@npm:*":
-  version: 4.4.1
-  resolution: "config@npm:4.4.1"
-  dependencies:
-    json5: "npm:^2.2.3"
-  checksum: 10c0/f92c7b61d2456f933a53da1fea06abe116584df99dd1254a93e7b10c9487ddf17a1f865bd7ab8e4cf0cca23777dd89b6b1ba81e1c71e06111d36fbb00b49c28f
-  languageName: node
-  linkType: hard
-
-"config@npm:4.4.2":
+"config@npm:*, config@npm:4.4.2":
   version: 4.4.2
   resolution: "config@npm:4.4.2"
   dependencies:
@@ -4462,19 +3929,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:4, debug@npm:^4.3.4, debug@npm:^4.3.5, debug@npm:^4.3.7, debug@npm:^4.4.0":
-  version: 4.4.1
-  resolution: "debug@npm:4.4.1"
-  dependencies:
-    ms: "npm:^2.1.3"
-  peerDependenciesMeta:
-    supports-color:
-      optional: true
-  checksum: 10c0/d2b44bc1afd912b49bb7ebb0d50a860dc93a4dd7d946e8de94abc957bb63726b7dd5aa48c18c2386c379ec024c46692e15ed3ed97d481729f929201e671fcd55
-  languageName: node
-  linkType: hard
-
-"debug@npm:^4.1.1, debug@npm:^4.4.3":
+"debug@npm:4, debug@npm:^4.1.1, debug@npm:^4.3.4, debug@npm:^4.3.5, debug@npm:^4.3.7, debug@npm:^4.4.0, debug@npm:^4.4.3":
   version: 4.4.3
   resolution: "debug@npm:4.4.3"
   dependencies:
@@ -4547,7 +4002,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"depd@npm:2.0.0, depd@npm:^2.0.0, depd@npm:~2.0.0":
+"depd@npm:^2.0.0, depd@npm:~2.0.0":
   version: 2.0.0
   resolution: "depd@npm:2.0.0"
   checksum: 10c0/58bd06ec20e19529b06f7ad07ddab60e504d9e0faca4bd23079fac2d279c3594334d736508dc350e06e510aba5e22e4594483b3a6562ce7c17dd797f4cc4ad2c
@@ -4961,14 +4416,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"exsolve@npm:^1.0.7":
-  version: 1.0.7
-  resolution: "exsolve@npm:1.0.7"
-  checksum: 10c0/4479369d0bd84bb7e0b4f5d9bc18d26a89b6dbbbccd73f9d383d14892ef78ddbe159e01781055342f83dc00ebe90044036daf17ddf55cc21e2cac6609aa15631
-  languageName: node
-  linkType: hard
-
-"exsolve@npm:^1.0.8":
+"exsolve@npm:^1.0.7, exsolve@npm:^1.0.8":
   version: 1.0.8
   resolution: "exsolve@npm:1.0.8"
   checksum: 10c0/65e44ae05bd4a4a5d87cfdbbd6b8f24389282cf9f85fa5feb17ca87ad3f354877e6af4cd99e02fc29044174891f82d1d68c77f69234410eb8f163530e6278c67
@@ -5021,7 +4469,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"fdir@npm:^6.4.4, fdir@npm:^6.5.0":
+"fdir@npm:^6.5.0":
   version: 6.5.0
   resolution: "fdir@npm:6.5.0"
   peerDependencies:
@@ -5094,20 +4542,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"form-data@npm:^4.0.0":
-  version: 4.0.4
-  resolution: "form-data@npm:4.0.4"
-  dependencies:
-    asynckit: "npm:^0.4.0"
-    combined-stream: "npm:^1.0.8"
-    es-set-tostringtag: "npm:^2.1.0"
-    hasown: "npm:^2.0.2"
-    mime-types: "npm:^2.1.12"
-  checksum: 10c0/373525a9a034b9d57073e55eab79e501a714ffac02e7a9b01be1c820780652b16e4101819785e1e18f8d98f0aee866cc654d660a435c378e16a72f2e7cac9695
-  languageName: node
-  linkType: hard
-
-"form-data@npm:^4.0.5":
+"form-data@npm:^4.0.0, form-data@npm:^4.0.5":
   version: 4.0.5
   resolution: "form-data@npm:4.0.5"
   dependencies:
@@ -5362,20 +4797,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"http-errors@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "http-errors@npm:2.0.0"
-  dependencies:
-    depd: "npm:2.0.0"
-    inherits: "npm:2.0.4"
-    setprototypeof: "npm:1.2.0"
-    statuses: "npm:2.0.1"
-    toidentifier: "npm:1.0.1"
-  checksum: 10c0/fc6f2715fe188d091274b5ffc8b3657bd85c63e969daa68ccb77afb05b071a4b62841acb7a21e417b5539014dff2ebf9550f0b14a9ff126f2734a7c1387f8e19
-  languageName: node
-  linkType: hard
-
-"http-errors@npm:~2.0.1":
+"http-errors@npm:^2.0.0, http-errors@npm:~2.0.1":
   version: 2.0.1
   resolution: "http-errors@npm:2.0.1"
   dependencies:
@@ -5444,18 +4866,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"import-in-the-middle@npm:^1.8.1":
-  version: 1.14.2
-  resolution: "import-in-the-middle@npm:1.14.2"
-  dependencies:
-    acorn: "npm:^8.14.0"
-    acorn-import-attributes: "npm:^1.9.5"
-    cjs-module-lexer: "npm:^1.2.2"
-    module-details-from-path: "npm:^1.0.3"
-  checksum: 10c0/ee614a09d3772ad39f8005d798458e541cbfb897b8f97623f4bac527eecc51984586cfbf8f195715df5c463ec0b7fce8086489dc12f758ffe5ea485b8a29da01
-  languageName: node
-  linkType: hard
-
 "import-in-the-middle@npm:^2.0.0":
   version: 2.0.0
   resolution: "import-in-the-middle@npm:2.0.0"
@@ -5487,7 +4897,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"inherits@npm:2.0.4, inherits@npm:^2.0.3, inherits@npm:~2.0.4":
+"inherits@npm:^2.0.3, inherits@npm:~2.0.4":
   version: 2.0.4
   resolution: "inherits@npm:2.0.4"
   checksum: 10c0/4e531f648b29039fb7426fb94075e6545faa1eb9fe83c29f0b6d9e7263aceb4289d2d4557db0d428188eeb449cc7c5e77b0a0b2c4e248ff2a65933a0dee49ef2
@@ -5521,15 +4931,6 @@ __metadata:
   dependencies:
     binary-extensions: "npm:^2.0.0"
   checksum: 10c0/a16eaee59ae2b315ba36fad5c5dcaf8e49c3e27318f8ab8fa3cdb8772bf559c8d1ba750a589c2ccb096113bb64497084361a25960899cb6172a6925ab6123d38
-  languageName: node
-  linkType: hard
-
-"is-core-module@npm:^2.16.0":
-  version: 2.16.1
-  resolution: "is-core-module@npm:2.16.1"
-  dependencies:
-    hasown: "npm:^2.0.2"
-  checksum: 10c0/898443c14780a577e807618aaae2b6f745c8538eca5c7bc11388a3f2dc6de82b9902bcc7eb74f07be672b11bbe82dd6a6edded44a00cb3d8f933d0459905eedd
   languageName: node
   linkType: hard
 
@@ -5673,7 +5074,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-yaml@npm:^4.1.0":
+"js-yaml@npm:^4.3.2":
   version: 4.3.2
   resolution: "js-yaml@npm:4.3.2"
   dependencies:
@@ -5739,24 +5140,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lightningcss-android-arm64@npm:1.32.0":
-  version: 1.32.0
-  resolution: "lightningcss-android-arm64@npm:1.32.0"
-  conditions: os=android & cpu=arm64
-  languageName: node
-  linkType: hard
-
 "lightningcss-android-arm64@npm:1.33.0":
   version: 1.33.0
   resolution: "lightningcss-android-arm64@npm:1.33.0"
   conditions: os=android & cpu=arm64
-  languageName: node
-  linkType: hard
-
-"lightningcss-darwin-arm64@npm:1.32.0":
-  version: 1.32.0
-  resolution: "lightningcss-darwin-arm64@npm:1.32.0"
-  conditions: os=darwin & cpu=arm64
   languageName: node
   linkType: hard
 
@@ -5767,24 +5154,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lightningcss-darwin-x64@npm:1.32.0":
-  version: 1.32.0
-  resolution: "lightningcss-darwin-x64@npm:1.32.0"
-  conditions: os=darwin & cpu=x64
-  languageName: node
-  linkType: hard
-
 "lightningcss-darwin-x64@npm:1.33.0":
   version: 1.33.0
   resolution: "lightningcss-darwin-x64@npm:1.33.0"
   conditions: os=darwin & cpu=x64
-  languageName: node
-  linkType: hard
-
-"lightningcss-freebsd-x64@npm:1.32.0":
-  version: 1.32.0
-  resolution: "lightningcss-freebsd-x64@npm:1.32.0"
-  conditions: os=freebsd & cpu=x64
   languageName: node
   linkType: hard
 
@@ -5795,24 +5168,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lightningcss-linux-arm-gnueabihf@npm:1.32.0":
-  version: 1.32.0
-  resolution: "lightningcss-linux-arm-gnueabihf@npm:1.32.0"
-  conditions: os=linux & cpu=arm
-  languageName: node
-  linkType: hard
-
 "lightningcss-linux-arm-gnueabihf@npm:1.33.0":
   version: 1.33.0
   resolution: "lightningcss-linux-arm-gnueabihf@npm:1.33.0"
   conditions: os=linux & cpu=arm
-  languageName: node
-  linkType: hard
-
-"lightningcss-linux-arm64-gnu@npm:1.32.0":
-  version: 1.32.0
-  resolution: "lightningcss-linux-arm64-gnu@npm:1.32.0"
-  conditions: os=linux & cpu=arm64 & libc=glibc
   languageName: node
   linkType: hard
 
@@ -5823,24 +5182,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lightningcss-linux-arm64-musl@npm:1.32.0":
-  version: 1.32.0
-  resolution: "lightningcss-linux-arm64-musl@npm:1.32.0"
-  conditions: os=linux & cpu=arm64 & libc=musl
-  languageName: node
-  linkType: hard
-
 "lightningcss-linux-arm64-musl@npm:1.33.0":
   version: 1.33.0
   resolution: "lightningcss-linux-arm64-musl@npm:1.33.0"
   conditions: os=linux & cpu=arm64 & libc=musl
-  languageName: node
-  linkType: hard
-
-"lightningcss-linux-x64-gnu@npm:1.32.0":
-  version: 1.32.0
-  resolution: "lightningcss-linux-x64-gnu@npm:1.32.0"
-  conditions: os=linux & cpu=x64 & libc=glibc
   languageName: node
   linkType: hard
 
@@ -5851,24 +5196,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lightningcss-linux-x64-musl@npm:1.32.0":
-  version: 1.32.0
-  resolution: "lightningcss-linux-x64-musl@npm:1.32.0"
-  conditions: os=linux & cpu=x64 & libc=musl
-  languageName: node
-  linkType: hard
-
 "lightningcss-linux-x64-musl@npm:1.33.0":
   version: 1.33.0
   resolution: "lightningcss-linux-x64-musl@npm:1.33.0"
   conditions: os=linux & cpu=x64 & libc=musl
-  languageName: node
-  linkType: hard
-
-"lightningcss-win32-arm64-msvc@npm:1.32.0":
-  version: 1.32.0
-  resolution: "lightningcss-win32-arm64-msvc@npm:1.32.0"
-  conditions: os=win32 & cpu=arm64
   languageName: node
   linkType: hard
 
@@ -5879,60 +5210,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lightningcss-win32-x64-msvc@npm:1.32.0":
-  version: 1.32.0
-  resolution: "lightningcss-win32-x64-msvc@npm:1.32.0"
-  conditions: os=win32 & cpu=x64
-  languageName: node
-  linkType: hard
-
 "lightningcss-win32-x64-msvc@npm:1.33.0":
   version: 1.33.0
   resolution: "lightningcss-win32-x64-msvc@npm:1.33.0"
   conditions: os=win32 & cpu=x64
-  languageName: node
-  linkType: hard
-
-"lightningcss@npm:^1.32.0":
-  version: 1.32.0
-  resolution: "lightningcss@npm:1.32.0"
-  dependencies:
-    detect-libc: "npm:^2.0.3"
-    lightningcss-android-arm64: "npm:1.32.0"
-    lightningcss-darwin-arm64: "npm:1.32.0"
-    lightningcss-darwin-x64: "npm:1.32.0"
-    lightningcss-freebsd-x64: "npm:1.32.0"
-    lightningcss-linux-arm-gnueabihf: "npm:1.32.0"
-    lightningcss-linux-arm64-gnu: "npm:1.32.0"
-    lightningcss-linux-arm64-musl: "npm:1.32.0"
-    lightningcss-linux-x64-gnu: "npm:1.32.0"
-    lightningcss-linux-x64-musl: "npm:1.32.0"
-    lightningcss-win32-arm64-msvc: "npm:1.32.0"
-    lightningcss-win32-x64-msvc: "npm:1.32.0"
-  dependenciesMeta:
-    lightningcss-android-arm64:
-      optional: true
-    lightningcss-darwin-arm64:
-      optional: true
-    lightningcss-darwin-x64:
-      optional: true
-    lightningcss-freebsd-x64:
-      optional: true
-    lightningcss-linux-arm-gnueabihf:
-      optional: true
-    lightningcss-linux-arm64-gnu:
-      optional: true
-    lightningcss-linux-arm64-musl:
-      optional: true
-    lightningcss-linux-x64-gnu:
-      optional: true
-    lightningcss-linux-x64-musl:
-      optional: true
-    lightningcss-win32-arm64-msvc:
-      optional: true
-    lightningcss-win32-x64-msvc:
-      optional: true
-  checksum: 10c0/70945bd55097af46fc9fab7f5ed09cd5869d85940a2acab7ee06d0117004a1d68155708a2d462531cea2fc3c67aefc9333a7068c80b0b78dd404c16838809e03
   languageName: node
   linkType: hard
 
@@ -6056,7 +5337,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"long@npm:^5.0.0, long@npm:^5.2.1":
+"long@npm:^5.0.0, long@npm:^5.2.1, long@npm:^5.3.2":
   version: 5.3.2
   resolution: "long@npm:5.3.2"
   checksum: 10c0/7130fe1cbce2dca06734b35b70d380ca3f70271c7f8852c922a7c62c86c4e35f0c39290565eca7133c625908d40e126ac57c02b1b1a4636b9457d77e1e60b981
@@ -6280,30 +5561,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minipass@npm:^7.0.2, minipass@npm:^7.0.3, minipass@npm:^7.0.4, minipass@npm:^7.1.2":
-  version: 7.1.2
-  resolution: "minipass@npm:7.1.2"
-  checksum: 10c0/b0fd20bb9fb56e5fa9a8bfac539e8915ae07430a619e4b86ff71f5fc757ef3924b23b2c4230393af1eda647ed3d75739e4e0acb250a6b1eb277cf7f8fe449557
-  languageName: node
-  linkType: hard
-
-"minipass@npm:^7.1.3":
+"minipass@npm:^7.0.2, minipass@npm:^7.0.3, minipass@npm:^7.0.4, minipass@npm:^7.1.2, minipass@npm:^7.1.3":
   version: 7.1.3
   resolution: "minipass@npm:7.1.3"
   checksum: 10c0/539da88daca16533211ea5a9ee98dc62ff5742f531f54640dd34429e621955e91cc280a91a776026264b7f9f6735947629f920944e9c1558369e8bf22eb33fbb
   languageName: node
   linkType: hard
 
-"minizlib@npm:^3.0.1":
-  version: 3.0.2
-  resolution: "minizlib@npm:3.0.2"
-  dependencies:
-    minipass: "npm:^7.1.2"
-  checksum: 10c0/9f3bd35e41d40d02469cb30470c55ccc21cae0db40e08d1d0b1dff01cc8cc89a6f78e9c5d2b7c844e485ec0a8abc2238111213fdc5b2038e6d1012eacf316f78
-  languageName: node
-  linkType: hard
-
-"minizlib@npm:^3.1.0":
+"minizlib@npm:^3.0.1, minizlib@npm:^3.1.0":
   version: 3.1.0
   resolution: "minizlib@npm:3.1.0"
   dependencies:
@@ -6356,15 +5621,6 @@ __metadata:
   dependencies:
     lru.min: "npm:^1.1.0"
   checksum: 10c0/65b7ffaf932a371602e4153808601e8f377d7fc85fa15b491ee821418e52ab4950155b840803a6eaf3d5b94d6e8aedc1bee723475541cb4713feb3544dca9336
-  languageName: node
-  linkType: hard
-
-"nanoid@npm:^3.3.11":
-  version: 3.3.11
-  resolution: "nanoid@npm:3.3.11"
-  bin:
-    nanoid: bin/nanoid.cjs
-  checksum: 10c0/40e7f70b3d15f725ca072dfc4f74e81fcf1fbb02e491cf58ac0c79093adc9b0a73b152bcde57df4b79cd097e13023d7504acb38404a4da7bc1cd8e887b82fe0b
   languageName: node
   linkType: hard
 
@@ -6521,14 +5777,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"p-map@npm:^7.0.2":
-  version: 7.0.3
-  resolution: "p-map@npm:7.0.3"
-  checksum: 10c0/46091610da2b38ce47bcd1d8b4835a6fa4e832848a6682cf1652bc93915770f4617afc844c10a77d1b3e56d2472bb2d5622353fa3ead01a7f42b04fc8e744a5c
-  languageName: node
-  linkType: hard
-
-"p-map@npm:^7.0.4":
+"p-map@npm:^7.0.2, p-map@npm:^7.0.4":
   version: 7.0.4
   resolution: "p-map@npm:7.0.4"
   checksum: 10c0/a5030935d3cb2919d7e89454d1ce82141e6f9955413658b8c9403cfe379283770ed3048146b44cde168aa9e8c716505f196d5689db0ae3ce9a71521a2fef3abd
@@ -6546,13 +5795,6 @@ __metadata:
   version: 3.1.1
   resolution: "path-key@npm:3.1.1"
   checksum: 10c0/748c43efd5a569c039d7a00a03b58eecd1d75f3999f5a28303d75f521288df4823bc057d8784eb72358b2895a05f29a070bc9f1f17d28226cc4e62494cc58c4c
-  languageName: node
-  linkType: hard
-
-"path-parse@npm:^1.0.7":
-  version: 1.0.7
-  resolution: "path-parse@npm:1.0.7"
-  checksum: 10c0/11ce261f9d294cc7a58d6a574b7f1b935842355ec66fba3c3fd79e0f036462eaf07d0aa95bb74ff432f9afef97ce1926c720988c6a7451d8a584930ae7de86e1
   languageName: node
   linkType: hard
 
@@ -6624,14 +5866,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"pg-protocol@npm:*":
-  version: 1.10.3
-  resolution: "pg-protocol@npm:1.10.3"
-  checksum: 10c0/f7ef54708c93ee6d271e37678296fc5097e4337fca91a88a3d99359b78633dbdbf6e983f0adb34b7cdd261b7ec7266deb20c3233bf3dfdb498b3e1098e8750b9
-  languageName: node
-  linkType: hard
-
-"pg-protocol@npm:^1.14.0":
+"pg-protocol@npm:*, pg-protocol@npm:^1.14.0":
   version: 1.14.0
   resolution: "pg-protocol@npm:1.14.0"
   checksum: 10c0/dccb29b30f5cee8f2ca7dfd17da9eb957174f7a1a25e987e0bfc9fe7640f53dc9fd05c7f3635e7db0c5eefcd41716fffe625f3c1ea9789634d438851b9ce90ae
@@ -6696,21 +5931,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"picomatch@npm:^4.0.2, picomatch@npm:^4.0.3":
-  version: 4.0.3
-  resolution: "picomatch@npm:4.0.3"
-  checksum: 10c0/9582c951e95eebee5434f59e426cddd228a7b97a0161a375aed4be244bd3fe8e3a31b846808ea14ef2c8a2527a6eeab7b3946a67d5979e81694654f939473ae2
-  languageName: node
-  linkType: hard
-
-"picomatch@npm:^4.0.4":
-  version: 4.0.4
-  resolution: "picomatch@npm:4.0.4"
-  checksum: 10c0/e2c6023372cc7b5764719a5ffb9da0f8e781212fa7ca4bd0562db929df8e117460f00dff3cb7509dacfc06b86de924b247f504d0ce1806a37fac4633081466b0
-  languageName: node
-  linkType: hard
-
-"picomatch@npm:^4.0.7":
+"picomatch@npm:^4.0.3, picomatch@npm:^4.0.4, picomatch@npm:^4.0.7":
   version: 4.0.7
   resolution: "picomatch@npm:4.0.7"
   checksum: 10c0/beb6ae02c43ae44e84883b90830196d9046b1726ead292adcf7f57945e0bb0d992d68563d87e03b484b6f3c9a5c6defda7523477f047d7f0e663f126cc01787f
@@ -6745,17 +5966,6 @@ __metadata:
   bin:
     playwright: cli.js
   checksum: 10c0/edf52d0a79feca37bf383e841a467aa68750684128218eac560063991c9e4b615a94901f580cd8a088bb05fd53008ab4a0e5e8d976067698b60ae5d1de2459f3
-  languageName: node
-  linkType: hard
-
-"postcss@npm:^8.5.10":
-  version: 8.5.10
-  resolution: "postcss@npm:8.5.10"
-  dependencies:
-    nanoid: "npm:^3.3.11"
-    picocolors: "npm:^1.1.1"
-    source-map-js: "npm:^1.2.1"
-  checksum: 10c0/c592dffa0c4873b401f01955b265538d9942f425040df5e2b8f0ad34c83773a792ea0fa5859ccc99cfb5b955b4ebff118ab7056315388dc83b107b0fa8313576
   languageName: node
   linkType: hard
 
@@ -6867,22 +6077,21 @@ __metadata:
   linkType: hard
 
 "protobufjs@npm:^7.5.3":
-  version: 7.5.4
-  resolution: "protobufjs@npm:7.5.4"
+  version: 7.6.6
+  resolution: "protobufjs@npm:7.6.6"
   dependencies:
     "@protobufjs/aspromise": "npm:^1.1.2"
     "@protobufjs/base64": "npm:^1.1.2"
-    "@protobufjs/codegen": "npm:^2.0.4"
-    "@protobufjs/eventemitter": "npm:^1.1.0"
-    "@protobufjs/fetch": "npm:^1.1.0"
+    "@protobufjs/codegen": "npm:^2.0.5"
+    "@protobufjs/eventemitter": "npm:^1.1.1"
+    "@protobufjs/fetch": "npm:^1.1.1"
     "@protobufjs/float": "npm:^1.0.2"
-    "@protobufjs/inquire": "npm:^1.1.0"
     "@protobufjs/path": "npm:^1.1.2"
     "@protobufjs/pool": "npm:^1.1.0"
-    "@protobufjs/utf8": "npm:^1.1.0"
+    "@protobufjs/utf8": "npm:^1.1.1"
     "@types/node": "npm:>=13.7.0"
-    long: "npm:^5.0.0"
-  checksum: 10c0/913b676109ffb3c05d3d31e03a684e569be91f3bba8613da4a683d69d9dba948daa2afd7d2e7944d1aa6c417890c35d9d9a8883c1160affafb0f9670d59ef722
+    long: "npm:^5.3.2"
+  checksum: 10c0/6c0dc6d4a2801825e39417bc116297d5261c0cf28892a5e28adafc13432331c0cb75603bbe50ad6f2715f3b0a9ce2896591ad6b51fdc8eae2d05b9ac2e4a8ec1
   languageName: node
   linkType: hard
 
@@ -7009,17 +6218,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"require-in-the-middle@npm:^7.1.1":
-  version: 7.5.2
-  resolution: "require-in-the-middle@npm:7.5.2"
-  dependencies:
-    debug: "npm:^4.3.5"
-    module-details-from-path: "npm:^1.0.3"
-    resolve: "npm:^1.22.8"
-  checksum: 10c0/43a2dac5520e39d13c413650895715e102d6802e6cc6ff322017bd948f12a9657fe28435f7cbbcba437b167f02e192ac7af29fa35cabd5d0c375d071c0605e01
-  languageName: node
-  linkType: hard
-
 "require-in-the-middle@npm:^8.0.0":
   version: 8.0.1
   resolution: "require-in-the-middle@npm:8.0.1"
@@ -7034,32 +6232,6 @@ __metadata:
   version: 1.0.0
   resolution: "requires-port@npm:1.0.0"
   checksum: 10c0/b2bfdd09db16c082c4326e573a82c0771daaf7b53b9ce8ad60ea46aa6e30aaf475fe9b164800b89f93b748d2c234d8abff945d2551ba47bf5698e04cd7713267
-  languageName: node
-  linkType: hard
-
-"resolve@npm:^1.22.8":
-  version: 1.22.10
-  resolution: "resolve@npm:1.22.10"
-  dependencies:
-    is-core-module: "npm:^2.16.0"
-    path-parse: "npm:^1.0.7"
-    supports-preserve-symlinks-flag: "npm:^1.0.0"
-  bin:
-    resolve: bin/resolve
-  checksum: 10c0/8967e1f4e2cc40f79b7e080b4582b9a8c5ee36ffb46041dccb20e6461161adf69f843b43067b4a375de926a2cd669157e29a29578191def399dd5ef89a1b5203
-  languageName: node
-  linkType: hard
-
-"resolve@patch:resolve@npm%3A^1.22.8#optional!builtin<compat/resolve>":
-  version: 1.22.10
-  resolution: "resolve@patch:resolve@npm%3A1.22.10#optional!builtin<compat/resolve>::version=1.22.10&hash=9bd1a5"
-  dependencies:
-    is-core-module: "npm:^2.16.0"
-    path-parse: "npm:^1.0.7"
-    supports-preserve-symlinks-flag: "npm:^1.0.0"
-  bin:
-    resolve: bin/resolve
-  checksum: 10c0/da5c4a85971e6eeb821805d117092321c6c257a6e1e45382c0b7ef41368a7e98690e01a08bac88b111443410a49e2fb17d1802ac5c51c8fc5532d77bef9f4be9
   languageName: node
   linkType: hard
 
@@ -7081,64 +6253,6 @@ __metadata:
   version: 3.0.3
   resolution: "robust-predicates@npm:3.0.3"
   checksum: 10c0/ae23a0318be809545f091a076818747848f144495491e24e6df5d767f2bad0a1501bbeac34e78b74681d1437ecff0585f593ebfe6c8d49a50e79c5053b962693
-  languageName: node
-  linkType: hard
-
-"rolldown@npm:1.0.0-rc.16":
-  version: 1.0.0-rc.16
-  resolution: "rolldown@npm:1.0.0-rc.16"
-  dependencies:
-    "@oxc-project/types": "npm:=0.126.0"
-    "@rolldown/binding-android-arm64": "npm:1.0.0-rc.16"
-    "@rolldown/binding-darwin-arm64": "npm:1.0.0-rc.16"
-    "@rolldown/binding-darwin-x64": "npm:1.0.0-rc.16"
-    "@rolldown/binding-freebsd-x64": "npm:1.0.0-rc.16"
-    "@rolldown/binding-linux-arm-gnueabihf": "npm:1.0.0-rc.16"
-    "@rolldown/binding-linux-arm64-gnu": "npm:1.0.0-rc.16"
-    "@rolldown/binding-linux-arm64-musl": "npm:1.0.0-rc.16"
-    "@rolldown/binding-linux-ppc64-gnu": "npm:1.0.0-rc.16"
-    "@rolldown/binding-linux-s390x-gnu": "npm:1.0.0-rc.16"
-    "@rolldown/binding-linux-x64-gnu": "npm:1.0.0-rc.16"
-    "@rolldown/binding-linux-x64-musl": "npm:1.0.0-rc.16"
-    "@rolldown/binding-openharmony-arm64": "npm:1.0.0-rc.16"
-    "@rolldown/binding-wasm32-wasi": "npm:1.0.0-rc.16"
-    "@rolldown/binding-win32-arm64-msvc": "npm:1.0.0-rc.16"
-    "@rolldown/binding-win32-x64-msvc": "npm:1.0.0-rc.16"
-    "@rolldown/pluginutils": "npm:1.0.0-rc.16"
-  dependenciesMeta:
-    "@rolldown/binding-android-arm64":
-      optional: true
-    "@rolldown/binding-darwin-arm64":
-      optional: true
-    "@rolldown/binding-darwin-x64":
-      optional: true
-    "@rolldown/binding-freebsd-x64":
-      optional: true
-    "@rolldown/binding-linux-arm-gnueabihf":
-      optional: true
-    "@rolldown/binding-linux-arm64-gnu":
-      optional: true
-    "@rolldown/binding-linux-arm64-musl":
-      optional: true
-    "@rolldown/binding-linux-ppc64-gnu":
-      optional: true
-    "@rolldown/binding-linux-s390x-gnu":
-      optional: true
-    "@rolldown/binding-linux-x64-gnu":
-      optional: true
-    "@rolldown/binding-linux-x64-musl":
-      optional: true
-    "@rolldown/binding-openharmony-arm64":
-      optional: true
-    "@rolldown/binding-wasm32-wasi":
-      optional: true
-    "@rolldown/binding-win32-arm64-msvc":
-      optional: true
-    "@rolldown/binding-win32-x64-msvc":
-      optional: true
-  bin:
-    rolldown: bin/cli.mjs
-  checksum: 10c0/e96a43bb639dcce7cfee0125742effe110271d005fa0992b098d8f7245f74adfd74da15aaaa00de47a2031c7675caa9aa58be132477eee02ecac2e388d94a29f
   languageName: node
   linkType: hard
 
@@ -7316,7 +6430,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"setprototypeof@npm:1.2.0, setprototypeof@npm:~1.2.0":
+"setprototypeof@npm:~1.2.0":
   version: 1.2.0
   resolution: "setprototypeof@npm:1.2.0"
   checksum: 10c0/68733173026766fa0d9ecaeb07f0483f4c2dc70ca376b3b7c40b7cda909f94b0918f6c5ad5ce27a9160bdfb475efaa9d5e705a11d8eaae18f9835d20976028bc
@@ -7336,13 +6450,6 @@ __metadata:
   version: 3.0.0
   resolution: "shebang-regex@npm:3.0.0"
   checksum: 10c0/1dbed0726dd0e1152a92696c76c7f06084eb32a90f0528d11acd764043aacf76994b2fb30aa1291a21bd019d6699164d048286309a278855ee7bec06cf6fb690
-  languageName: node
-  linkType: hard
-
-"shimmer@npm:^1.2.1":
-  version: 1.2.1
-  resolution: "shimmer@npm:1.2.1"
-  checksum: 10c0/ae8b27c389db2a00acfc8da90240f11577685a8f3e40008f826a3bea8b4f3b3ecd305c26be024b4a0fd3b123d132c1569d6e238097960a9a543b6c60760fb46a
   languageName: node
   linkType: hard
 
@@ -7443,14 +6550,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"source-map-js@npm:>=0.6.2 <2.0.0, source-map-js@npm:^1.2.1":
-  version: 1.2.1
-  resolution: "source-map-js@npm:1.2.1"
-  checksum: 10c0/7bda1fc4c197e3c6ff17de1b8b2c20e60af81b63a52cb32ec5a5d67a20a7d42651e2cb34ebe93833c5a2a084377e17455854fee3e21e7925c64a51b6a52b0faf
-  languageName: node
-  linkType: hard
-
-"source-map-js@npm:^1.2.2":
+"source-map-js@npm:>=0.6.2 <2.0.0, source-map-js@npm:^1.2.1, source-map-js@npm:^1.2.2":
   version: 1.2.2
   resolution: "source-map-js@npm:1.2.2"
   checksum: 10c0/d5d6dec62266834f83dd4f8a2606a196fb1a006ca5d53b0ef80ee513b7eba2f4e2ae241f4bc129ae7e9b80dea24f6e3d92b446b7e6e96be7653cab8888168a94
@@ -7484,13 +6584,6 @@ __metadata:
   version: 0.0.2
   resolution: "stackback@npm:0.0.2"
   checksum: 10c0/89a1416668f950236dd5ac9f9a6b2588e1b9b62b1b6ad8dff1bfc5d1a15dbf0aafc9b52d2226d00c28dffff212da464eaeebfc6b7578b9d180cef3e3782c5983
-  languageName: node
-  linkType: hard
-
-"statuses@npm:2.0.1":
-  version: 2.0.1
-  resolution: "statuses@npm:2.0.1"
-  checksum: 10c0/34378b207a1620a24804ce8b5d230fea0c279f00b18a7209646d5d47e419d1cc23e7cbf33a25a1e51ac38973dc2ac2e1e9c647a8e481ef365f77668d72becfd0
   languageName: node
   linkType: hard
 
@@ -7581,13 +6674,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"supports-preserve-symlinks-flag@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "supports-preserve-symlinks-flag@npm:1.0.0"
-  checksum: 10c0/6c4032340701a9950865f7ae8ef38578d8d7053f5e10518076e6554a9381fa91bd9c6850193695c141f32b21f979c985db07265a758867bac95de05f7d8aeb39
-  languageName: node
-  linkType: hard
-
 "tar@npm:^7.4.3":
   version: 7.5.9
   resolution: "tar@npm:7.5.9"
@@ -7615,37 +6701,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tinyglobby@npm:^0.2.12":
-  version: 0.2.14
-  resolution: "tinyglobby@npm:0.2.14"
-  dependencies:
-    fdir: "npm:^6.4.4"
-    picomatch: "npm:^4.0.2"
-  checksum: 10c0/f789ed6c924287a9b7d3612056ed0cda67306cd2c80c249fd280cf1504742b12583a2089b61f4abbd24605f390809017240e250241f09938054c9b363e51c0a6
-  languageName: node
-  linkType: hard
-
-"tinyglobby@npm:^0.2.15":
-  version: 0.2.15
-  resolution: "tinyglobby@npm:0.2.15"
-  dependencies:
-    fdir: "npm:^6.5.0"
-    picomatch: "npm:^4.0.3"
-  checksum: 10c0/869c31490d0d88eedb8305d178d4c75e7463e820df5a9b9d388291daf93e8b1eb5de1dad1c1e139767e4269fe75f3b10d5009b2cc14db96ff98986920a186844
-  languageName: node
-  linkType: hard
-
-"tinyglobby@npm:^0.2.16":
-  version: 0.2.16
-  resolution: "tinyglobby@npm:0.2.16"
-  dependencies:
-    fdir: "npm:^6.5.0"
-    picomatch: "npm:^4.0.4"
-  checksum: 10c0/f2e09fd93dd95c41e522113b686ff6f7c13020962f8698a864a257f3d7737599afc47722b7ab726e12f8a813f779906187911ff8ee6701ede65072671a7e934b
-  languageName: node
-  linkType: hard
-
-"tinyglobby@npm:^0.2.17":
+"tinyglobby@npm:^0.2.12, tinyglobby@npm:^0.2.15, tinyglobby@npm:^0.2.17":
   version: 0.2.17
   resolution: "tinyglobby@npm:0.2.17"
   dependencies:
@@ -7671,7 +6727,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"toidentifier@npm:1.0.1, toidentifier@npm:~1.0.1":
+"toidentifier@npm:~1.0.1":
   version: 1.0.1
   resolution: "toidentifier@npm:1.0.1"
   checksum: 10c0/93937279934bd66cc3270016dd8d0afec14fb7c94a05c72dc57321f8bd1fa97e5bea6d1f7c89e728d077ca31ea125b78320a616a6c6cd0e6b9cb94cb864381c1
@@ -7699,7 +6755,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.2.0, tslib@npm:^2.4.0, tslib@npm:^2.6.2, tslib@npm:^2.7.0, tslib@npm:^2.8.1":
+"tslib@npm:^2.2.0, tslib@npm:^2.6.2, tslib@npm:^2.7.0, tslib@npm:^2.8.1":
   version: 2.8.1
   resolution: "tslib@npm:2.8.1"
   checksum: 10c0/9c4759110a19c53f992d9aae23aac5ced636e99887b51b9e61def52611732872ff7668757d4e4c61f19691e36f4da981cd9485e869b4a7408d689f6bf1f14e62
@@ -8004,7 +7060,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"vite@npm:8.3.4":
+"vite@npm:8.3.4, vite@npm:^6.0.0 || ^7.0.0 || ^8.0.0":
   version: 8.3.4
   resolution: "vite@npm:8.3.4"
   dependencies:
@@ -8058,63 +7114,6 @@ __metadata:
   bin:
     vite: bin/vite.js
   checksum: 10c0/63d7351fa21580fb646f0b594c64e97a56cdf15c55a57372a7adefe6287995fa7384cb5ddca14695ff7dca738ba00e0a3352fc24df711d9c501c5576f40f0867
-  languageName: node
-  linkType: hard
-
-"vite@npm:^6.0.0 || ^7.0.0 || ^8.0.0":
-  version: 8.0.9
-  resolution: "vite@npm:8.0.9"
-  dependencies:
-    fsevents: "npm:~2.3.3"
-    lightningcss: "npm:^1.32.0"
-    picomatch: "npm:^4.0.4"
-    postcss: "npm:^8.5.10"
-    rolldown: "npm:1.0.0-rc.16"
-    tinyglobby: "npm:^0.2.16"
-  peerDependencies:
-    "@types/node": ^20.19.0 || >=22.12.0
-    "@vitejs/devtools": ^0.1.0
-    esbuild: ^0.27.0 || ^0.28.0
-    jiti: ">=1.21.0"
-    less: ^4.0.0
-    sass: ^1.70.0
-    sass-embedded: ^1.70.0
-    stylus: ">=0.54.8"
-    sugarss: ^5.0.0
-    terser: ^5.16.0
-    tsx: ^4.8.1
-    yaml: ^2.4.2
-  dependenciesMeta:
-    fsevents:
-      optional: true
-  peerDependenciesMeta:
-    "@types/node":
-      optional: true
-    "@vitejs/devtools":
-      optional: true
-    esbuild:
-      optional: true
-    jiti:
-      optional: true
-    less:
-      optional: true
-    sass:
-      optional: true
-    sass-embedded:
-      optional: true
-    stylus:
-      optional: true
-    sugarss:
-      optional: true
-    terser:
-      optional: true
-    tsx:
-      optional: true
-    yaml:
-      optional: true
-  bin:
-    vite: bin/vite.js
-  checksum: 10c0/92d50d968793d914b9146c76b2fd064a02449c289d6ca586af16ac858e4843037518b75370e83ab94a5a4af17255aec5e9dd357f54ab794d3d62fabec62f5197
   languageName: node
   linkType: hard
 
