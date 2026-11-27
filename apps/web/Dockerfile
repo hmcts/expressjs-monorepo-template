@@ -9,7 +9,7 @@ COPY --chown=hmcts:hmcts --parents apps/*/package.json libs/*/package.json e2e-t
 
 # ---- Build image ----
 FROM base AS build
-RUN --mount=type=cache,target=/opt/app/.yarn/cache,uid=100,gid=101 yarn install --immutable --mode=skip-build
+RUN --mount=type=cache,target=/opt/app/.yarn/cache,uid=1000,gid=1000 yarn install --immutable --mode=skip-build
 COPY --chown=hmcts:hmcts . .
 ENV NODE_ENV=production
 RUN yarn turbo run build --filter=@hmcts/web...
@@ -17,7 +17,7 @@ RUN yarn turbo run build --filter=@hmcts/web...
 # ---- Runtime image ----
 FROM base AS runtime
 ENV NODE_ENV=production
-RUN --mount=type=cache,target=/opt/app/.yarn/cache,uid=100,gid=101 yarn workspaces focus @hmcts/web --production
+RUN --mount=type=cache,target=/opt/app/.yarn/cache,uid=1000,gid=1000 yarn workspaces focus @hmcts/web --production
 COPY --from=build --parents /opt/app/./apps/web/dist /opt/app/./libs/*/dist /opt/app/./libs/*/generated ./
 COPY apps/web/config ./apps/web/config
 COPY apps/web/helm/values.yaml ./apps/web/helm/values.yaml
